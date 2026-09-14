@@ -99,7 +99,40 @@ function mesAbreujat(str) {
 }
 
 function anaTecnica() {
-  window.location.href = 'tecnica.html';
+  document.getElementById('pin-input').value = '';
+  document.getElementById('pin-error').style.display = 'none';
+  document.getElementById('btn-accedir').textContent = 'Accedir';
+  document.getElementById('modal-pin').style.display = 'flex';
+  setTimeout(() => document.getElementById('pin-input').focus(), 100);
+}
+
+function tancaModal() {
+  document.getElementById('modal-pin').style.display = 'none';
+}
+
+async function verificaPin() {
+  const pin = document.getElementById('pin-input').value;
+  const btn = document.getElementById('btn-accedir');
+  document.getElementById('pin-error').style.display = 'none';
+  btn.textContent = '⏳ Verificant...';
+  btn.disabled = true;
+  try {
+    const res = await fetch(SUPABASE_URL + '/auth/v1/token?grant_type=password', {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: 'validacio-tecnica@brivalls.cat', password: pin })
+    });
+    if (!res.ok) throw new Error();
+    const data = await res.json();
+    // Guardar token per a tecnica.html
+    sessionStorage.setItem('sb-token', data.access_token);
+    window.location.href = 'tecnica.html';
+  } catch(e) {
+    btn.textContent = 'Accedir';
+    btn.disabled = false;
+    document.getElementById('pin-error').style.display = 'block';
+    document.getElementById('pin-input').value = '';
+  }
 }
 
 async function carregaSessions() {
@@ -191,5 +224,25 @@ function generaSVG(pinya) {
 
 carregaSessions();
 </script>
+
+<div id="modal-pin" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:200;align-items:center;justify-content:center;">
+  <div style="background:#fff;border-radius:16px;padding:24px;width:300px;max-width:90vw;text-align:center;">
+    <div style="font-size:32px;margin-bottom:8px;">🔐</div>
+    <div style="font-size:17px;font-weight:600;margin-bottom:6px;">Accés tècnic</div>
+    <p style="font-size:13px;color:#666;margin-bottom:16px;">Introdueix el PIN per accedir</p>
+    <input type="password" id="pin-input" placeholder="PIN" maxlength="8"
+      style="width:100%;text-align:center;font-size:24px;letter-spacing:8px;padding:10px;border:1.5px solid #ddd;border-radius:8px;outline:none;margin-bottom:8px;"
+      onkeydown="if(event.key==='Enter')verificaPin()">
+    <div id="pin-error" style="color:#e74c3c;font-size:13px;margin-bottom:8px;display:none;">PIN incorrecte</div>
+    <button id="btn-accedir" onclick="verificaPin()"
+      style="width:100%;background:#29327a;color:#fff;border:none;border-radius:8px;padding:12px;font-size:15px;font-weight:600;cursor:pointer;margin-bottom:8px;">
+      Accedir
+    </button>
+    <button onclick="tancaModal()"
+      style="width:100%;background:none;border:none;color:#666;font-size:14px;cursor:pointer;padding:8px;">
+      Cancel·lar
+    </button>
+  </div>
+</div>
 </body>
 </html>

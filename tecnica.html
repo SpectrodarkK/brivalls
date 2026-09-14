@@ -2268,6 +2268,13 @@ function actualitzaBotoPin() {
 
 // ===================== INIT =====================
 (async () => {
+  // Recuperar token si venim de l'index.html
+  const tokenDeIndex = sessionStorage.getItem('sb-token');
+  if (tokenDeIndex) {
+    supabaseToken = tokenDeIndex;
+    pinAutenticat = true;
+    sessionStorage.removeItem('sb-token');
+  }
   await carregaDades();
   renderitzaMembres();
   renderitzaSessions();
