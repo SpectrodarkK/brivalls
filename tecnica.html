@@ -1,0 +1,2279 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1a1a2e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Brivalls de Cornudella</title>
+<style>
+  :root {
+    --blau: #29327a;
+    --blau-fosc: #1e2560;
+    --blau-clar: #eaebf5;
+    --groc: #f39c12;
+    --groc-clar: #fef9e7;
+    --verd: #27ae60;
+    --verd-clar: #eafaf1;
+    --gris-fosc: #1a1a2e;
+    --gris-mig: #4a4a6a;
+    --gris-clar: #f4f4f8;
+    --blanc: #ffffff;
+    --text: #1a1a2e;
+    --text-suau: #6c6c8a;
+    --vora: #e0e0ee;
+    --ombra: 0 2px 12px rgba(26,26,46,0.10);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: var(--gris-clar); color: var(--text); min-height: 100vh; }
+
+  /* CAPÇALERA */
+  .cap { background: #e8e8e8; color: #1a1a1a; padding: 14px 16px 12px; display: flex; align-items: center; gap: 10px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 8px rgba(0,0,0,0.25); }
+  .cap-logo { font-size: 22px; }
+  .cap-title { font-size: 17px; font-weight: 600; letter-spacing: 0.3px; flex: 1; }
+  .cap-back { background: none; border: none; color: #1a1a1a; font-size: 22px; cursor: pointer; padding: 4px; display: none; }
+  .cap-back.visible { display: flex; align-items: center; }
+  .cap-subtitle { font-size: 11px; opacity: 0.65; margin-top: 1px; }
+
+  /* NAV */
+  .nav { display: flex; background: var(--blanc); border-bottom: 1px solid var(--vora); }
+  .nav-btn { flex: 1; padding: 11px 4px 9px; border: none; background: none; cursor: pointer; font-size: 9px; color: var(--text-suau); display: flex; flex-direction: column; align-items: center; gap: 4px; transition: color 0.15s; }
+  .nav-btn .ico { font-size: 20px; }
+  .nav-btn.actiu { color: var(--blau); border-bottom: 2px solid var(--blau); }
+
+  /* PANELLS */
+  .panell { display: none; padding: 16px; animation: fadeIn 0.2s ease; }
+  .panell.actiu { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* CARDS */
+  .card { background: var(--blanc); border-radius: 12px; box-shadow: var(--ombra); margin-bottom: 14px; overflow: hidden; }
+  .card-cap { padding: 14px 16px 10px; border-bottom: 1px solid var(--vora); display: flex; align-items: center; justify-content: space-between; }
+  .card-titol { font-size: 14px; font-weight: 600; color: var(--text); }
+  .card-cos { padding: 10px 0; }
+
+  /* FORMULARIS */
+  .input-grup { margin-bottom: 12px; }
+  .input-etiqueta { font-size: 12px; font-weight: 600; color: var(--text-suau); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; display: block; }
+  input, select, textarea { width: 100%; padding: 10px 12px; border: 1.5px solid var(--vora); border-radius: 8px; font-size: 15px; color: var(--text); background: var(--blanc); outline: none; transition: border-color 0.15s; font-family: inherit; }
+  input:focus, select:focus, textarea:focus { border-color: var(--blau); }
+  textarea { resize: vertical; min-height: 70px; }
+
+  /* BOTONS */
+  .btn { padding: 10px 18px; border-radius: 8px; border: none; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px; font-family: inherit; }
+  .btn-primari { background: var(--blau); color: var(--blanc); width: 100%; justify-content: center; padding: 13px; font-size: 15px; }
+  .btn-primari:active { background: var(--blau-fosc); transform: scale(0.98); }
+  .btn-secundari { background: var(--gris-clar); color: var(--text); }
+  .btn-secondari:active { background: #e0e0e8; }
+  .btn-petit { padding: 6px 12px; font-size: 12px; border-radius: 6px; }
+  .btn-perill { background: var(--blau-clar); color: var(--blau); }
+  .btn-verd { background: var(--verd-clar); color: var(--verd); }
+  .btn-groc { background: var(--groc-clar); color: #b7770d; }
+  .btn-row { display: flex; gap: 8px; margin-top: 8px; }
+
+  .membre-item:nth-child(even),
+  .assist-item:nth-child(even) { background: var(--gris-clar); }
+  .membre-item { display: flex; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--vora); gap: 12px; }
+  .membre-item:last-child { border-bottom: none; }
+  .membre-avatar { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+  .membre-info { flex: 1; min-width: 0; }
+  .membre-nom { font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .membre-detall { font-size: 11px; color: var(--text-suau); margin-top: 1px; }
+  .membre-accions { display: flex; gap: 6px; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 10px; font-weight: 600; }
+
+  /* POSICIONS DE PINYA */
+  .pinya-container { padding: 16px; }
+  .pinya-title { font-size: 13px; font-weight: 700; color: var(--text-suau); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px; }
+  .pinya-grid { display: grid; gap: 8px; }
+  .pos-card { background: var(--blanc); border: 1.5px solid var(--vora); border-radius: 10px; padding: 10px 12px; display: flex; align-items: center; gap: 10px; cursor: pointer; transition: border-color 0.15s, box-shadow 0.15s; }
+  .pos-card:active { border-color: var(--blau); box-shadow: 0 0 0 2px rgba(192,57,43,0.15); }
+  .pos-card.ocupada { border-color: var(--blau); background: var(--blau-clar); }
+  .pos-card.ocupada .pos-nom { color: var(--blau-fosc); }
+  .pos-num { width: 30px; height: 30px; border-radius: 50%; background: var(--gris-fosc); color: var(--blanc); font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .pos-card.ocupada .pos-num { background: var(--blau); }
+  .pos-info { flex: 1; }
+  .pos-nom { font-size: 13px; font-weight: 600; }
+  .pos-persona { font-size: 11px; color: var(--text-suau); margin-top: 1px; }
+  .pos-card.ocupada .pos-persona { color: var(--blau); font-weight: 500; }
+
+  /* SESSIÓ */
+  .sessio-item { padding: 12px 16px; border-bottom: 1px solid var(--vora); display: flex; align-items: center; gap: 12px; cursor: pointer; transition: background 0.12s; }
+  .sessio-item:last-child { border-bottom: none; }
+  .sessio-item:active { background: var(--gris-clar); }
+  .sessio-data { font-size: 13px; font-weight: 600; }
+  .sessio-info { flex: 1; }
+  .sessio-assistents { font-size: 11px; color: var(--text-suau); }
+
+  /* ASSISTÈNCIA */
+  .assist-item { display: flex; align-items: center; padding: 10px 16px; border-bottom: 1px solid var(--vora); gap: 12px; }
+  .assist-item:last-child { border-bottom: none; }
+  .toggle { position: relative; width: 44px; height: 26px; flex-shrink: 0; }
+  .toggle input { opacity: 0; width: 0; height: 0; }
+  .toggle-slider { position: absolute; inset: 0; background: #d0d0e0; border-radius: 26px; cursor: pointer; transition: 0.2s; }
+  .toggle-slider:before { content: ''; position: absolute; width: 20px; height: 20px; left: 3px; top: 3px; background: white; border-radius: 50%; transition: 0.2s; box-shadow: 0 1px 3px rgba(0,0,0,0.2); }
+  .toggle input:checked + .toggle-slider { background: var(--verd); }
+  .toggle input:checked + .toggle-slider:before { transform: translateX(18px); }
+
+  /* MODAL */
+  .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 200; display: none; align-items: flex-end; }
+  .modal-overlay.obert { display: flex; }
+  .modal { background: var(--blanc); border-radius: 20px 20px 0 0; padding: 20px 20px 32px; width: 100%; max-height: 85vh; overflow-y: auto; }
+  .modal-titol { font-size: 17px; font-weight: 700; margin-bottom: 16px; }
+  .modal-tanca { position: absolute; right: 20px; top: 18px; background: var(--gris-clar); border: none; border-radius: 50%; width: 30px; height: 30px; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; }
+  .modal { position: relative; }
+
+  /* SELECTOR PERSONA */
+  .persona-opcio { padding: 10px 12px; border: 1.5px solid var(--vora); border-radius: 8px; margin-bottom: 8px; cursor: pointer; display: flex; align-items: center; gap: 10px; transition: border-color 0.12s; }
+  .persona-opcio:active, .persona-opcio.sel { border-color: var(--blau); background: var(--blau-clar); }
+  .persona-opcio.sel .persona-opcio-nom { color: var(--blau-fosc); }
+  .persona-opcio.deshabilitada { cursor: default; opacity: 0.45; background: var(--gris-clar); }
+  .tag-ocupat { font-size: 10px; font-weight: 600; color: var(--text-suau); background: var(--gris-clar); padding: 3px 8px; border-radius: 20px; flex-shrink: 0; }
+
+  /* BUIT */
+  .buit { text-align: center; padding: 40px 20px; color: var(--text-suau); }
+  .buit-ico { font-size: 48px; margin-bottom: 12px; }
+  .buit-text { font-size: 14px; }
+
+  /* STATS */
+  .stats-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 16px; }
+  .stat-card { background: var(--blanc); border-radius: 10px; padding: 12px 10px; text-align: center; box-shadow: var(--ombra); }
+  .stat-num { font-size: 22px; font-weight: 700; }
+  .stat-lbl { font-size: 10px; color: var(--text-suau); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  .seccio-titol { font-size: 13px; font-weight: 700; color: var(--text-suau); text-transform: uppercase; letter-spacing: 0.8px; margin: 16px 0 8px; }
+
+  /* COLORS POSICIONS */
+  .rol-baix { background: #fdebd0; color: #a04000; }
+  .rol-mig { background: #d5e8d4; color: #1e6b28; }
+  .rol-dalt { background: #dae8fc; color: #1a5276; }
+  .rol-especial { background: #e8d5f5; color: #6c3483; }
+
+  /* TIPUS CASTELL */
+  .tipus-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+  .tipus-opcio { border: 1.5px solid var(--vora); border-radius: 10px; padding: 10px 6px; text-align: center; cursor: pointer; transition: border-color 0.12s, background 0.12s; }
+  .tipus-opcio:active, .tipus-opcio.sel { border-color: var(--blau); background: var(--blau-clar); }
+  .tipus-opcio-ico { font-size: 20px; margin-bottom: 4px; }
+  .tipus-opcio-nom { font-size: 12px; font-weight: 600; }
+  .tipus-opcio-sub { font-size: 10px; color: var(--text-suau); margin-top: 1px; }
+  .tipus-opcio.sel .tipus-opcio-nom { color: var(--blau-fosc); }
+
+  /* TRONC DESPLEGABLE */
+  .tronc-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; cursor: pointer; user-select: none; }
+  .tronc-header:active { background: var(--gris-clar); }
+  .tronc-titol { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+  .tronc-chevron { font-size: 12px; color: var(--text-suau); transition: transform 0.2s; }
+  .tronc-chevron.obert { transform: rotate(180deg); }
+  .tronc-cos { border-top: 1px solid var(--vora); }
+  .tronc-seccio { padding: 10px 16px 4px; }
+  .tronc-seccio-titol { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.7px; color: var(--text-suau); margin-bottom: 8px; }
+  .tronc-pos { display: flex; align-items: center; padding: 9px 0; border-bottom: 1px solid var(--vora); gap: 10px; cursor: pointer; }
+  .tronc-pos:last-child { border-bottom: none; }
+  .tronc-pos-num { width: 26px; height: 26px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; flex-shrink: 0; }
+  .tronc-pos-info { flex: 1; }
+  .tronc-pos-nom { font-size: 13px; font-weight: 500; }
+  .tronc-pos-persona { font-size: 11px; color: var(--text-suau); margin-top: 1px; }
+  .tronc-pos.ocupada .tronc-pos-persona { color: var(--verd); font-weight: 500; }
+  .pinya-svg-wrap { display: flex; justify-content: center; padding: 16px 8px 8px; background: var(--gris-clar); }
+  .pinya-svg-wrap svg { max-width: 100%; height: auto; }
+  .pos-cercle { cursor: pointer; transition: opacity 0.12s; }
+  .pos-cercle:active { opacity: 0.75; }
+  .pos-cercle-lbl { font-size: 9px; font-weight: 700; fill: #fff; text-anchor: middle; pointer-events: none; }
+  .pos-cercle-inicials { font-size: 10px; font-weight: 700; fill: #fff; text-anchor: middle; pointer-events: none; }
+
+  /* LLEGENDA ROLS */
+  .llegenda-rols { display: flex; flex-wrap: wrap; gap: 10px; padding: 12px 16px; justify-content: center; }
+  .llegenda-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text-suau); }
+  .llegenda-punt { width: 11px; height: 11px; border-radius: 50%; flex-shrink: 0; }
+
+  /* VISTA TOGGLE (dibuix / llista) */
+  .vista-toggle { display: flex; background: var(--gris-clar); border-radius: 8px; padding: 3px; margin: 0 16px 12px; }
+  .vista-toggle button { flex: 1; padding: 8px; border: none; background: none; border-radius: 6px; font-size: 12px; font-weight: 600; color: var(--text-suau); cursor: pointer; }
+  .vista-toggle button.actiu { background: var(--blanc); color: var(--blau-fosc); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+
+  /* LLISTA PER ROL */
+  .rol-grup { margin-bottom: 4px; }
+  .rol-grup-cap { padding: 10px 16px 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; color: var(--text-suau); display: flex; align-items: center; gap: 6px; }
+  .rol-grup-punt { width: 9px; height: 9px; border-radius: 50%; }
+
+  /* Avatar colors */
+  .av0 { background: #fdebd0; color: #a04000; }
+  .av1 { background: #d5e8d4; color: #1e6b28; }
+  .av2 { background: #dae8fc; color: #1a5276; }
+  .av3 { background: #f9ebea; color: #922b21; }
+  .av4 { background: #e8d5f5; color: #6c3483; }
+  .av5 { background: #fef9e7; color: #9a7d0a; }
+</style>
+</head>
+<body>
+
+<!-- CAPÇALERA -->
+<div class="cap">
+  <button class="cap-back" id="cap-back" onclick="tornarEnrere()">←</button>
+  <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAHEAAABQCAYAAAAujppDAAAzKklEQVR42u19eXhV1dX+u9Y+5065mSEMogwikAAKXLBULcFOto7VfsGOTlX0s9o69VNUvFwQp9ZaW6dSh1ZrVW5ra7W1dajGEYEAKgmgOCDzkDm50zl7rd8f9wbC5Gdbcfh+Pc+TJ0+Sk33u3u9e7xr3OsD/3Ytqa+MO6uoM/nP93wD0f78lznV18/8D+CcJsEGTLwzXTLwqXh278ugekD74EHGurY07Hwz8j//6hO+8OAP1/8T9SjU1cKdO/T7atm27LBAoS/he6sR+g2rvm3r42K6mpjoGkrr99ro6g6YmHTUhPrn//l++v0+/I7ytG6c2AglZs6ZeesYEwEC9flJXyflkg5iQf1IItakJuaYmYNSEyw8Sm4MxgYgPG0kmp9ld767dUkP1AJjsySreS0r6o5GH0IvGXPnfxI6jKY03NVEXAEVdnUEyaf8jiR+IxqaaNYdWUW3fOhPp+7lDtm2o3/y/SUI8Huf6+nqtiV1+aL/9j/ptZdVn92fVXxGbo8TmHhCSRQP2P+qeyqrJn9+26YVHe2hyzZpnFUigz4Da2UymE2rfY7WNauhsIpOB4x9e2u/whoGDjpy05anb3wGA2tq4s0NK/wPiHq56XbOmXtDUpKGKqf0Nm+V9BzyNrRvn1L/f4tXXTyWgXvvsV1tFoGuNE/q8qJezfvY8JX6DyfzZDRQfCk21bb7/hd81peqoqamOgCN17MT4MIUcBTadCrxCjFFETBB/I2BamflLCh3Wd2BtrLL/ke80LEi055l4vmlqSn4iKJY+CdLXQ53V468YbNzwhVayf1+xeM7j1bGZjxIwWCCXrGyY+0RdXZ1J7oXSev5WPX7G79gJnawqrDbXAeISIgagftNr/cfBO68RUIrFznYaGuZ51ROv+hEpJqrKSyCqIUUJG2eSWPs2lM5Vsg8w07kqenffYjN+S5dcqez9YuWi65o/Rab3R3MdfHC8ynNlsTHB31g/e5xv7TGOay4m1VYonWaVP7dqaWJDHvQ96co6AyTtiPEzDjZkGlQFzOyoimUTYPGzf21acu0MWVd5Frps1R+qv/TtaUjKmIkzpyic6aI2SJAXAZqsqpsBSoJ0SmGZmglaSiBXoEdQ2hxvonxCx2Z5dM2hoz0k6wQg/f8QxDgDs3TsxFlDLfQXArqUVU5RkW1kzGGiequBECj4CyVZrtbvVxoo/9KCozqySCQUgO5lPlo9fsZrbAJjRTzLJJTKRvjYKU03//zyR85CUTSClNfCw9sqJQ2iXuOMil0+AXBhVL6jQBuAr5UE+Ivtnr2OFBaEg5oarv5iTWzmH4jMV5l1xOsLE+s+bgHgj+/RCQFmkS/2Xoi8t3JxYjk7/o1gvojJ6cuq31eYUhWvu2nRrK8z002p1AZG4v0s1jjlgaRtPfAQEftWZdzQjUNgyJW0n838Olz2XsXgBAH6y1jMzW+oOK9suGbJyobEkpJg6rpQwF8J0vsWLBhomc2xCox1ffNf1bEr74ZqWMV74PWFiXU1E668ftSEmbGPM1hAH8fzYrF4uN3milYvu3br6IkzJ4ngFmJnJdR7VGFSpHY6ER5Wck4j8X+qGfNEU1Mi90H8RIC0esKMF5mDh4nNWeOoaWkNybw5j3Yfc9iK6ObLym32cZerSpm3Wu/MA9a9d9cbGB5cX7ufxSxg69YqnTZth96dfsYpU55/bdSPSbsvVvC1AEKAroLoPGIMhfKPxHi1H6eO/FjotGZ8fDhY/kqQrzY2zH2resLMS0CYsaJhTuVBh1y+n+PwXSy4sHHp1St7aLOubr7p8fU0DsaswmDPgjEVlvIz0drauLOlw1tFxhmm4okh5dZsGPEv1Mt3XluumxcXG7fSiisEUW2zNjdi0IYNOwGQer18/0DYHA4j5xlfizG8dfzo2FXfBMsoVWRI6ZsCeyaTedgKT1y1NLGhZsLM6SAtamowNw//Sou7+m+/yP7fA7GuztQ01oRHjx6dTian2ZrxV52urFc4OW/S669f11o94cqfGxMaJ5Jtdn0+3XEGdjc0nO3t6mSrgoh214d1dXVm/vwkRn/2sqGS5SYiuICKgXI7h3Bs65t6Teez1BkJgK1CoLacjWlj+xuk8RC18lHlM9KjIqdnSiSDsRzlKBiwHeoboqE0omUdANTEZl6kwFioDmHSRGPD3GdHjb/yJGb8Ar4c0/TqNcv+T0pibW3cqa9P+KNiV3yZwXNL3LIpCxZcnK6JXTkXoCNcN/gtz8t+l0ygzHc65q566cedeyTLAoCp5eUHBKN6AztcjKw+BpYHaGhnGyA4YPRV3y0tcu61XtrCBIyqD1+BgdqFX7c8ioBYaGHaaqCBFJMTVFRckgGmZQELIKMQC59dkHho46wcRAe3tdXVzXKXrkHItfZigL69omHO8NGxmUeqIqlGa1csurox/zMNb1oy+1c9htanHsQeAGsmXDlDGX8jpaNUcbKEMlNWvfTjzuoJV/zUOKHviJeb3bR0zi29rcxdAQQAvF1eIhZLuZKGIpMPV0iHbGKHNyCQbTj8W2dVN3dVHJElPxsU/80Q7JBuDkYFiptbn8DhuXXo4gAMK2wbwR3h++VXpzQ43idpYdpu8BEsl5AjrXqrqW49T38JF2fXKlBvCdDqCVf+EMABIPoCSE9fsfjqpTWxyw8FzO0gk4bKH5oaZt/UM/9PrXW6A8ArzlLQd1YsvnqpDUZvJdJnORP8W00sfgQR2PfTxzctnXNLr8zB7rv3WRgiqPX1fC6jobJNc9KlVtrVssP9EbYTUm2VZ2Vt6AiSLGZ3PKcvbL3XJpsf5iOz76KNQngmOASGFKqAbSUtOj7n9/11Fwerratb2SGCKXwRLAgKcJmUdJ14wAA6Bx6h3qeC3l2x5OqbQXiagIgAqZHj4wNFaRKgf1Pxk6oQAOjq2kj7Wlj24eAFS3H8FYOJzWGA/NA4Rf/w/dSAFQ1zTq+JXXkxm+AMK7nvrlg85/FYbLrb0DDP2wOFMpIgjIODg+DLG2U3cBlfKG1qifIBfC/LGuif0l/d81m58FdH8azAc3xJ68vY6pQjLGm0UwB1lSchZVw8sP5PqKC0RC7KSvG3sgZpIvV2CUD6ABUpYCHdd0S44/5AOxu8RKC/sq9P9t3w7irUxh3UJ/zqCTM/B9KzobQFpE+RYnpJoPubCxbclH6/CNOnQRIJddN4WOzSUjLmaYH/rOubr6j1T4dq18EHx6sUVJzubh2/YvGcx4E60xtABUjnw+gzcIggNA2WRiBLBMtAMwDqkVe1QKCvpfTyiM7/S405INzO/9W1Ar8PV+PEiuPkv8uOggvBybkVeFvK8fywQdJvXqsWnZJztJNIbS8AFYAFqFzhb2S75ZyottweFDIoDRF/NUL0C2uwfN3+g5/dFr4/EotNd1csmfO8Mt0K4HACXyOMBxcsuCldUxcPJJNJW1NzSf/hh8ZL9qXQ8D6iUYNk0gbhXsQc7GA4d2U4FVm+eOYAEA2RoGkEZO1bjT9dG4tNd4GddysBStNg6Uj4+mbJcH23/DBdVfFFXVvxoDAu1U4FLAwxgHKoPEL+k+ccRK+29acYNkKUcHXJEVhvSviv4eG4KzwOk1o3IJzz8OTgYawT2KCF8rPvWVYphAnKFaknXbv5lGLKNbiG+yj7Cu0UsW1WfI/B/Y1T2/GEnNjQMM+7efhXgisXzXmZCRep2B+sXHz1gwDQlEzkamJXncrR0qUBK7MBUF3dfP600CkB0BGxeB9X7BTNrnoM4erzQXQhFBc0NSR+P3rCzKMal8z5+57ioDofBjUwCJV/ASE6ERn9OhyqgK9ACQEdCs0V6M4naf5ZRPg+mKv619J9pWNwTscSHJ9+E9+pPAGlyKKDgjjMf09n1T4nX1s8zaRaA/jTDQ9h7MHrYVMBMGte+kKAkGrnbSHbcXfYsKuEYF4ye+d8JA1bFCDiuszz5TdtnKoKJsR3yn2O+cyMfmqDdwNarE7wDM2lk8xyfOPiuWt71MwnWRIJUIwbN6OvgTwkzMc1NSVzTQ2zbzTAFBBmV0+88ozGJXP+Hov90t0NQAXTNFhxy+9BhP4KF2cBqJCsqgogrepLDkrlCm+dsZumRzX7G9fZWl5ES8L9EbY+PDIYKJ2IkIcuDaB1Swhjj92Kvud0G/KAlOfgyYZhgGOhSnn9V6rwm8luOzcqHXeEHS5SgrsLgA6gHQRTrghd36Vll6WnaFOfGAGimuAbb6wLx+vqAjWxK45QG3xBVB5rXJyYAj9zFoD38gDum+tDzuzHCZiFjAnsT5DhRM5D1bErf2s4eKBvszdRZtU4J1pThbo605A829+TC6ErKouF5FD4UOlSDwqXCKQCZYaDCtXU465tnRsh22a4uCKLZdQPW7gIIfWxxRShXy6FH25ehHmDx+mkw9bTmScvpI3rSpHJOggHfCxaMRDIuGBSULki/YxrW2dHSDYzm0qF+rvwCgHSTAge4dmKWSk4+wujnTIg7db5METwgaQPACNi8W1GbcoxoVDNxFnPALJSma8YM2nOn0RyzzU10E97R58+gZKYECAhKxsSSyDyXcNmPAj/UPFnEHAjRUb0e31hYh2SNbtlId58EwEiiFV7KpfTcEmpJSBQMPfBIZC4qm03hG3zJVFGipijAs9n9JNuhNSHQ4q3TRk2RSJ6+ulL/KdvuQ/3xh9BxcBWLFoxEDnPIOcbDO7TDhT5kCC045aQv+0HUdY2ZirZBUCTt1Sli7Tk7Izf59YudvoqYJnE6l9pVPNKmgabfbF0vLaVXZfrLo290ZBYGTT+N4lNCVTmMQLbDPhBJSwE9Js14+PDk8lpUqjd+WSBWFeo76yJzbxszKFX38bG6ePZ7tkR3fIgGfd8JTxd7KS25e/bjUZpxAhkty2oKKEg/RDdqmAwFDvobjPZbedEpfPOkMNRJTgAWSBDDob7LfheahlywtiQLcYDX6pR54KMU9K/g5yyFNauGoC7Hx0PEcLQfm246NyX4G92peWCiLT/POxwWAkB3Z0+OwkoUqn8aZeUXpx2yCOSLAi+gg3FdP2AiNdQcVJgJD+Dbr7UTi9ZvLpy2NXLFl7b5Ka31hOZc0EoF/G2Ni587XoFnWdcZAoG+CfQsKmrM3UAGt8a+T8gmq3AQwxTScwHWfEaKcrfbqpPdO2q2BUgLIaD4orxMHo9IjRVOlVIwaA8gKmnXNs6J0K6lZlLd5EWBlQIRakcZh40RR/LjSBXBJNGbMDYUZvQ2R3AMwuHYUtrBEHX4nc3P4xxqQ12/UUV0I1kqEyBPdFnKyH4Gc9WzE7BGSJG23pZswqQC0gGq7iPjswtddDyo0ia1zrhrnIce+Db3318woTs0Rly5jY1XH3IqAmXT2bjvtu0KLFp12D+J9bZHxWb+SVSnEfMxcTO/b7NvLWqwXluTxIIANgwICzd6Te4jPeTFrWkMBQCQKrtd4Rsx51hwy4IQd3NWkQW8HOs/c/vsJtri8zRP/oWqSWkci5yngFBURzNojsVwLSvNupPhjxh18yuZMcVRmh36xM5QDKkxd/N2LIfZhisrCna2XqwADlQVIC67gn4bT8JEykZDqsio6MHblqzAgCqYzPPYZK/7MWo+dDiqh+SYaOE+CyqftT+2Bh3ssnJMb7jX6Rk7hWbHbOqYe5deyreJYLqM3DoyI0p+0b5H2FxLgRKZQp/A0vrrCLNPOc6XFZgn14LTg4g7QTqK9J3ZqcGvug7B6TbMPKAZixZ1R/Fkez2FSIBNAKMfXGrtt4XNRRWgsEe6ZNKRCpnd0vkWM+gg0hlFwB9gIoV0kXaekHY7/5z0OESRdAAGR/vpKPu2wAQR5wTDYk7es937ISZMcvu16D+6qaG2b/5sIDkD4NGAdJRj8kXQJhiPe+0V19NtIF4nFp/DQNL8w79+9eQsk//gIC5QinzgutvPaVYsy+5xlRqfprSa/8yYFsIgUM92+/eTo183jN2mwFcH0MHtsHzTT4+ajn/pYwQ+dhvUxdrmPJ1U73HM4C0ENwxvq36TZdGjvEcbSVS7bVCPdGcCkVuhbFbTotq6tGg65QrEcEGlUCE10asXp1VwCSQkPy8gerYlV8bM2nOC9aYmwHxFXLmqNjMYwBo3YdwVuTfBzE5XwCQIVlJgHUCoXNqYvEjOOv9g4jGWKXGhoZ53l4PtkyFKMDYz2uESq7j9hC2fr+IpYXN+1mLxWdm/Ko7usnpp0bbKf83VpSXpKG6s6IQAAG1KDZZWKUdGrkgjdJOGv12xu97Zxe5B1ijrYXxqBd9GoBKVbsfCvpbzygm/x3HcLlCbd6/9VQh0KEFzpA44tzQMM8bO/GyYQD9ROCf17Ro1hE5P3sbwRTn5VsJqPskWKf5JWlcPHetcOQYVbsVhNkaijwG6Hsw3ruAEpLJPUtiEkSAdD8fGpa6LBpouzEMDoN303891mJEpc+NXbbsR2mDHFgzOweveS/BEMpjvPN43QQ4kIprum35zLRhBWt6D/RZpBALab0qYlviEQOAKbzDICKA06o2AD5486BhYwjQ0WgiAJT2qZOgG4gCp4+Ixfs4hhwAN6xomPMIQPphGDgfjmFTV2dib5dz7yD26M/Mrg75dk1DQyK1N+7XOhgkoS0nDPoSNzp3pVtpgC1WItvrc/VYi22E4ETfls9OwR1md7YWAVif4ZSmMfNnR+HuR8ahojQNa7mXNBLubP0LRvnbkDEutBUIjPFt+ZwUAjUF6esdSy1QOJUrck3Gts6MILfcMaZcobLzbBTwI0QOFG0p6MObqyrPiTU0WIIqQDp6/JXVFAifoH5OlGgoAQeoCoHpjKZFic35wf71UNyHY9gkk7ZhZ7lB4ytXrfhfrbBkLRHq7XtLzUkD2OzXGfV9tuTsRJ8eICnS4lMytuyCDMNR1tbdrUUOKMCkWzZGYByl3r40Q5EhB20mBJNT2E7SkrqMLf1RmjmsrC27jCd5+kSJavcfA7btughripgrdqZ3BYQARJkdVV3fCZxO6jeF0mmi/CgA4tynBG9u6UwdYpxwp6r3bDaTfs4NBGeT1fMAXFlbO8upr4f/cYGYr/OMXXm0w6Eqz2YjTBQkY1y1fqqpYfate9thCtAs1Ms7gwcPcYQOaxMRUuLdrMVikcp4SiLH5ww6ifZId8UK7Ya0zSiVtQ2lxi2yeWnp9SF9Zmz0ojBQKZ+dkpL/yhikiAqUunsu0SNpnRORrgeChiNKVKRQP781FICq2iCzEwAhI3bGmm73tsktqzv2kFOVTW3xA9jQoQLvOBU7IhiKXgq1NQL5JQDUT4X8U4e/PlydGKeCVrxAoXcyYQpgp6jI8aSQurppexw/DjABOHO/4QMDlpa4RGPSqkT5sogd1mKNb6t+3aWR43N5a1H2bC1mVzm25bQiXf9IibM1XESOyPY6mh61LR5h7eColNzVqdGTs4627z2X6L1n7OYzo9p1f9DhEiU1atVCuEDuDFAf4ziAbuiGf9yAtWuum9yyukPzanfnByPOq15NvEvg6xjuHAJ9GZAmK7gAIpsA0PvX0u5zEBMCxBkZcyxITlDiNjbhAwm8sHHJnNsKltduejdR2MyD+pduFmiHAsqA7mQtfiPr972ri9yh1mjLHqxFBqhMtfv3AX/LGcVEq8ls6lOENgThQMBQEAFsFGwAzijWjShhjFej23YZTwDK5xI19deAv+XUKHnLHcMVChaghIyJELEAPuUptLNL5E8ZtVMGvffeYwo4mh9CaBfVEY8XNAPJAqi+B5CnIlOZdSYRPzFyfHzADqn92HRiQpqakAPwFwB/GTMpPhHkzKqJXfmtZHLa7/YSYlIFDDU0eGv3H/JSmGhwzojVLmYKq1Rc3S1FJ+UMuoh2i5b4AEUVkiVpj0eka37QaBTkRizeRjmy5CCkFh1OAKG0RS5rwCFBOOTjnbfLkdkSRijsQSyBqDBeRCGWtOPasO28L2Q4pERRVfYBBbo8kYUZ1TuFZFGI2c16TnfVhrfWFgTYEPauzxKJ/HdPTZFRehOEr0G1WsGnE+ltjti+ADYAs/5lx//fADEfAx17aHyQIHAQS3qD8cMtyxZdsbhm/BVNRNyc9yCSe9GH0K0jRxbnUtlRGVVrW5iDowvW4mjrbLcWeRdrsULhrTS2ZWYEudccx5QrfCHAAm85ZVACfMM4bd1rOHrIapu6hOiWRyfz4sYB2NYRwfptxThw6Fao74Ikn4ry32XbclURsgudfHQoT602yux0iDzZZ+27X991DvMB05hfhP/FRUgooJSjy1aEQWdDqUmhzzkcONe3qZuals19tUd3fuR02qPvfE9GEuQKX/iunMn+pSZ21UtgqhPRt/MWaM2edpdJAJLtztQNdN3xZGGKTsz6fe/uQmDEHuhTdtBn6pGAv+W0YvJW5OlObV4RZcngXacMWTiYvnapxg+vt5+5ZS0dedRb/JtZD2PMgVuwuaUI72woA1igSvlSjCcKpRhLHGMqNB8ZyH9izkAhisnvYHDZM4AzHzAKcBzgaYBN7Ij7vN9mB0Dq+qFyEdupLI9CUe/Z1B2uE90yKhaf0KM7P3IQe6q4Viyd8/TyhTO/uGLJ7CPC2HQ4kXuygu7yAmbzjp2425WffDGWbmmxD7mnZOZV3pYJcAhGOvdAn2EFGNI6N2ybLysy8MAUzTvbCsCFxTYTwXKnL2K5DXr2uYss3+YxBuUYaUa0shuXn/oicr7BosaBQJFAXdX2G8N+80VRRjcxFe8WHeJMRjXKNLC0LjdmqsLW1eVd1g8G3vYlVgDIlGETCG2k+CYRJQzc34jYe1i1Oi8Uoz8OnZin01GT4iNcdQ7wJN2VA3er9dPEeixb3PE+fokAwKAVa5YC+AZuAvS0irXi4gIEUKE2X7PU42x7b+ed7WzDTnSX3w1ECMHHq8EqrEuX4NIzXkTk+63O0mcOwn1/ORhDB7XizJMaMHn8Gow/aCOeWjIMF656STrnRjTzvOtw+c7jbXdv2glcIV7ZTakAjc19nQgv6DOgPWiHDyCJoDX1yNXEdCWTe5ACWSU8BPUbmKgBACWTdR8fnZLo58B0FhGf5ytdRYZ+oop1xdjY/gGmR/pXBJEB0CX3FQoRe1eeaffjrt1ySpRyr+5GdwDnNYmkCM8GByMS8lA7+T3a3NQXpyZOwINPj0Z83lTM/VUtTJ9uHD5xHV57rwovTx8CfhkGFdh5vEJwXZoLwfX7O5km51Ry9E19p29/OhK+6j8d5SIAWlsLVuB7qlqlknsX4ueY3Ym+SjUAjcdn0cdFp7SiYfZdvs38huG+BpI3AV7DQtfnQ3Bx3pvFpQqGwqGjkdUVpTGU00vsUAWyUA6DyFVpuyFsWy6JMtJ5uhM/Hz7rkUCbZji+aPp7xl9S0V/7Bbuxf/82/Okfo7GltQj9K7vQv6ILf35xBFLvlumB3S2SURcv2UEciFqIBXoifEqAzXE+uH5Wxu9zexc7/dSRLWS5gvrB977XK470T4qiUn19whfgApB5BaBtADYpyTJTsB0SiVn6kYNYKLnX6gkzL2FyLhayyqC3GWhUg9uHxS4tLehD2gOAhghCBE9XlZ+NKL8IooG2XZUrlP3NZLecHdXOO0MOF+dLMdQSHAiKNQsQEPE9FA3MStW8dtl8dJGzcXOUisI5kFG8vaEMrmPhefkajxRcrPxBldJjRG6xxXKnLzLiwEBRqlkwKQJWUFqVloofd0vZj9KGPCLNAIWqN7GCf5XuCCAccki8jJXuVcV6JVovUBdCoyzTsLw/Oevj8xOJdD+FvgNrXxF2ogTpBwUXecR7AI/QAIcInvd66ZFOGZ8qaXybc+SIp2L6KqefdP2W2RHWZmau7GW8qEUHB/Hj4s/itUAVKlJpvfgHL+PQr2w2q+eVQ4TQ1hlCe0cYIwe1IJ120bc4hW5yEfR8VK7J8JryUjhisZmL0M0uwuLj9qIYno0cALdTcOY3l+CEE5cbf0NQ2SkQp8CHgxApRf+ddeoOQgJWM0waslY3g2gzqXay4eV5SUx89JJYX5+wACDsX02grczOaaR6soCmkuDs11+/rrUQltPemXyaCE/fKP+WU8yPIkynwodREnBYqf2nIX/bBVGDzjx99nahiYHZpZ/DvZGxWGNK8VLRIDrjlyfwttcrkVUHTEB7dxC/f7oap35rEWITN2BDNoouE8D07mWIBnJ4KjgUUfXQxQE4pLgrOg4/KZ6Mt7gcjWV9ce5vj+ZnHz8ITkWOmJnYgLiCQkihXUgWb4f1n6dTrF6Y6CDSiwFUgKmGCZ9V5pPF2omFQrOP3sXo4fqVi65rhs29pND6piWzTxXxNsExs0eOjw/Mh+Xy4SRVsL5VXqpvlX0bIbofFkWyWT0uVfJbWLZ+PyodtxcKdwP5MxYCggdGUC3e9Cqw0B2A/tINVy36OGls2RLG0wsOQsCx8CyjJJLDLQ8fineXlcvv3T/YRMvzuKv1MZzfuQg/KzoU75kSBNUHCNiaieAJdygqkEZILYqRhfFVH3pqtAdfWnM+unzhVsniMXTT192R7X8EQET/LIhxBkjHjL98osK5TcQbxcQDQZyD+n/V7mx9wcaQjwHE/IerOSQ+Tsn8TFSXA0C62MRVxWPSuoIV66qC8EbpEABvIsy/lbRayUG5j7rp5x279ZRi9JRiqBCsEBiKqOZQrhkE1CI0OidgymsYBmAUSgRiRWcqAFXAMRad6QC++6M6eub5oebrtBIjci24snQq7o+MQbHmoETIeg4oJuKUiapPIKPwlfyKcqYXlw/6Owal9g+Mah7oHNRcafZvOY5GNT8dj9cF/nkAd/h/ylwD0S0qcpEQ7ha1b6jiFqcodFjhxn8Zi38jKZz3E2vGx4fnG/a4j4v4w9k4fVVsEEJnNC1NvAXESbUQQHyz7Jtw+T4x+WRO169C0n5H2LCjpEFALCGkFmH10GLCeNWtwqLAQCzR/rh93l/0tocn0S3zJ6GqohtdqQD279eBp2+9F+dcfwwWvD4I0XC+N0MWBpYY/fxupMhFG4cQ1RwUgDGK5tYw7rv6j7qtPULfm3U8KstTaq1R0UBK/PRniyL+ScYJT/J8/7Gqsuzzi168tkm1V03RP3dcjYA41daCt3TJrw27jhV/lWHHtzb7VTX2uJWLrmvp7VR+xJn9gsM/IT7ZMc5UC/9tA7wdlI2v7nrWsOeotq4uPd1rc37VeW1Yu550jVOm5BMhYAVF8PCWKcOj4YPwdGgI1phSCBMyKQdHjXsbt1z2GH77+MF4cclgDKzqwIXffRlPvHAQZt5xJMqKM7BChUnllVcOBgyFC9nuShApcp5B/8puzL9uPl5ZsR/+8ESN9K3w+cuTG++9Iznpj2+s7f9H1zVQJfg265HSsyD9VVPDGw/nT3Dle/B8wGw8AdCaCTOnw3GLYK1HBIeILJH+sdAH59+qevswyjP28gF2P/2j0+HSPHjrRx7w7WCzuScTVWOFuFSy2MoR3BsZi0fCI9BsIgirj6D6IAXIKNq7Qxg3YhN+8K0FGNinE+m0g+STo/HgE2MRieRACih27siQ/2nn3zHlU1SprIP+Fd248DsvYfTQrfB9xnNLhuLuRw9FKqMgEqsKJSKHTSA/jvgNCjtnRcM1j3xAqSQAOnzcjL4B47wCcp6HSjWB2kG82Ip9ZOWSWa/kMxj/ek7xQyoejnNtLbiqarQmk41a8A91TxEazAdjWo1ZOzi1NqBUFbJZfTI0lG4q/gzWOKUolhwcWEhBnoh6Fl7R0hFGe0cIoYgHL2AABSqjKTgq8GDgqoUD3euWJgLSWQeGFMSKrlQAbe0hRIo8aASQHKFvUbcE2bKCegILmo+DK4wJGBBBxT6YzrZf8M7yn29+/zP5O1SOkH/UyiVzb62eMPMRQ84tAjkfsO80NVz9w3/3XP9H2sdG8xl9WTX4oOpK9ZpULH4enYTfFI1FAIKwerCFIxgAYIwg5xl0pQIIBSwOqGrDqDHbsH+wQ0qfyKEkleNSyaJMMmjjIK4vPgxbOQIXshuQXADtO199Hd84dhly3UE0N4fRSUFsfK9IVicr6T2U0tumHM0UBkMR0ZzscHAAqIoC6jgRI+KtAbLfaWq4/oW9gbC9aWDsiu+xiUwk6z9sydu2YvHVS6snXPlDJvNqY0PiWcTj/O9k9z/yZkR1dXVmfnILbRj07u9uKD+y7sHAMNtH06anIq1HYgiKtq4QBvbpxLFTVuGrk1dj7PgtCK3xbGZ2CLnXHQMXsErwwShSD9PLj8YLwf0R1dz2sbYnJVjR3hXEg3P/gMNqVwFtIaDKA1azzV4VQabBNRnXwSYqwtJAf/wtdCCWB/eDQqHWsyAyO/S7+mxcR1VzZL3vNC27LrlnIJVisXlOStc9yxx4GfDGExwCYYX1sw+tWDr3uQ/j0OlH3Nst7zNS7VRM6XdK+C+hA9FH0pAd1AUihQihOx3A905Yikdvuh9X/fApTJrynuqf2V/7jUra3FBs2oJBtCGILgogRS7SxkGQ7F6pVBVwHAEpIN1B+CFHOx4ose+dWEWbXiwx7YEgPGX0t93yrfQbelvr394s9rpPUpWVxgkZVbU7aJkcsTmBiktOcH71+MtOrq9P+IVQ5E4uWMquHUKERxsXz7ykcfHsL8DaCxTUTkyfzd82698WpI+yfTTV1s4yyWTSHzVhxoOuU3Ss9bqsEJveOksKfuLNlzyO47/8OkAuvNaItN8YktTvA8ZElbjY7hw3MYBJKUxIoEHa477uqewMlvhgV6Xt2pB03x80JqyEUrs9FZUjlgwHnE6VOxe8+pM/fjF26T/Wi95vnNAx1s9YKkgkETMgIuIrceD+kbEZW+rrE8/0GDt1daMpmQRg8CM2ocmjJyZGqcqdyxsSLwB4rVf9xr/dxZg/Ohqdz/X1CX/UuMtmuk7RyZ7X7WkvAHukMJV1ccP3n8LxX30VFmFk3wjYlukRTScDjlOmhL2co3AOspZHiSK7FyWh+S2bfddI99lF2nlPyDHFOx+sUYKEmEyX+OuC2e5ba2trnacarm+PYOuJ4ucWGBPcSSIB4kIlMRuY+TWxSw9AMiko1BXVxOIHEKhUbO5YVX2d2bluzKQ5/xg9cebX8x0Z4x/K+vNHhKBJJqfZ6gkzPmec4GzfT/lE5OysswTtXUGcNGUlvnbcq/BtkWYec/xtp0d3KsXonUsEAGkljXwl50fv6SYZwITcnkEkABIANl1fTLmXXcN9dqnkZkAFWuQxWYMbBmze3D2rvh61tXGnoWGep9aequpnCsdxtNfOYxFfmN0+quZeQFHT2GgKZu0xCgo3NSTea2qYdePyRTM/B+gdKlqcTE6ziH9IFPdR0CjicZr8945gey68jNkdITYnoF2yHIV83qO3PYARQzZL8zUlknowX7i7WxMEAyBDUFUpOT8tJadmDVRo2oXTsHDlfoiGcxDZxbCBop2CmNv+LI7PvYF2DcL0YJHviiGRIDEfl1lWfsvGz2AWfCSgPR2k6usT/qjxM+5xnPBpvp/ebROqqu+4EcfzUj9YtfTaXwwffn6wtDQrae33CphSau23Vyydu2ZfLDB/FDSKRELac6ELjRMeYW3W3xVAZkUq5eKQcZswwm22m79brqnfBR1TupdzhO0E7mttn9u7tOTMrIMUkdfpoq07BIdlr7EPIUKzCYOt7jxeB8GUqa28tVvLb+mcS4QcpoJ7akirqkYroATmB1QFtId1I4KxNiuGzNzhh8ZL3NKSMzxn6AIwpwA8SUwPjJowMxaLTXd3NoA+8SDGOZmcJmPGzOgH4v8RmxXqZapvXwAFfJdxYEuLdJ4Vosyr7p7ps6eLxdSc7XtvF4U+4xtpZsAVtHWH0NwehjG7VH/v9BzFJo7m/847SjGCh3l+1W87HcRyfuaJogYFCFN3mE7J7T2+9XVrsyli3kPFApGKFXaCxY6Xne16mXut+jOIzNNQOhBkygj6ZLsZEC6k8T40Ftyn1mltLbi+Hr4fwPmOCZX63u66cLvREQTKV2RJu4modJdz9D30aVVKf5iWkrMyBj6RdhDUAeBYbNhWjPauEIIBC92LdWqgWGuK4TkM8gDJkZb8d9oW/3fGsABIs2uGeFUEvLNLOT4AIB11W8MduWaAI4BfKPruDSMZ62eUmM/yneh1TQtnPgHgCQAYO3H2SI+l/+qFiU58yO0z96UkUn19wh9+6PklAJ0pNqdE7/M8VUQDQnBpt2Pd2kGgCpHKX3RpyXkZR9NEmsuDq0KAEby5tgKZnANm2Vu0CK5arHNL0N4Vghu1+a4YF2YcZAhQhlhZ6wo17S2jMCRfQOntgt0uwi7WmHBEJXcuEOfBtfEQALy++KpVKxfPqcc+6H/K+04K4wYAXK/oBMeE+on4sj18tRt+qgEQGrnsRahkTS+6s3m6s/3u69TwFN9oM22vSuu91K+/VbVdAqkgdQzd/l1BcEmw2S/Cts+EbP/ftPuhL3qQFvIB5FACAvA3qm7uLDQG3G2xu7oQIGh4j6K+QzeyiAcovjt8eIW7pj5RcHrivK9eA7jPQKzfrlPo2/p+s86H2yRChPrg4DcdxVMhQ6IZ+NJFUnJu2q+8pYtNReFYdy8yVguYsEByAV3W1A+BQD4IYEFooyA6KYA2CqLbuGBWGBZ0ZgJY/41ig3FegH3HcAU5XEpBpNRnlTtVQdi6K4D5019pZPqAqEJVgL2KI7FYT5iDQ5zSjbUANN+YLyH76l1T+0gnKiFBUjPpkv5i6QiRHBERv58XYiDYwuGBnkOPFufoGOmnHP2fbgl/wcufSxTs1pOUSwFsFXnt2gG6+t1KEwn6yMBBVD18O7Uco7xmpF0HT9hheN7ZH6XRrDoO6Onnh3Se+OVlS7xuXW3S4nExj7Yp/aVT3bGwp7/cziZ2EyEJqHVGsOME9+gi7WoIsyH4dCKAJ7Zsadynrpyzb6h0lqmvhw8Jfs6YQFHvcNVeMGRffJRAPrvc9l0/5oDmprIfZ6w73I5EJwVEIMQF1igkuahS0b3AtTrTYMHW/U3noACiNocSzeHm1icQ8zciyw5kPey0LzTKjTWTcdufJ1Jliec8uXBoO/VPHblbvlP3XEPT83Y3Yj2c2IHanND7sFiBUokUR37YjYc+chdDRaYWNqz2/AYKm9eC6mPHeV4SsdblYPGX+3/rD6Uvrx/jHvH58dhEn4eLbo4Qq8IvNAECFat03BX0m8+OUm6TY17utx8cEaTIxfSupYjJRmxCFG0dQQmcRyY0z3evuOw597NjNjmdKZJQ0B10yKEzvvTMM3BuvvkrQVWQKnhPehAA6utn5Sv7VI9WsYUs53Z9bnvNyfZQqooPEA9/7Z3XhufnH+dPFYg9k1ZgoopF3ipVJXaZTcAQOeQ4YYfY5V6xSCUAw7TtbCLoVNpCNL71RS+NL4nVjRwlR6MqfhrSfEkRdVxf5IRcy2uLivEaVYGhGGg78UX7DlpTYbhsbf+fdnF0RudTXhe/Bj97Z3m0+zbHMaRg5Hz6+pFHwn/44c9YIujei6DiDBBqxs2oITIxkZyCYPJ5EVXHCZmeORkn1DtdZY0JGvJ1Qo+79SkCMZ8fGxa7tJRAB+YFDkrskqpdaW3269bK4b7NXAixbzpO2KiqJSJjbU4t+Evjx18xuB71dvEvY26gpvVl7qBDQfJ3XuVy16kl6PpTIGkrdFUJrC50Bmozh2FBGGO3oXxbBhglXtUDnRQ6LrsRvy4+PjCy5RDqlznrzgcn3xh0cmqtDwDHDJp8YbiQA6T383WR92ROM04+AK6qQuQQsUu+zT7k28wJovaz6mevIeKe1kkKIhDLIfs6KrYPQMznxwLE+xcsOQUxQ6RDfP+rK5de+/CqZXNfWrnkmp8h40ywkp3nOGEDhaiKNU44lIKcDUAv/t2x+bZhh7Ssa76q6MyN50S2RNa57A7Tu+DpwyF26engEOtAIEQY0tmmxXUZv+89XQhUC9sN/DNctC6nz0xxVGGOP2rxViu6BVAwB/cr9oqOxPu3dab6+oQdFru0lIhOFZuvpmPjct6kyh23csk131i19Lo/r1xyzYKmpddcISI3GhNiIlioQJVG7gjdfUpA3H7OTnkgs0sK9YwJkqr/p1WvXv9uTU080PPi5aamRNeKhrln+zZzdZ6KSMVmlYnPPOSQeFl9/SxLR6rVOLjPnevXd21yx7SU2M/s1/juE32RXbTA6btxWXAgRchT6WYMO6VZ3Wu7DRQOWkkpjOOwYUAQU+stAPnzn+/uJKLNPYKn4v8gz/rJ9/N1NaB0unHCVSK+x+w4KrpJ/eyRK5dc91jPa+Bjseku6uqM77o3W5vNAOSqCoh0UD50N00+NSD2mNMkth8Rbz+LCDbPAUp9+0KAhORpTKm2Nu6sXHLNTOun73SckKtic8YJ9c1S9nyAtLZ2lqFEvm5qRNfqrQPefGdhXV2dKVq38Y+nl3zhRYddowohVZRVZwhZAnwoWJUVI8FCRNBp0/LFuaroIjKwNuuzCXx51ITLJyeTSbsHR5zq6yE1NfEogS8WmxMiJgAZK97xK169oTEWm+7W1yd8JJO2oWGeh2RSVi9MrIfKm8QO5/1JVPYcPsKnqRt/3mugsrwRR6QqENV1AOnOtEJaXz/L1tXVGcoGvm8l+zoZN2D9jCVjLqqZFO9fX498h478WVD6ZWy6m0wm7SGH/M+hzO5JYjNCREYBRBgEIlKFIEAsBBetqdAuZwql0KVKiAwBcjUAoGbnY+l5KUyIBHIXGSc8SMTzjQk6anMXvbHsukV7fo9HHRd04XoiRgHEok1eKvypdDGUKFQwv0XVWkPUDeypEQMpUIempkROrHdOvjJJPOZAmdjcXCAhdXVNVAin6YZjB1gAyLGZWYile6rqG4bd1u6+DYgfqGRHrL4joGlU09kMgJL5RoKF/L1aKGBtJscc+Pzo2IwjkUjIjvcfxrm+PuGPnnjF/szmYutnssaEHN+mn1ux7PrbexLFu6uS7bPvViWbnz8ZIxF3L+HYTziIgpBxQoaMCRsnbASI7O3eZHKara2NO6uW3fCS2Nwf3WBpSNXCdYvPqI7N+NoOuotzIpGQkbFLxxonfCxImU0wqBRwKsoj5pSrTooj6l0gEVpo2/Edd0TLkz1nIQuOPRFhP3aCxjjBAHMg4DhFJILLdvYqgFjsl66I3ucEoiXMTpCImUj/BwDqq5r2iEZyR9Cg3OSfYZRQ5nud+9Qf/9AjNlWFCSqhydrMUyK+R5Rz1aILAOI1NT0nM3aPtdYrCV0+2/dSpaq+L5pzVHEU6uY/imSdID6LkAAccX3R3JOary8lqNqclzGD90sLlfm3AttuBRQFB74nd6c1NXFX4b1i/fRbqjZfjahpVqJl+c3UmHfKEwnpnnDZeOaA5nLtfzMUcH0/1bRy2XWv5DtG0p4jMMn5AhCIaal4GbGaAwEdTro4g/9cH9wgUAUXIjC0D55Jn+rF+dec/t41lXt9mfO/8n/Uk1nY+fogz9hb+GtPpYO73vtBywv/1f/7z/X/7fX/ACyD4Cde6vnzAAAAAElFTkSuQmCC" alt="Brivalls" style="height:40px;width:auto;flex-shrink:0;">
+  <div>
+    <div class="cap-title" id="cap-title">Brivalls de Cornudella</div>
+    <div class="cap-subtitle" id="cap-subtitle"></div>
+  </div>
+  <button id="btn-pin" onclick="obreModalPin()" title="Accedir amb PIN" style="background:none;border:none;font-size:20px;cursor:pointer;padding:4px;flex-shrink:0;">🔐</button>
+</div>
+
+<!-- NAVEGACIÓ -->
+<div class="nav" id="nav-principal">
+  <button class="nav-btn actiu" onclick="canviaPanell('sessions')" id="nav-sessions">
+    <span class="ico">📅</span><span>Sessions</span>
+  </button>
+  <button class="nav-btn" onclick="requereixPin(()=>canviaPanell('membres'))" id="nav-membres">
+    <span class="ico">👥</span><span>Membres</span>
+  </button>
+
+</div>
+
+<!-- ======================== PANELL MEMBRES ======================== -->
+<div class="panell" id="panell-membres">
+  <button class="btn btn-primari" onclick="requereixPin(obreModalMembre)" style="margin-bottom:14px;">
+    ➕ Afegir membre
+  </button>
+  <div class="card">
+    <div class="card-cap">
+      <span class="card-titol">Llistat de membres</span>
+      <span id="comptador-membres" style="font-size:12px;color:var(--text-suau);"></span>
+    </div>
+    <div id="llista-membres">
+      <div class="buit"><div class="buit-ico">👥</div><div class="buit-text">Encara no hi ha membres. Afegeix el primer!</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================== PANELL SESSIONS ======================== -->
+<div class="panell" id="panell-sessions">
+  <button class="btn btn-primari" onclick="requereixPin(obreModalSessio)" style="margin-bottom:14px;">
+    ➕ Nova sessió
+  </button>
+  <div class="card">
+    <div class="card-cap"><span class="card-titol">Sessions</span></div>
+    <div id="llista-sessions">
+      <div class="buit"><div class="buit-ico">📅</div><div class="buit-text">Cap sessió creada. Crea la primera!</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================== PANELL DETALL SESSIÓ ======================== -->
+<div class="panell" id="panell-sessio-detall">
+  <div class="card" id="assist-card">
+    <div class="card-cap" onclick="toggleAssistCard()" style="cursor:pointer;">
+      <span class="card-titol">Assistència</span>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span id="resum-assist" style="font-size:12px;color:var(--text-suau);"></span>
+        <span id="assist-chevron" style="font-size:12px;color:var(--text-suau);transition:transform 0.2s;">▼</span>
+      </div>
+    </div>
+    <div id="assist-cos">
+      <div style="padding:8px 12px 4px;">
+        <input type="text" id="cerca-assistent" placeholder="🔍 Cerca membre..." oninput="filtraAssistents()" style="font-size:13px;padding:7px 10px;">
+      </div>
+      <div id="llista-assistencia"></div>
+    </div>
+  </div>
+  <div id="pinya-sessio-area" style="margin-top:4px;"></div>
+</div>
+
+<!-- ======================== PANELL PINYES ======================== -->
+
+<!-- ======================== PANELL PINYA DETALL ======================== -->
+<div class="panell" id="panell-pinya-detall">
+  <div id="pinya-detall-contingut"></div>
+</div>
+
+<!-- ======================== MODALS ======================== -->
+
+<!-- Modal Membre -->
+<div class="modal-overlay" id="modal-membre">
+  <div class="modal">
+    <div class="modal-titol" id="modal-membre-titol">Nou membre</div>
+    <button class="modal-tanca" onclick="tancaModal('modal-membre')">✕</button>
+    <input type="hidden" id="membre-id-edit">
+    <div class="input-grup">
+      <label class="input-etiqueta">Nom complet</label>
+      <input type="text" id="membre-nom" placeholder="Nom i cognoms">
+    </div>
+    <div class="input-grup">
+      <label class="input-etiqueta">Foto</label>
+      <div style="display:flex;align-items:center;gap:12px;">
+        <div id="membre-foto-preview" style="width:60px;height:60px;border-radius:50%;background:var(--gris-clar);border:2px solid var(--vora);overflow:hidden;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:24px;">👤</div>
+        <div style="flex:1;">
+          <input type="file" id="membre-foto-input" accept="image/*" capture="user" style="display:none;" onchange="processaFotoMembre(this)">
+          <button class="btn" style="width:100%;background:var(--gris-clar);color:var(--text);margin-bottom:6px;" onclick="document.getElementById('membre-foto-input').click()">📷 Fer foto / Triar imatge</button>
+          <button class="btn" id="membre-foto-esborrar" style="width:100%;background:none;color:var(--text-suau);font-size:12px;display:none;" onclick="esborraFotoMembre()">✕ Eliminar foto</button>
+        </div>
+      </div>
+    </div>
+    <div class="input-grup">
+      <label class="input-etiqueta">Telèfon (opcional)</label>
+      <input type="tel" id="membre-tel" placeholder="600 000 000">
+    </div>
+    <div class="input-grup" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div>
+        <label class="input-etiqueta">Mida (cm)</label>
+        <input type="number" id="membre-mida" placeholder="170" min="100" max="220">
+      </div>
+      <div>
+        <label class="input-etiqueta">Data de naixement</label>
+        <input type="date" id="membre-naixement">
+      </div>
+    </div>
+    <div class="input-grup">
+      <label class="input-etiqueta">Notes</label>
+      <textarea id="membre-notes" placeholder="Observacions, experiència..."></textarea>
+    </div>
+    <button class="btn btn-primari" onclick="guardarMembre()">Guardar membre</button>
+  </div>
+</div>
+
+<!-- Modal Sessió -->
+<div class="modal-overlay" id="modal-sessio">
+  <div class="modal">
+    <div class="modal-titol">Nova sessió</div>
+    <button class="modal-tanca" onclick="tancaModal('modal-sessio')">✕</button>
+    <div class="input-grup">
+      <label class="input-etiqueta">Data</label>
+      <input type="date" id="sessio-data">
+    </div>
+    <div class="input-grup">
+      <label class="input-etiqueta">Hora</label>
+      <input type="time" id="sessio-hora" value="10:00">
+    </div>
+    <div class="input-grup">
+      <label class="input-etiqueta">Lloc</label>
+      <input type="text" id="sessio-lloc" placeholder="Ex: Plaça Major, Pavelló...">
+    </div>
+    <div class="input-grup">
+      <label class="input-etiqueta">Tipus</label>
+      <select id="sessio-tipus">
+        <option value="assaig">Assaig</option>
+        <option value="actuacio">Actuació</option>
+        <option value="diada">Diada</option>
+      </select>
+    </div>
+    <button class="btn btn-primari" onclick="guardarSessio()">Guardar sessió</button>
+  </div>
+</div>
+
+<!-- Modal Pinya -->
+<div class="modal-overlay" id="modal-pinya">
+  <div class="modal">
+    <div class="modal-titol">Nova pinya</div>
+    <button class="modal-tanca" onclick="tancaModal('modal-pinya')">✕</button>
+    <div class="input-grup">
+      <label class="input-etiqueta">Nom de la pinya</label>
+      <input type="text" id="pinya-nom" placeholder="Ex: Diada de Sant Jordi">
+    </div>
+    <div class="input-grup">
+      <label class="input-etiqueta">Tipus de castell</label>
+      <div class="tipus-grid" id="tipus-castell-grid"></div>
+    </div>
+    <div class="input-grup">
+      <label class="input-etiqueta">Descripció (opcional)</label>
+      <textarea id="pinya-desc" placeholder="Notes sobre la formació..."></textarea>
+    </div>
+    <button class="btn btn-primari" style="margin-top:6px;" onclick="guardarPinya()">Crear tronc</button>
+  </div>
+</div>
+
+<!-- Modal PIN -->
+<div class="modal-overlay" id="modal-pin">
+  <div class="modal" style="text-align:center;">
+    <div class="modal-titol">🔐 Introdueix el PIN</div>
+    <p style="font-size:13px;color:var(--text-suau);margin-bottom:16px;">Cal el PIN per modificar dades i veure informació de membres</p>
+    <input type="password" id="pin-input" placeholder="PIN" style="text-align:center;font-size:24px;letter-spacing:8px;" maxlength="8" onkeydown="if(event.key==='Enter')verificaPin()">
+    <div id="pin-error" style="color:#e74c3c;font-size:13px;margin-top:8px;display:none;">PIN incorrecte</div>
+    <button class="btn btn-primari" style="margin-top:12px;" onclick="verificaPin()">Accedir</button>
+    <button class="btn" style="margin-top:8px;background:none;color:var(--text-suau);" onclick="tancaModal('modal-pin')">Cancel·lar</button>
+  </div>
+</div>
+
+<!-- Modal Confirmació -->
+<div class="modal-overlay" id="modal-confirm">
+  <div class="modal" style="padding-bottom:24px;">
+    <div class="modal-titol" id="modal-confirm-titol">Confirmar</div>
+    <p id="modal-confirm-text" style="font-size:15px;color:var(--text-suau);margin-bottom:20px;"></p>
+    <div style="display:flex;gap:10px;">
+      <button class="btn btn-secundari" style="flex:1;justify-content:center;" onclick="tancaModal('modal-confirm')">Cancel·lar</button>
+      <button class="btn btn-perill" id="modal-confirm-ok" style="flex:1;justify-content:center;background:var(--blau);color:#fff;">Eliminar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Acció Posició -->
+<div class="modal-overlay" id="modal-accio-pos">
+  <div class="modal">
+    <div class="modal-titol" id="modal-accio-titol">Posició assignada</div>
+    <button class="modal-tanca" onclick="tancaModal('modal-accio-pos')">✕</button>
+    <div id="modal-accio-persona" style="display:flex;align-items:center;gap:12px;background:var(--gris-clar);border-radius:10px;padding:12px 14px;margin-bottom:16px;"></div>
+    <button class="btn" style="width:100%;justify-content:center;margin-bottom:10px;background:var(--gris-clar);color:var(--text);font-size:15px;" onclick="reassignaDesDeAccio()">🔄 Canviar persona</button>
+    <button class="btn" style="width:100%;justify-content:center;background:var(--blau-clar);color:var(--blau);font-size:15px;" onclick="desassignaDesDeAccio()">✕ Treure persona</button>
+  </div>
+</div>
+
+<!-- Modal Selecció Persona -->
+<div class="modal-overlay" id="modal-seleccio-persona">
+  <div class="modal">
+    <div class="modal-titol" id="modal-sel-titol">Assignar persona</div>
+    <button class="modal-tanca" onclick="tancaModal('modal-seleccio-persona')">✕</button>
+    <input type="text" id="cerca-persona" placeholder="Cerca pel nom..." oninput="filtraPersones()" style="margin-bottom:12px;">
+    <div id="llista-sel-persones"></div>
+  </div>
+</div>
+
+<script>
+// ===================== ROLS I COLORS =====================
+const ROLS = {
+  agulla:      { nom: 'Agulla',        color: '#27ae60' },
+  baix:        { nom: 'Baix',          color: '#1a1a2e' },
+  baix_pilar:  { nom: 'Baix (pilar)',  color: '#1a1a2e' },
+  envoltant:   { nom: 'Envoltant',     color: '#27ae60' },
+  crossa:      { nom: 'Crossa',        color: '#f1c40f' },
+  contrafort:  { nom: 'Contrafort',    color: '#e8e8e8', textObscur: true },
+  vent:        { nom: 'Vent',          color: '#c0392b' },
+  lateral:     { nom: 'Lateral',       color: '#2980b9' },
+  diagonal:    { nom: 'Diagonal',      color: '#2980b9' },
+  mans:        { nom: 'Mans',          color: '#8e44ad' },
+  tap:         { nom: 'Tap',           color: '#95a5a6' }
+};
+function colorRol(rol) { return (ROLS[rol] || { color: '#7f8c8d' }).color; }
+function nomRol(rol) { return (ROLS[rol] || { nom: rol }).nom; }
+
+// ===================== PLANTILLES DE CASTELL =====================
+// Disposició triangular real: 3 troncs simètrics a 120°. Cada tronc té
+// la seva pròpia agulla; el baix amb les seves 2 crosses (una a cada
+// banda); el contrafort radial cap enfora; mans i vents en files més
+// enllà; i els laterals oberts, a l'alçada de mans/vents, a cada costat.
+function generaCastellTriangular(opts) {
+  const { anglesBaix, anglesVent, agullaCentral, filesMV, lateralsPerBaix, tapsFila } = opts;
+  const cx0 = 50, cy0 = 58;
+
+  const rAgulla = 6.5;
+  const rBaix = 18;
+  const rContra = 27;
+  const rMansBase = 37, rMansStep = 9;
+  const rVentBase = 30, rVentStep = 8;
+  const rLateral = 26, rLateralStep = 8.5; // creixen radialment com mans/vents
+
+  const crossaOffset = 24;
+  // Offset lateral simètric: exactament a mig camí angular entre les mans (angle del baix)
+  // i els vents (bisectriu). Fórmula: (360 / nTroncs) / 4
+  const offsetLateral = 360 / anglesBaix.length / 4;
+  const lateralStep = 9;
+
+  const P = [];
+  let n = 1;
+  const add = (rol, cx, cy) => { P.push({ id: 'p' + (n++), rol, cx: +cx.toFixed(1), cy: +cy.toFixed(1) }); };
+
+  // Agulla: central única o una per tronc
+  if (agullaCentral) {
+    add('agulla', cx0, cy0);
+  } else {
+    anglesBaix.forEach(a => {
+      const r = a * Math.PI / 180;
+      add('agulla', cx0 + rAgulla * Math.cos(r), cy0 + rAgulla * Math.sin(r));
+    });
+  }
+
+  // Baixos
+  anglesBaix.forEach(a => {
+    const r = a * Math.PI / 180;
+    add('baix', cx0 + rBaix * Math.cos(r), cy0 + rBaix * Math.sin(r));
+  });
+
+  // Crosses (2 per baix, al mateix radi que el baix, al seu costat)
+  anglesBaix.forEach(a => {
+    [-1, 1].forEach(sign => {
+      const aC = a + sign * crossaOffset;
+      const rad = aC * Math.PI / 180;
+      add('crossa', cx0 + rBaix * Math.cos(rad), cy0 + rBaix * Math.sin(rad));
+    });
+  });
+
+  // Contraforts
+  anglesBaix.forEach(a => {
+    const r = a * Math.PI / 180;
+    add('contrafort', cx0 + rContra * Math.cos(r), cy0 + rContra * Math.sin(r));
+  });
+
+  // Mans
+  anglesBaix.forEach(a => {
+    const rad = a * Math.PI / 180;
+    for (let f = 0; f < filesMV; f++) {
+      const r = rMansBase + f * rMansStep;
+      add('mans', cx0 + r * Math.cos(rad), cy0 + r * Math.sin(rad));
+    }
+  });
+
+  // Vents: si s'especifiquen angles explícits els usa, sinó calcula les bisectrius
+  const bisectrius = anglesVent || (() => {
+    const res = [];
+    for (let i = 0; i < anglesBaix.length; i++) {
+      let a1 = anglesBaix[i], a2 = anglesBaix[(i + 1) % anglesBaix.length];
+      let bis = (a1 + a2) / 2;
+      if (Math.abs(a1 - a2) > 180) bis += 180;
+      res.push(bis);
+    }
+    return res;
+  })();
+
+  bisectrius.forEach(bis => {
+    const rad = bis * Math.PI / 180;
+    for (let f = 0; f < filesMV; f++) {
+      const r = rVentBase + f * rVentStep;
+      add('vent', cx0 + r * Math.cos(rad), cy0 + r * Math.sin(rad));
+    }
+  });
+
+  // Laterals: angle fix a banda i banda del baix, creixen radialment per files
+  anglesBaix.forEach(a => {
+    [-1, 1].forEach(sign => {
+      const aLat = a + sign * offsetLateral;
+      const rad = aLat * Math.PI / 180;
+      for (let k = 0; k < lateralsPerBaix; k++) {
+        const r = rLateral + k * rLateralStep;
+        add('lateral', cx0 + r * Math.cos(rad), cy0 + r * Math.sin(rad));
+      }
+    });
+  });
+
+  // Tap opcional
+  if (tapsFila) {
+    anglesBaix.forEach(a => {
+      const rad = a * Math.PI / 180;
+      const r = rMansBase + filesMV * rMansStep + 6;
+      add('tap', cx0 + r * Math.cos(rad), cy0 + r * Math.sin(rad));
+    });
+  }
+
+  return P;
+}
+
+function generaPlantilla(tipus) {
+  if (tipus === 'pilar') {
+    const cx0 = 50, cy0 = 56;
+    const rAgulla=10, rCrossa=10, crossaOffset=80, rContra=14;
+    const rMansBase=22, rMansStep=9;
+    const rVentBase=17, rVentStep=8;
+    const rDiag=17, rDiagStep=8.5;
+    const P = []; let n = 1;
+    const add = (rol,cx,cy) => P.push({id:'p'+(n++),rol,cx:+cx.toFixed(1),cy:+cy.toFixed(1)});
+
+    // Baix al centre geomètric exacte
+    add('baix', cx0, cy0);
+    // Agulla just per damunt del baix
+    add('agulla', cx0, cy0 - rAgulla);
+    // Crosses als costats del baix
+    [-1,1].forEach(s => {
+      const rad = (90 + s*crossaOffset) * Math.PI/180;
+      add('crossa', cx0 + rCrossa*Math.cos(rad), cy0 + rCrossa*Math.sin(rad));
+    });
+    // Contrafort just per sota del baix
+    add('contrafort', cx0, cy0 + rContra);
+
+    // Mans: 3 files dalt i baix
+    [-90, 90].forEach(a => {
+      const rad = a * Math.PI/180;
+      for (let f=0; f<3; f++) add('mans', cx0+(rMansBase+f*rMansStep)*Math.cos(rad), cy0+(rMansBase+f*rMansStep)*Math.sin(rad));
+    });
+    // Vents: 3 files esquerra i dreta
+    [0, 180].forEach(a => {
+      const rad = a * Math.PI/180;
+      for (let f=0; f<3; f++) add('vent', cx0+(rVentBase+f*rVentStep)*Math.cos(rad), cy0+(rVentBase+f*rVentStep)*Math.sin(rad));
+    });
+    // Diagonals: 3 files als 4 cantons (45°, 135°, 225°, 315°)
+    [45, 135, 225, 315].forEach(a => {
+      const rad = a * Math.PI/180;
+      for (let f=0; f<3; f++) add('diagonal', cx0+(rDiag+f*rDiagStep)*Math.cos(rad), cy0+(rDiag+f*rDiagStep)*Math.sin(rad));
+    });
+    // Taps: 1 posició als 8 angles intermedis (22.5°, 67.5°, 112.5°, ...)
+    // Comencen a radi equivalent a "fila 2.5" de les altres fileres
+    const rTap = 29;
+    [22.5, 67.5, 112.5, 157.5, 202.5, 247.5, 292.5, 337.5].forEach(a => {
+      const rad = a * Math.PI/180;
+      add('tap', cx0 + rTap*Math.cos(rad), cy0 + rTap*Math.sin(rad));
+    });
+
+    return P;
+  }
+  if (tipus === '2') return generaCastellTriangular({
+    anglesBaix: [0, 180], anglesVent: [90, 270], agullaCentral: true,
+    filesMV: 3, lateralsPerBaix: 3, tapsFila: false
+  });
+  if (tipus === '3') return generaCastellTriangular({
+    anglesBaix: [-90, 30, 150], filesMV: 3, lateralsPerBaix: 3, tapsFila: false
+  });
+  if (tipus === '3ag') {
+    // Igual que el 3 però sense agulles — el centre l'ocupa un pilar
+    // 1 baix central + 4 envoltants a 90° + corona exterior del 3 (sense agulles)
+    const cx0=50, cy0=58;
+    const anglesBaix3=[-90,30,150];
+    const rBaix=18, rCrossa=18, crossaOffset=24, rContra=27;
+    const rMansBase=37, rMansStep=9, rVentBase=30, rVentStep=8;
+    const rLateral=26, lateralStep=8.5, offsetLateral=30;
+    const rEnvolt=8;  // més espai entre les envoltants i el baix central
+    const P=[]; let n=1;
+    const add=(rol,cx,cy)=>P.push({id:'p'+(n++),rol,cx:+cx.toFixed(1),cy:+cy.toFixed(1)});
+
+    // Primer les 4 envoltants (es dibuixaran per sota del baix central)
+    [0,90,180,270].forEach(a=>{
+      const r=a*Math.PI/180;
+      add('envoltant', cx0+rEnvolt*Math.cos(r), cy0+rEnvolt*Math.sin(r));
+    });
+    // Baix central AL FINAL → es dibuixa per damunt de les envoltants al SVG
+    add('baix_pilar', cx0, cy0);
+    // Corona exterior (sense agulles)
+    anglesBaix3.forEach(a=>{const r=a*Math.PI/180; add('baix',cx0+rBaix*Math.cos(r),cy0+rBaix*Math.sin(r));});
+    anglesBaix3.forEach(a=>{[-1,1].forEach(s=>{const r=(a+s*crossaOffset)*Math.PI/180; add('crossa',cx0+rCrossa*Math.cos(r),cy0+rCrossa*Math.sin(r));});});
+    anglesBaix3.forEach(a=>{const r=a*Math.PI/180; add('contrafort',cx0+rContra*Math.cos(r),cy0+rContra*Math.sin(r));});
+    anglesBaix3.forEach(a=>{const rad=a*Math.PI/180; for(let f=0;f<3;f++) add('mans',cx0+(rMansBase+f*rMansStep)*Math.cos(rad),cy0+(rMansBase+f*rMansStep)*Math.sin(rad));});
+    for(let i=0;i<3;i++){let a1=anglesBaix3[i],a2=anglesBaix3[(i+1)%3],bis=(a1+a2)/2;if(Math.abs(a1-a2)>180)bis+=180;const rad=bis*Math.PI/180;for(let f=0;f<3;f++)add('vent',cx0+(rVentBase+f*rVentStep)*Math.cos(rad),cy0+(rVentBase+f*rVentStep)*Math.sin(rad));}
+    anglesBaix3.forEach(a=>{[-1,1].forEach(s=>{const aLat=a+s*offsetLateral;const rad=aLat*Math.PI/180;for(let k=0;k<3;k++)add('lateral',cx0+(rLateral+k*lateralStep)*Math.cos(rad),cy0+(rLateral+k*lateralStep)*Math.sin(rad));});});
+    return P;
+  }
+  if (tipus === '4') return generaCastellTriangular({
+    anglesBaix: [-90, 0, 90, 180], filesMV: 3, lateralsPerBaix: 3, tapsFila: false
+  });
+  if (tipus === '5') {
+    // Castell de 5 = 2 castells de 3 compartint la rengla
+    // Banda del 3: Rengla (centre) + Plena (baix-esq, 150°) + Buida (baix-dre, 30°)
+    // Banda del 2: Carregada (dalt-esq, -150°) + Descarregada (dalt-dre, -30°)
+    // Distribució el·líptica: rX=18, rY=50
+    const cx0 = 50, cy0 = 58;
+    const rX = 18, rY = 50;
+    const rContra = 9, rMans = 18;
+
+    const P5 = []; let n5 = 1;
+    const add5 = (rol,cx,cy) => P5.push({id:'p'+(n5++), rol, cx:+cx.toFixed(1), cy:+cy.toFixed(1)});
+
+    function epos(angDeg) {
+      const a = angDeg * Math.PI / 180;
+      return [cx0 + rX*Math.cos(a), cy0 + rY*Math.sin(a)];
+    }
+
+    // Banda del 3 (baix de la figura): Rengla + Plena + Buida
+    const pPlena = epos(150);   // baix-esquerra
+    const pBuida  = epos(30);   // baix-dreta
+
+    // Banda del 2 (dalt de la figura): Carregada + Descarregada
+    const pCarregada     = epos(-150);  // dalt-esquerra
+    const pDescarregada  = epos(-30);   // dalt-dreta
+
+    const rMansStep = 9;
+    const rLat = 9, rLStep = 9;
+    const rCrossa = 9;
+
+    function addBaix5(bx, by, angOverride, nMans, addLaterals) {
+      add5('baix', bx, by);
+      const a = angOverride !== undefined ? angOverride : Math.atan2(by - cy0, bx - cx0);
+      [-1,1].forEach(s => add5('crossa', bx + rCrossa*Math.cos(a + s*Math.PI/2), by + rCrossa*Math.sin(a + s*Math.PI/2)));
+      add5('contrafort', bx + rContra*Math.cos(a), by + rContra*Math.sin(a));
+      for (let f = 0; f < nMans; f++)
+        add5('mans', bx + (rMans + f*rMansStep)*Math.cos(a), by + (rMans + f*rMansStep)*Math.sin(a));
+      addLaterals(bx, by, a);
+    }
+
+    // Laterals Rengla: surten del baix desplaçats als costats, van en dir mans (-90°)
+    function lateralsRengla(bx, by, a) {
+      // 3 laterals per banda, pas rCrossa, comencen a la 2a posició
+      [-1,1].forEach(s => {
+        for (let f = 1; f <= 3; f++)
+          add5('lateral', bx + rCrossa*(1+f)*Math.cos(a + s*Math.PI/2),
+                          by + rCrossa*(1+f)*Math.sin(a + s*Math.PI/2));
+      });
+    }
+
+    // Laterals Plena/Buida: paral·lels a les mans, desplaçats lateralment (±perpendicular)
+    // Comencen al nivell del contrafort (rContra) i creixen en la mateixa direcció que les mans
+    function lateralsPlenaBuida(bx, by, a) {
+      [-1,1].forEach(s => {
+        const sx = bx + rCrossa*Math.cos(a + s*Math.PI/2);
+        const sy = by + rCrossa*Math.sin(a + s*Math.PI/2);
+        for (let f = 0; f < 3; f++)
+          add5('lateral', sx + rContra*Math.cos(a) + f*rCrossa*Math.cos(a),
+                          sy + rContra*Math.sin(a) + f*rCrossa*Math.sin(a));
+      });
+    }
+
+    // Laterals Carregada/Descarregada:
+    // Nord = cap amunt absolut (-π/2), 3 laterals
+    // Sud = cap avall absolut (π/2), 1 lateral
+    // Comencen a la 2a posició (f=2*rCrossa) per no solapar amb la crossa
+    function lateralsSuperiors(bx, by, a) {
+      for (let f = 1; f <= 3; f++)
+        add5('lateral', bx + rCrossa*(1+f)*Math.cos(-Math.PI/2),
+                        by + rCrossa*(1+f)*Math.sin(-Math.PI/2));
+      add5('lateral', bx + rCrossa*2*Math.cos(Math.PI/2),
+                      by + rCrossa*2*Math.sin(Math.PI/2));
+    }
+
+    // Centre del triangle de la banda del 3 (per orientar mans/crosses/laterals)
+    const cTx = (cx0 + pPlena[0] + pBuida[0]) / 3;
+    const cTy = (cy0 + pPlena[1] + pBuida[1]) / 3;
+
+    // idx 0: Rengla — mans cap amunt (-90°)
+    addBaix5(cx0, cy0, -Math.PI/2, 2, lateralsRengla);
+    // idx 1: Plena — angle cap enfora des del centre del triangle de la banda del 3
+    addBaix5(pPlena[0], pPlena[1], Math.atan2(pPlena[1]-cTy, pPlena[0]-cTx), 3, lateralsPlenaBuida);
+    // idx 2: Buida — angle cap enfora des del centre del triangle de la banda del 3
+    addBaix5(pBuida[0], pBuida[1], Math.atan2(pBuida[1]-cTy, pBuida[0]-cTx), 3, lateralsPlenaBuida);
+    // idx 3: Carregada (dalt-esquerra)
+    addBaix5(pCarregada[0], pCarregada[1], Math.PI, 3, lateralsSuperiors);
+    // idx 4: Descarregada (dalt-dreta)
+    addBaix5(pDescarregada[0], pDescarregada[1], 0, 3, lateralsSuperiors);
+
+    // 3 agulles: triangle petit interior dins dels 3 baixos de la banda del 3
+    const factorAgulla = 0.4;
+    [[cx0, cy0], pPlena, pBuida].forEach(([bx, by]) => {
+      const a = Math.atan2(by - cTy, bx - cTx);
+      const d = Math.hypot(bx - cTx, by - cTy);
+      add5('agulla', cTx + d * factorAgulla * Math.cos(a), cTy + d * factorAgulla * Math.sin(a));
+    });
+
+    // 4 fileres de 3 vents
+    // 1. Sud entre Plena i Buida
+    const yCrossaPB = Math.max(
+      pPlena[1] + rCrossa * Math.sin(Math.atan2(pPlena[1]-cTy, pPlena[0]-cTx) + Math.PI/2),
+      pBuida[1] + rCrossa * Math.sin(Math.atan2(pBuida[1]-cTy, pBuida[0]-cTx) - Math.PI/2)
+    );
+    for (let f = 0; f < 3; f++)
+      add5('vent', cx0, yCrossaPB + (2 + f) * rCrossa);
+
+    // 2. Nord entre les fileres de laterals dels baixos superiors
+    const yLateralsNord = pCarregada[1] - rCrossa * 2;
+    for (let f = 0; f < 3; f++)
+      add5('vent', cx0, yLateralsNord - f * rCrossa);
+
+    // 3 i 4. Horitzontals, just darrere del lateral de la rengla
+    const yLat = cy0 + rCrossa;
+    for (let f = 0; f < 3; f++) {
+      add5('vent', cx0 - rCrossa * (3 + f), yLat);
+      add5('vent', cx0 + rCrossa * (3 + f), yLat);
+    }
+
+    // Taps: diagonals entre les mans i els laterals nord dels baixos superiors
+    // Carregada: diagonal NW (-135°), Descarregada: diagonal NE (-45°)
+    for (let f = 2; f <= 3; f++) {
+      add5('tap', pCarregada[0]    + f*rCrossa*Math.cos(-135*Math.PI/180),
+                  pCarregada[1]    + f*rCrossa*Math.sin(-135*Math.PI/180));
+      add5('tap', pDescarregada[0] + f*rCrossa*Math.cos(-45*Math.PI/180),
+                  pDescarregada[1] + f*rCrossa*Math.sin(-45*Math.PI/180));
+    }
+
+    return P5;
+  }
+  return [];
+}
+
+// Calcula el viewBox SVG necessari
+
+// Calcula el viewBox SVG necessari perquè totes les posicions hi càpiguen còmodament
+function calculaViewBox(posicions) {
+  const R = 5.2, marge = R + 3;
+  const xs = posicions.map(p => p.cx), ys = posicions.map(p => p.cy);
+  const minX = Math.min(...xs) - marge, maxX = Math.max(...xs) + marge;
+  const minY = Math.min(...ys) - marge, maxY = Math.max(...ys) + marge;
+  return { x: minX, y: minY, w: maxX - minX, h: maxY - minY };
+}
+
+// ===================== TRONC =====================
+// Colors per pis del tronc (de baix a dalt)
+const COLORS_TRONC = {
+  segons:    '#e67e22',
+  terços:    '#16a085',
+  quartes:   '#8e44ad',
+  dos:       '#2980b9',
+  acotxador: '#27ae60',
+  enxaneta:  '#c0392b'
+};
+
+const NOMS_TIPUS = {
+  pilar: { nom: 'Pilar',           sub: '29 persones', ico: '🗼' },
+  '2':   { nom: 'Castell de 2',    sub: '33 persones', ico: '🏰' },
+  '3':   { nom: 'Castell de 3',    sub: '51 persones', ico: '🏰' },
+  '3ag': { nom: '3 amb agulla',    sub: '53 persones', ico: '🏰' },
+  '4':   { nom: 'Castell de 4',    sub: '68 persones', ico: '🏯' },
+  '5':   { nom: 'Castell de 5',    sub: '80 persones', ico: '🏯' }
+};
+
+function generaTronc(tipus) {
+  const nPilars = { 'pilar': 1, '2': 2, '3': 3, '3ag': 4, '4': 4, '5': 5 }[tipus];
+  const pos = [];
+  let n = 1;
+  const add = (pis, pilar, etiqueta, pom) =>
+    pos.push({ id: 'tr' + (n++), pis, pilar, etiqueta, pom: pom || 0, personaId: null });
+
+  if (tipus === '5') {
+    for (let p = 1; p <= 5; p++) {
+      add('segons',  p, `Segon ${p}`);
+      add('terços',  p, `Terç ${p}`);
+      add('quartes', p, `Quarta ${p}`);
+    }
+    add('dos',       6, 'Dos A1');
+    add('dos',       6, 'Dos A2');
+    add('acotxador', 6, 'Acotxador A');
+    add('dos',       7, 'Dos B1');
+    add('dos',       7, 'Dos B2');
+    add('acotxador', 7, 'Acotxador B');
+    add('enxaneta',  0, 'Enxaneta');
+    return pos;
+  }
+
+  if (tipus === 'pilar') {
+    add('segons',    1, 'Segon');
+    add('terços',    1, 'Terç');
+    add('acotxador', 1, 'Acotxador');
+    add('enxaneta',  1, 'Enxaneta');
+    return pos;
+  }
+
+  if (tipus === '3ag') {
+    // 3 pilars normals + 1 pilar per l'agulla (etiqueta diferenciada)
+    for (let p = 1; p <= 3; p++) {
+      add('segons',  p, `Segon ${p}`);
+      add('terços',  p, `Terç ${p}`);
+      add('quartes', p, `Quarta ${p}`);
+    }
+    // Pilar de l'agulla (pilar 4)
+    add('segons',  4, 'Agulla - Segon');
+    add('terços',  4, 'Agulla - Terç');
+    add('quartes', 4, 'Agulla - Quarta');
+    // Pom únic
+    add('dos',       0, 'Dos 1');
+    add('dos',       0, 'Dos 2');
+    add('acotxador', 0, 'Acotxador');
+    add('enxaneta',  0, 'Enxaneta');
+    return pos;
+  }
+
+  // Pilars amb noms específics per cada castell
+  const nomsPilars = {
+    '2':   ['Carregada', 'Descarregada'],
+    '3':   ['Rengla', 'Plena', 'Buida'],
+    '3ag': ['Rengla', 'Plena', 'Buida', 'Agulla'],
+    '4':   ['Esquerre', 'Rengla', 'Dreta', 'Contra'],
+    '5':   ['Rengla', 'Plena', 'Buida', 'Carregada', 'Descarregada'],
+  };
+  const noms = nomsPilars[tipus] || [];
+  for (let p = 1; p <= nPilars; p++) {
+    const nom = noms[p-1] || `Pilar ${p}`;
+    add('segons',  p, `${nom} - Segon`);
+    add('terços',  p, `${nom} - Terç`);
+    add('quartes', p, `${nom} - Quarta`);
+  }
+
+  if (tipus === '5') {
+    add('dos',       0, 'Dos A1',       1);
+    add('dos',       0, 'Dos A2',       1);
+    add('acotxador', 0, 'Acotxador A',  1);
+    add('dos',       0, 'Dos B1',       2);
+    add('dos',       0, 'Dos B2',       2);
+    add('acotxador', 0, 'Acotxador B',  2);
+    add('enxaneta',  0, 'Enxaneta',     0);
+  } else {
+    add('dos',       0, 'Dos 1');
+    add('dos',       0, 'Dos 2');
+    add('acotxador', 0, 'Acotxador');
+    add('enxaneta',  0, 'Enxaneta');
+  }
+
+  return pos;
+}
+
+// Mapa pilar → índex del baix a la pinya (ordre visual de cada castell)
+const INDEX_BAIX_PER_PILAR = {
+  '2':   [1, 0],
+  '3':   [0, 2, 1],
+  '3ag': [0, 2, 1, -1],
+  '4':   [3, 2, 1, 0],
+  '5':   [0, 1, 2, 3, 4],  // Rengla, Plena, Buida, Descarregada, Carregada
+};
+
+function getNomPilar(tipus, pilarIdx) {
+  const noms = {
+    '2':   ['Carregada', 'Descarregada'],
+    '3':   ['Rengla', 'Plena', 'Buida'],
+    '3ag': ['Rengla', 'Plena', 'Buida', 'Agulla'],
+    '4':   ['Esquerre', 'Rengla', 'Dreta', 'Contra'],
+    '5':   ['Rengla', 'Plena', 'Buida', 'Carregada', 'Descarregada'],
+  };
+  return (noms[tipus] || [])[pilarIdx] || `Pilar ${pilarIdx+1}`;
+}
+
+function nomPisTronc(pis) {
+  return { segons: 'Segon', terços: 'Terç', quartes: 'Quarta', dos: 'Dos', acotxador: 'Acotxador', enxaneta: 'Enxaneta' }[pis] || pis;
+}
+
+// Retorna el Set de IDs de persones ja usades tant a la pinya com al tronc
+function getIdsJaAssignatsGlobal(excloentPosId, excloentTroncId) {
+  const usats = new Set();
+  if (pinyaActual) {
+    pinyaActual.posicions.forEach(p => {
+      if (p.id !== excloentPosId && p.personaId) usats.add(p.personaId);
+    });
+    (pinyaActual.tronc || []).forEach(t => {
+      if (t.id !== excloentTroncId && t.personaId) usats.add(t.personaId);
+    });
+  }
+  return usats;
+}
+
+let troncObert = true;
+let troncSessioObert = {};
+let castellPlegat = {};
+let pinyaOculta = {};
+let assistCardObert = true;
+
+function toggleTronc() {
+  troncObert = !troncObert;
+  pintaPinyaDetall();
+}
+
+function renderitzaTroncSessio(cas, pinya, obert) {
+  if (!pinya || !['pilar','2','3','3ag','4','5'].includes(pinya.tipus)) return '';
+  if (!cas.assignacionsTronc) cas.assignacionsTronc = {};
+  // Fem servir el tronc de la pinya com a plantilla però les assignacions de la sessió
+  const tronc = pinya.tronc || [];
+  if (!tronc.length) return '';
+  const nAssig = tronc.filter(t => cas.assignacionsTronc[t.id]).length;
+  const casId = cas.id;
+
+  function cellaTroncSessio(t) {
+    const personaId = cas.assignacionsTronc[t.id] || null;
+    const membre = personaId ? estat.membres.find(m => m.id === personaId) : null;
+    const color = COLORS_TRONC[t.pis] || '#7f8c8d';
+    return `<div onclick="obreAssignacioTroncSessio('${casId}','${t.id}')"
+      style="background:${membre?color:'var(--gris-clar)'};border:1.5px solid ${membre?color:'var(--vora)'};
+      border-radius:8px;padding:6px 4px;text-align:center;cursor:pointer;min-height:48px;
+      display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;">
+      <div style="font-size:9px;font-weight:700;color:${membre?'#fff':'var(--text-suau)'};text-transform:uppercase;letter-spacing:0.4px;">${nomPisTronc(t.pis)}</div>
+      ${membre
+        ? `<div style="font-size:10px;font-weight:600;color:#fff;margin-top:2px;word-break:break-word;">${membre.nom.split(' ')[0]}</div>
+           <button onclick="event.stopPropagation();desassignaTroncSessio('${casId}','${t.id}')" style="position:absolute;top:2px;right:3px;background:none;border:none;color:rgba(255,255,255,0.8);font-size:11px;cursor:pointer;">✕</button>`
+        : `<div style="font-size:9px;color:var(--text-suau);margin-top:2px;">+</div>`}
+    </div>`;
+  }
+
+  // Guardem temporalment pinyaActual per reutilitzar la funció
+  const pinyaBak = pinyaActual;
+  const troncObertBak = troncObert;
+  pinyaActual = pinya;
+  troncObert = obert;
+
+  const nPilars = {'pilar':1,'2':2,'3':3,'3ag':4,'4':4,'5':5}[pinya.tipus];
+  const pisosOrdrePilar = pinya.tipus === 'pilar'
+    ? ['enxaneta','acotxador','terços','segons']
+    : ['quartes','terços','segons'];
+  function etiqPilar3ag(i) {
+    if (pinya.tipus === '3ag' && i === 3) return '<span style="color:#27ae60;font-weight:700;">Agulla</span>';
+    return `P${i+1}`;
+  }
+
+  let cos = '';
+  if (pinya.tipus === 'pilar') {
+    const files = pisosOrdrePilar.map(pis => {
+      const t = tronc.find(x => x.pis === pis);
+      return t ? cellaTroncSessio(t) : '';
+    }).join('');
+    cos = `<div style="max-width:180px;margin:0 auto;display:flex;flex-direction:column;gap:6px;">
+      <div style="text-align:center;font-size:10px;font-weight:700;color:var(--text-suau);text-transform:uppercase;">▲ Dalt</div>
+      ${files}
+      <div style="text-align:center;font-size:10px;font-weight:700;color:var(--text-suau);text-transform:uppercase;">▼ Base</div>
+    </div>`;
+  } else if (pinya.tipus === '5') {
+    const pomA=tronc.filter(t=>t.pilar===6), pomB=tronc.filter(t=>t.pilar===7);
+    const enx=tronc.find(t=>t.pis==='enxaneta');
+    function pomH(items){
+      const dos=items.filter(t=>t.pis==='dos'),acot=items.find(t=>t.pis==='acotxador');
+      return `<div style="margin-bottom:4px;">${acot?cellaTroncSessio(acot):''}</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;">${dos.map(t=>cellaTroncSessio(t)).join('')}</div>`;
+    }
+    const fp=pisosOrdrePilar.filter(p=>['quartes','terços','segons'].includes(p)).map(pis=>{
+      const cels=Array.from({length:5},(_,i)=>{const t=tronc.find(x=>x.pilar===i+1&&x.pis===pis);return t?cellaTroncSessio(t):'<div></div>';}).join('');
+      return `<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:4px;">${cels}</div>`;
+    }).join('');
+    const etiq5=Array.from({length:5},(_,i)=>{
+      const nom=getNomPilar('5',i);
+      // Calcular suma mides pilar i del 5
+      let suma=0;
+      const mapa5Local=INDEX_BAIX_PER_PILAR['5']||[];
+      const baixos5=pinya.posicions.filter(p=>p.rol==='baix');
+      const posBaix5=baixos5[mapa5Local[i]];
+      if(posBaix5){const mId=cas.assignacions&&cas.assignacions[posBaix5.id];const mb=mId&&estat.membres.find(m=>m.id===mId);if(mb&&mb.mida)suma+=mb.mida;}
+      ['segons','terços','quartes'].forEach(pis=>{
+        const t=tronc.find(x=>x.pilar===i+1&&x.pis===pis);
+        if(t){const mId=cas.assignacionsTronc&&cas.assignacionsTronc[t.id];const mb=mId&&estat.membres.find(m=>m.id===mId);if(mb&&mb.mida)suma+=mb.mida;}
+      });
+      const sumaStr=suma>0?suma+' cm':'';
+      return `<div style="text-align:center;">
+        <div style="font-size:9px;font-weight:600;color:var(--text-suau);">${nom}</div>
+        ${sumaStr?`<div style="font-size:9px;color:var(--text-suau);">${sumaStr}</div>`:''}
+      </div>`;
+    }).join('');
+    const baixosPinya5=pinya.posicions.filter(p=>p.rol==='baix');
+    const mapa5=INDEX_BAIX_PER_PILAR['5']||[];
+    const filaBaixos5=Array.from({length:5},(_,i)=>{
+      const pos=baixosPinya5[mapa5[i]];
+      const nomP=getNomPilar('5',i);
+      if(!pos) return '<div></div>';
+      const membreId=cas.assignacions&&cas.assignacions[pos.id];
+      const membre=membreId?estat.membres.find(m=>m.id===membreId):null;
+      const color=colorRol('baix');
+      return `<div onclick="obreAssignacioPosicio('${pos.id}','sessio-cas-${casId}')"
+        style="background:${membre?color:'var(--gris-clar)'};border:1.5px solid ${membre?color:'var(--vora)'};
+        border-radius:8px;padding:5px 4px;text-align:center;cursor:pointer;min-height:44px;
+        display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;">
+        <div style="font-size:9px;font-weight:700;color:${membre?'#fff':'var(--text-suau)'};text-transform:uppercase;">${nomP}</div>
+        ${membre?`<div style="font-size:10px;font-weight:600;color:#fff;margin-top:2px;">${membre.nom.split(' ')[0]}</div>
+          <button onclick="event.stopPropagation();desassignaPosSessio('${casId}','${pos.id}')" style="position:absolute;top:2px;right:3px;background:none;border:none;color:rgba(255,255,255,0.8);font-size:11px;cursor:pointer;">✕</button>`
+        :`<div style="font-size:9px;color:var(--text-suau);margin-top:2px;">+</div>`}
+      </div>`;
+    }).join('');
+    cos=`<div style="text-align:center;font-size:10px;font-weight:700;color:var(--text-suau);margin-bottom:6px;">▲ Enxaneta</div>
+      <div style="margin-bottom:6px;">${enx?cellaTroncSessio(enx):''}</div>
+      <div style="border-top:2px dashed var(--vora);margin:8px 0;"></div>
+      <div style="display:grid;grid-template-columns:3fr 2fr;gap:8px;margin-bottom:6px;">
+        <div><div style="font-size:9px;font-weight:700;color:var(--text-suau);text-align:center;margin-bottom:4px;">Pom A · Banda del 3</div>${pomH(pomA)}</div>
+        <div><div style="font-size:9px;font-weight:700;color:var(--text-suau);text-align:center;margin-bottom:4px;">Pom B · Banda del 2</div>${pomH(pomB)}</div>
+      </div>
+      <div style="border-top:2px dashed var(--vora);margin:8px 0;"></div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:4px;">${etiq5}</div>
+      ${fp}
+      <div style="border-top:2px dashed var(--vora);margin:8px 0;"></div>
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:4px;">${filaBaixos5}</div>
+      <div style="text-align:center;font-size:10px;font-weight:700;color:var(--text-suau);text-transform:uppercase;margin-top:4px;">▼ Base</div>`;
+  } else {
+    const pisosPom = ['enxaneta','acotxador','dos'];
+    const filaPom = pisosPom.map(pis=>{
+      const items=tronc.filter(t=>t.pilar===0&&t.pis===pis);
+      const cel=items.map(t=>cellaTroncSessio(t)).join('');
+      return pis==='dos'
+        ?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;">${cel}</div>`
+        :`<div style="margin-bottom:6px;">${cel}</div>`;
+    }).join('');
+    const fp=pisosOrdrePilar.map(pis=>{
+      const cels=Array.from({length:nPilars},(_,i)=>{const t=tronc.find(x=>x.pilar===i+1&&x.pis===pis);return t?cellaTroncSessio(t):'<div></div>';}).join('');
+      return `<div style="display:grid;grid-template-columns:repeat(${nPilars},1fr);gap:6px;margin-bottom:6px;">${cels}</div>`;
+    }).join('');
+
+    // Etiquetes amb noms de pilar correctes
+    // Calcular suma de mides per pilar (baix + segon + terç + quarta)
+    function sumaMidesPilar(pilarNum) {
+      const pisos = ['baix', 'segons', 'terços', 'quartes'];
+      let suma = 0;
+      // Baix: ve de cas.assignacions (pinya)
+      const mapaBaixosLocal = INDEX_BAIX_PER_PILAR[pinya.tipus] || [];
+      const baixosPinyaLocal = pinya.posicions.filter(p => p.rol === 'baix');
+      const baixPilarCentralLocal = pinya.posicions.find(p => p.rol === 'baix_pilar');
+      const idx = mapaBaixosLocal[pilarNum];
+      const posBaix = (idx === -1) ? baixPilarCentralLocal : baixosPinyaLocal[idx];
+      if (posBaix) {
+        const mId = cas.assignacions && cas.assignacions[posBaix.id];
+        const mb = mId && estat.membres.find(m => m.id === mId);
+        if (mb && mb.mida) suma += mb.mida;
+      }
+      // Segon, terç, quarta: ve del tronc
+      ['segons','terços','quartes'].forEach(pis => {
+        const t = tronc.find(x => x.pilar === pilarNum+1 && x.pis === pis);
+        if (t) {
+          const mId = cas.assignacionsTronc && cas.assignacionsTronc[t.id];
+          const mb = mId && estat.membres.find(m => m.id === mId);
+          if (mb && mb.mida) suma += mb.mida;
+        }
+      });
+      return suma > 0 ? suma + ' cm' : '';
+    }
+
+    const etiq=Array.from({length:nPilars},(_,i)=>{
+      const nom=getNomPilar(pinya.tipus,i);
+      const color=pinya.tipus==='3ag'&&i===3?'color:#27ae60;font-weight:700;':'';
+      const suma=sumaMidesPilar(i);
+      return `<div style="text-align:center;${color}">
+        <div style="font-size:10px;font-weight:600;color:var(--text-suau);">${nom}</div>
+        ${suma?`<div style="font-size:9px;color:var(--text-suau);font-weight:500;">${suma}</div>`:''}
+      </div>`;
+    }).join('');
+
+    // Fila de baixos: mapping correcte per cada castell
+    const baixosPinya = pinya.posicions.filter(p => p.rol === 'baix');
+    const baixPilarCentral = pinya.posicions.find(p => p.rol === 'baix_pilar');
+    const mapaBaixos = INDEX_BAIX_PER_PILAR[pinya.tipus] || [];
+    const filaBaixosSessio = Array.from({length:nPilars},(_,i)=>{
+      const idx = mapaBaixos[i];
+      const pos = (idx === -1) ? baixPilarCentral : baixosPinya[idx];
+      const nomP = getNomPilar(pinya.tipus, i);
+      if (!pos) return '<div></div>';
+      // Les assignacions de baixos van a cas.assignacions (igual que la pinya a sessió)
+      const membreId = cas.assignacions && cas.assignacions[pos.id];
+      const membre = membreId ? estat.membres.find(m=>m.id===membreId) : null;
+      const color = colorRol(pos.rol);
+      return `<div onclick="obreAssignacioPosicio('${pos.id}','sessio-cas-${casId}')"
+        style="background:${membre?color:'var(--gris-clar)'};border:1.5px solid ${membre?color:'var(--vora)'};
+        border-radius:8px;padding:5px 4px;text-align:center;cursor:pointer;min-height:44px;
+        display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;">
+        <div style="font-size:9px;font-weight:700;color:${membre?'#fff':'var(--text-suau)'};text-transform:uppercase;letter-spacing:0.4px;">${nomP}</div>
+        ${membre
+          ?`<div style="font-size:10px;font-weight:600;color:#fff;margin-top:2px;word-break:break-word;">${membre.nom.split(' ')[0]}</div>
+            <button onclick="event.stopPropagation();desassignaPosSessio('${casId}','${pos.id}')" style="position:absolute;top:2px;right:3px;background:none;border:none;color:rgba(255,255,255,0.8);font-size:11px;cursor:pointer;">✕</button>`
+          :`<div style="font-size:9px;color:var(--text-suau);margin-top:2px;">+</div>`}
+      </div>`;
+    }).join('');
+
+    cos=`<div style="text-align:center;font-size:10px;font-weight:700;color:var(--text-suau);text-transform:uppercase;margin-bottom:8px;">▲ Pom de dalt</div>
+      ${filaPom}
+      <div style="border-top:2px dashed var(--vora);margin:10px 0 8px;"></div>
+      <div style="display:grid;grid-template-columns:repeat(${nPilars},1fr);gap:6px;margin-bottom:4px;">${etiq}</div>
+      ${fp}
+      <div style="border-top:2px dashed var(--vora);margin:8px 0;"></div>
+      <div style="display:grid;grid-template-columns:repeat(${nPilars},1fr);gap:6px;margin-bottom:4px;">${filaBaixosSessio}</div>
+      <div style="text-align:center;font-size:10px;font-weight:700;color:var(--text-suau);text-transform:uppercase;margin-top:4px;">▼ Base</div>`;
+  }
+
+  pinyaActual = pinyaBak;
+  troncObert = troncObertBak;
+
+  return `<div class="card" style="margin-bottom:14px;">
+    <div class="tronc-header" onclick="toggleTroncSessio('${casId}')">
+      <div class="tronc-titol">🏗️ Tronc <span style="font-size:11px;font-weight:400;color:var(--text-suau);">${nAssig}/${tronc.length} assignats</span></div>
+      <span class="tronc-chevron ${obert?'obert':''}">▼</span>
+    </div>
+    ${obert ? `<div class="tronc-cos" style="padding:12px 14px 8px;">${cos}</div>` : ''}
+  </div>`;
+}
+
+function desassignaPosSessio(casId, posId) {
+  if (!estaAutenticat()) { requereixPin(() => desassignaPosSessio(casId, posId)); return; }
+  const cas = sessioActual.castells && sessioActual.castells.find(c => c.id === casId);
+  if (cas && cas.assignacions) delete cas.assignacions[posId];
+  desaSessio();
+  renderitzaPinyaSessio();
+}
+
+function toggleTroncSessio(casId) {
+  troncSessioObert[casId] = !(troncSessioObert[casId] !== false);
+  renderitzaPinyaSessio();
+}
+
+function afegirCastellSessio() {
+  if (!estaAutenticat()) { requereixPin(afegirCastellSessio); return; }
+  asseguraCastells();
+  const casId = id();
+  sessioActual.castells.push({ id: casId, pinya: null, assignacions: {}, assignacionsTronc: {} });
+  desaSessio();
+  window._casIdPendent = casId;
+  obreModalPinya();
+}
+
+function eliminarCastellSessio(casId) {
+  if (!estaAutenticat()) { requereixPin(() => eliminarCastellSessio(casId)); return; }
+  confirma('Eliminar aquest castell de la sessió?', () => {
+    sessioActual.castells = sessioActual.castells.filter(c => c.id !== casId);
+    desaSessio();
+    renderitzaPinyaSessio();
+  });
+}
+
+function obreAssignacioTroncSessio(casId, troncId) {
+  if (!estaAutenticat()) { requereixPin(() => obreAssignacioTroncSessio(casId, troncId)); return; }
+  posicioSeleccionada = troncId;
+  contextAssignacio = 'sessio-tronc';
+  window._casIdTronc = casId;
+  const cas = sessioActual.castells.find(c => c.id === casId);
+  const pinya = cas && cas.pinyaId ? estat.pinyes.find(p => p.id === cas.pinyaId) : null;
+  // Invalida: assignats a la pinya d'aquesta sessió + altres posicions del tronc d'aquesta sessió
+  const usats = new Set();
+  if (cas) {
+    Object.values(cas.assignacions || {}).forEach(m => usats.add(m));
+    Object.entries(cas.assignacionsTronc || {}).forEach(([tid, mid]) => { if (tid !== troncId) usats.add(mid); });
+  }
+  const assistents = estat.membres.filter(m => sessioActual.assistencia && sessioActual.assistencia[m.id]);
+  const persones = assistents.filter(m => !usats.has(m.id));
+  document.getElementById('cerca-persona').style.display = 'block';
+  document.getElementById('cerca-persona').value = '';
+  document.getElementById('modal-sel-titol').textContent = 'Assignar al tronc';
+  renderitzaOpcionsPersones(persones, usats);
+  obreModal('modal-seleccio-persona');
+}
+
+function desassignaTroncSessio(casId, troncId) {
+  if (!estaAutenticat()) { requereixPin(() => desassignaTroncSessio(casId, troncId)); return; }
+  const cas = sessioActual.castells.find(c => c.id === casId);
+  if (cas && cas.assignacionsTronc) delete cas.assignacionsTronc[troncId];
+  desaSessio();
+  renderitzaPinyaSessio();
+}
+
+// ===================== PINYES (TRONCS DE CASTELL) =====================
+let tipusSeleccionat = null;
+
+function obreModalPinya() {
+  document.getElementById('pinya-nom').value = '';
+  document.getElementById('pinya-desc').value = '';
+  tipusSeleccionat = null;
+  renderitzaTipusGrid();
+  obreModal('modal-pinya');
+}
+
+function renderitzaTipusGrid() {
+  const cont = document.getElementById('tipus-castell-grid');
+  cont.innerHTML = Object.keys(NOMS_TIPUS).map(t => {
+    const info = NOMS_TIPUS[t];
+    return `<div class="tipus-opcio ${tipusSeleccionat === t ? 'sel' : ''}" onclick="seleccionaTipus('${t}')">
+      <div class="tipus-opcio-ico">${info.ico}</div>
+      <div class="tipus-opcio-nom">${info.nom}</div>
+      <div class="tipus-opcio-sub">${info.sub}</div>
+    </div>`;
+  }).join('');
+}
+
+function seleccionaTipus(t) {
+  tipusSeleccionat = t;
+  renderitzaTipusGrid();
+}
+
+function guardarPinya() {
+  if (!tipusSeleccionat) { alert('Selecciona un tipus de castell'); return; }
+  const nomBase = NOMS_TIPUS[tipusSeleccionat]?.nom || tipusSeleccionat;
+  let nom = document.getElementById('pinya-nom').value.trim();
+  if (!nom) {
+    // Comptar quantes pinyes amb el mateix nom base ja existeixen a totes les sessions
+    const totes = (estat.sessions || []).flatMap(s =>
+      (s.castells || []).map(c => c.pinya?.nom || '').filter(Boolean)
+    );
+    const n = totes.filter(n => n === nomBase || n.startsWith(nomBase + ' #')).length;
+    nom = n === 0 ? nomBase : `${nomBase} #${n + 1}`;
+  }
+  const p = {
+    id: id(),
+    nom,
+    tipus: tipusSeleccionat,
+    desc: document.getElementById('pinya-desc').value.trim(),
+    posicions: generaPlantilla(tipusSeleccionat).map(pos => ({ ...pos, personaId: null })),
+    tronc: generaTronc(tipusSeleccionat)
+  };
+  tancaModal('modal-pinya');
+  // Guardar embeguda al castell de la sessió
+  if (window._casIdPendent && sessioActual) {
+    asseguraCastells();
+    const cas = sessioActual.castells.find(c => c.id === window._casIdPendent);
+    if (cas) {
+      cas.pinya = p;
+      cas.pinyaId = p.id;
+      cas.assignacions = {};
+      cas.assignacionsTronc = {};
+    }
+    window._casIdPendent = null;
+    desaSessio();
+    renderitzaPinyaSessio();
+  }
+}
+
+function renderitzaPinyaDetall() {
+  if (!pinyaActual) return;
+  pintaPinyaDetall();
+}
+
+function pintaPinyaDetall() {
+  if (!pinyaActual) return;
+  if (!pinyaActual.tronc) {
+    pinyaActual.tronc = generaTronc(pinyaActual.tipus);
+    desaPinyaActual();
+  }
+  // Trobar el castell de la sessió que conté aquesta pinya
+  const cas = sessioActual && sessioActual.castells
+    ? sessioActual.castells.find(c => c.pinya && c.pinya.id === pinyaActual.id)
+    : null;
+
+  const cont = document.getElementById('pinya-detall-contingut');
+  cont.innerHTML = `
+    <div class="card">
+      ${pinyaActual.desc ? `<div style="padding:12px 16px 0;font-size:13px;color:var(--text-suau);">${pinyaActual.desc}</div>` : ''}
+      <div id="pinya-vista-cos"></div>
+    </div>
+    ${cas ? renderitzaTroncSessio(cas, pinyaActual, troncObert) : ''}`;
+
+  // Context d'assignació: si tenim cas de sessió, usem sessio-cas-ID
+  const ctx = cas ? 'sessio-cas-' + cas.id : 'pinya';
+  const assignacions = cas ? (cas.assignacions || {}) : null;
+  renderitzaVistaPinya(pinyaActual, assignacions, ctx);
+}
+
+// Renderitza la vista SVG dins de #pinya-vista-cos o un contenidor donat
+function renderitzaVistaPinya(castell, assignacionsExternes, context, containerId) {
+  const cId = containerId || 'pinya-vista-cos';
+  const el = document.getElementById(cId);
+  if (!el) return;
+  el.innerHTML = dibuixaSVGCastell(castell, assignacionsExternes, context) + llegendaRols(castell);
+}
+
+function getPersonaPosicio(pos, assignacionsExternes, context) {
+  if (context === 'sessio' || (context && context.startsWith('sessio-cas-'))) {
+    return (assignacionsExternes && assignacionsExternes[pos.id]) || null;
+  }
+  return pos.personaId;
+}
+
+// Retorna el conjunt d'IDs de membres ja assignats a alguna posició del
+// tronc actiu (exclou la posició que s'està editant ara mateix).
+function getIdsJaAssignats(excloentPosId) {
+  const ids = new Set();
+  if (contextAssignacio && contextAssignacio.startsWith('sessio-cas-')) {
+    const casId = contextAssignacio.replace('sessio-cas-', '');
+    const cas = sessioActual && sessioActual.castells && sessioActual.castells.find(c => c.id === casId);
+    if (cas) {
+      Object.entries(cas.assignacions || {}).forEach(([posId, memId]) => { if (posId !== excloentPosId) ids.add(memId); });
+      Object.values(cas.assignacionsTronc || {}).forEach(memId => ids.add(memId));
+    }
+  } else if (contextAssignacio === 'sessio-tronc') {
+    const casId = window._casIdTronc;
+    const cas = sessioActual && sessioActual.castells && sessioActual.castells.find(c => c.id === casId);
+    if (cas) {
+      Object.values(cas.assignacions || {}).forEach(memId => ids.add(memId));
+      Object.entries(cas.assignacionsTronc || {}).forEach(([tid, mid]) => { if (tid !== excloentPosId) ids.add(mid); });
+    }
+  } else if (contextAssignacio === 'pinya') {
+    pinyaActual.posicions.forEach(p => {
+      if (p.id !== excloentPosId && p.personaId) ids.add(p.personaId);
+    });
+    (pinyaActual.tronc || []).forEach(t => { if (t.personaId) ids.add(t.personaId); });
+  } else if (contextAssignacio === 'tronc') {
+    (pinyaActual.tronc || []).forEach(t => {
+      if (t.id !== excloentPosId && t.personaId) ids.add(t.personaId);
+    });
+    pinyaActual.posicions.forEach(p => { if (p.personaId) ids.add(p.personaId); });
+  }
+  return ids;
+}
+
+function dibuixaSVGCastell(castell, assignacionsExternes, context) {
+  const esSessio = context === 'sessio' || (context && context.startsWith('sessio-cas-'));
+  const assistents = esSessio && sessioActual && sessioActual.assistencia
+    ? estat.membres.filter(m => sessioActual.assistencia[m.id]) : null;
+  const R = 5.2;
+  const cercles = castell.posicions.map(pos => {
+    const personaId = getPersonaPosicio(pos, assignacionsExternes, context);
+    const membre = personaId ? estat.membres.find(m => m.id === personaId) : null;
+    const absent = membre && assistents && !assistents.some(a => a.id === membre.id);
+    const color = colorRol(pos.rol);
+    const stroke = membre ? (absent ? '#e74c3c' : '#333') : '#bbb';
+    const dash = membre ? '' : 'stroke-dasharray="2,2"';
+    // El baix_pilar es dibuixa al final (per damunt de les envoltants) però mateixa mida
+    const r = R;
+    const strokeW = membre ? 0.9 : 0.5;
+    const strokeColor = stroke;
+
+    // Nom complet dins del cercle via foreignObject — HTML real, sense abreviatures
+    let nomHTML = '';
+    if (membre) {
+      const parts = membre.nom.trim().split(/\s+/);
+      const nomPila = parts[0];
+      const cognom = parts.slice(1).join(' ');
+      const d = r * 2;
+      const fsPila = nomPila.length > 7 ? '1.6px' : nomPila.length > 5 ? '1.9px' : '2.1px';
+      const fsCognom = cognom.length > 8 ? '1.4px' : '1.6px';
+      nomHTML = `<foreignObject x="${pos.cx - r}" y="${pos.cy - r}" width="${d}" height="${d}">
+        <div xmlns="http://www.w3.org/1999/xhtml" style="width:${d}px;height:${d}px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;line-height:1.15;overflow:hidden;box-sizing:border-box;padding:0 0.3px;">
+          <span style="font-size:${fsPila};font-weight:700;color:#fff;display:block;">${nomPila}</span>
+          ${cognom ? `<span style="font-size:${fsCognom};font-weight:500;color:rgba(255,255,255,0.88);display:block;">${cognom}</span>` : ''}
+        </div>
+      </foreignObject>`;
+    }
+
+    return `<g class="pos-cercle" onclick="obreAccioPos('${pos.id}','${context}',${membre ? 'true' : 'false'})">
+      <circle cx="${pos.cx}" cy="${pos.cy}" r="${r}" fill="${color}" stroke="${strokeColor}" stroke-width="${strokeW}" ${dash} opacity="${absent ? 0.45 : 1}"/>
+      ${nomHTML}
+      ${absent ? `<circle cx="${pos.cx}" cy="${pos.cy - r - 2}" r="1.8" fill="#e74c3c"/><text x="${pos.cx}" y="${pos.cy - r - 1.3}" style="font-size:2.5px;text-anchor:middle;fill:white;font-weight:700;">!</text>` : ''}
+    </g>`;
+  }).join('');
+  const vb = calculaViewBox(castell.posicions);
+  return `<div class="pinya-svg-wrap">
+    <svg viewBox="${vb.x.toFixed(1)} ${vb.y.toFixed(1)} ${vb.w.toFixed(1)} ${vb.h.toFixed(1)}" xmlns="http://www.w3.org/2000/svg">${cercles}</svg>
+  </div>`;
+}
+
+function llegendaRols(castell) {
+  const rolsUsats = [...new Set(castell.posicions.map(p => p.rol))];
+  return `<div class="llegenda-rols">
+    ${rolsUsats.map(r => `<div class="llegenda-item">
+      <span class="llegenda-punt" style="background:${colorRol(r)};${r==='contrafort'?'border:1px solid #ccc;':''}"></span>
+      <span>${nomRol(r)}</span>
+    </div>`).join('')}
+  </div>`;
+}
+
+// Quan es toca una posició al dibuix SVG: si ja té persona obre el modal d'acció,
+// si està buida obre directament el selector de persona.
+function obreAccioPos(posId, context, tePersona) {
+  if (!estaAutenticat()) { requereixPin(() => obreAccioPos(posId, context, tePersona)); return; }
+  if (!tePersona) {
+    obreAssignacioPosicio(posId, context);
+    return;
+  }
+  posicioSeleccionada = posId;
+  contextAssignacio = context;
+  let personaId;
+  if (context && context.startsWith('sessio-cas-')) {
+    const casId = context.replace('sessio-cas-', '');
+    const cas = sessioActual.castells && sessioActual.castells.find(c => c.id === casId);
+    personaId = cas && cas.assignacions && cas.assignacions[posId];
+  } else {
+    const pos = pinyaActual && pinyaActual.posicions.find(p => p.id === posId);
+    personaId = pos && pos.personaId;
+  }
+  const membre = personaId ? estat.membres.find(m => m.id === personaId) : null;
+  if (!membre) { obreAssignacioPosicio(posId, context); return; }
+
+  // Trobar el rol de la posició
+  let rol = '';
+  if (context && context.startsWith('sessio-cas-')) {
+    const casId = context.replace('sessio-cas-', '');
+    const cas = sessioActual.castells && sessioActual.castells.find(c => c.id === casId);
+    const pinya = cas && cas.pinyaId && estat.pinyes.find(p => p.id === cas.pinyaId);
+    rol = pinya && pinya.posicions.find(p => p.id === posId)?.rol || '';
+  } else if (pinyaActual) {
+    rol = pinyaActual.posicions.find(p => p.id === posId)?.rol || '';
+  }
+  document.getElementById('modal-accio-titol').textContent = nomRol(rol);
+  document.getElementById('modal-accio-persona').innerHTML = `
+    <div class="membre-avatar ${colorAvatar(membre.nom)}" style="width:42px;height:42px;font-size:15px;flex-shrink:0;${membre.foto ? `background-image:url('${membre.foto}');background-size:cover;background-position:center;` : ''}">${membre.foto ? '' : inicials(membre.nom)}</div>
+    <div><div style="font-size:16px;font-weight:600;">${membre.nom}</div></div>`;
+  obreModal('modal-accio-pos');
+}
+
+function reassignaDesDeAccio() {
+  if (!estaAutenticat()) { requereixPin(reassignaDesDeAccio); return; }
+  tancaModal('modal-accio-pos');
+  obreAssignacioPosicio(posicioSeleccionada, contextAssignacio);
+}
+
+function desassignaDesDeAccio() {
+  if (!estaAutenticat()) { requereixPin(desassignaDesDeAccio); return; }
+  desassignaPosicio(posicioSeleccionada, contextAssignacio);
+  tancaModal('modal-accio-pos');
+}
+
+function obreAssignacioPosicio(posId, context) {
+  if (!estaAutenticat()) { requereixPin(() => obreAssignacioPosicio(posId, context)); return; }
+  posicioSeleccionada = posId;
+  contextAssignacio = context;
+  let persones;
+  if (context && context.startsWith('sessio-cas-')) {
+    persones = estat.membres.filter(m => sessioActual.assistencia && sessioActual.assistencia[m.id]);
+  } else {
+    persones = estat.membres;
+  }
+  document.getElementById('cerca-persona').style.display = 'block';
+  document.getElementById('cerca-persona').value = '';
+  document.getElementById('modal-sel-titol').textContent = 'Assignar persona';
+  renderitzaOpcionsPersones(persones);
+  obreModal('modal-seleccio-persona');
+}
+
+function renderitzaOpcionsPersones(persones) {
+  const cont = document.getElementById('llista-sel-persones');
+  if (!persones.length) {
+    cont.innerHTML = '<div class="buit"><div class="buit-ico">👥</div><div class="buit-text">No hi ha persones disponibles</div></div>';
+    return;
+  }
+  const jaAssignats = getIdsJaAssignats(posicioSeleccionada);
+  cont.innerHTML = persones.map(m => {
+    const ocupat = jaAssignats.has(m.id);
+    return `<div class="persona-opcio ${ocupat ? 'deshabilitada' : ''}" onclick="assignaPersona('${m.id}')">
+      <div class="membre-avatar ${colorAvatar(m.nom)}" style="width:32px;height:32px;font-size:11px;${m.foto ? `background-image:url('${m.foto}');background-size:cover;background-position:center;` : ''}">${m.foto ? '' : inicials(m.nom)}</div>
+      <div style="flex:1;">
+        <div class="persona-opcio-nom" style="font-size:14px;font-weight:600;">${m.nom}</div>
+        </div>
+      ${ocupat ? `<span class="tag-ocupat" style="font-size:10px;">↔ Intercanviar</span>` : ''}
+    </div>`;
+  }).join('');
+}
+
+// Normalitza un text per a cerques sense distinció d'accents ni majúscules
+function normalitza(str) {
+  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+}
+
+function filtraPersones() {
+  const cerca = normalitza(document.getElementById('cerca-persona').value);
+  let persones = (contextAssignacio && contextAssignacio.startsWith('sessio-cas-'))
+    ? estat.membres.filter(m => sessioActual.assistencia && sessioActual.assistencia[m.id])
+    : estat.membres;
+  if (cerca) persones = persones.filter(m => normalitza(m.nom).includes(cerca));
+  renderitzaOpcionsPersones(persones);
+}
+
+function filtraAssistents() {
+  const cerca = normalitza(document.getElementById('cerca-assistent').value);
+  renderitzaAssistencia(cerca);
+}
+
+function assignaPersona(membreId) {
+  const ctx = contextAssignacio;
+
+  // Funció per trobar on està assignada una persona en el context actual
+  function trobaPosicioActual(membreId) {
+    if (ctx && ctx.startsWith('sessio-cas-')) {
+      const casId = ctx.replace('sessio-cas-', '');
+      const cas = sessioActual.castells.find(c => c.id === casId);
+      if (!cas) return null;
+      const assignacions = cas.assignacions || {};
+      for (const [posId, mId] of Object.entries(assignacions)) {
+        if (mId === membreId && posId !== posicioSeleccionada) return { tipus: 'sessio-pinya', posId, cas };
+      }
+      const troncAss = cas.assignacionsTronc || {};
+      for (const [posId, mId] of Object.entries(troncAss)) {
+        if (mId === membreId && posId !== posicioSeleccionada) return { tipus: 'sessio-tronc', posId, cas };
+      }
+    } else if (ctx === 'pinya') {
+      const pos = pinyaActual.posicions.find(p => p.personaId === membreId && p.id !== posicioSeleccionada);
+      if (pos) return { tipus: 'pinya', posId: pos.id };
+      const t = (pinyaActual.tronc || []).find(t => t.personaId === membreId && t.id !== posicioSeleccionada);
+      if (t) return { tipus: 'tronc', posId: t.id };
+    } else if (ctx === 'tronc') {
+      const t = (pinyaActual.tronc || []).find(t => t.personaId === membreId && t.id !== posicioSeleccionada);
+      if (t) return { tipus: 'tronc', posId: t.id };
+      const pos = pinyaActual.posicions.find(p => p.personaId === membreId && p.id !== posicioSeleccionada);
+      if (pos) return { tipus: 'pinya', posId: pos.id };
+    }
+    return null;
+  }
+
+  // Obtenir el membre que hi ha ara a la posició destí
+  function membreActualEnPosicio() {
+    if (ctx && ctx.startsWith('sessio-cas-')) {
+      const casId = ctx.replace('sessio-cas-', '');
+      const cas = sessioActual.castells.find(c => c.id === casId);
+      return cas && cas.assignacions && cas.assignacions[posicioSeleccionada] || null;
+    } else if (ctx === 'pinya') {
+      return pinyaActual.posicions.find(p => p.id === posicioSeleccionada)?.personaId || null;
+    } else if (ctx === 'tronc') {
+      return (pinyaActual.tronc || []).find(t => t.id === posicioSeleccionada)?.personaId || null;
+    }
+    return null;
+  }
+
+  const posicioOrigen = trobaPosicioActual(membreId);
+  const membreDesplaçat = membreActualEnPosicio();
+
+  // Fer l'assignació (o intercanvi)
+  if (ctx && ctx.startsWith('sessio-cas-')) {
+    const casId = ctx.replace('sessio-cas-', '');
+    const cas = sessioActual.castells.find(c => c.id === casId);
+    if (cas) {
+      if (!cas.assignacions) cas.assignacions = {};
+      // Si intercanvi: posar el membre desplaçat a la posició origen
+      if (posicioOrigen && membreDesplaçat) {
+        if (posicioOrigen.tipus === 'sessio-pinya') posicioOrigen.cas.assignacions[posicioOrigen.posId] = membreDesplaçat;
+        else if (posicioOrigen.tipus === 'sessio-tronc') posicioOrigen.cas.assignacionsTronc[posicioOrigen.posId] = membreDesplaçat;
+      } else if (posicioOrigen) {
+        // Buidar la posició origen
+        if (posicioOrigen.tipus === 'sessio-pinya') delete posicioOrigen.cas.assignacions[posicioOrigen.posId];
+        else if (posicioOrigen.tipus === 'sessio-tronc') delete posicioOrigen.cas.assignacionsTronc[posicioOrigen.posId];
+      }
+      cas.assignacions[posicioSeleccionada] = membreId;
+    }
+    desaSessio();
+    tancaModal('modal-seleccio-persona');
+    renderitzaPinyaSessio();
+  } else if (ctx === 'sessio-tronc') {
+    const casId = window._casIdTronc;
+    const cas = sessioActual.castells.find(c => c.id === casId);
+    if (cas) {
+      if (!cas.assignacionsTronc) cas.assignacionsTronc = {};
+      if (posicioOrigen && membreDesplaçat) {
+        if (posicioOrigen.tipus === 'sessio-pinya') posicioOrigen.cas.assignacions[posicioOrigen.posId] = membreDesplaçat;
+        else if (posicioOrigen.tipus === 'sessio-tronc') posicioOrigen.cas.assignacionsTronc[posicioOrigen.posId] = membreDesplaçat;
+      } else if (posicioOrigen) {
+        if (posicioOrigen.tipus === 'sessio-pinya') delete posicioOrigen.cas.assignacions[posicioOrigen.posId];
+        else if (posicioOrigen.tipus === 'sessio-tronc') delete posicioOrigen.cas.assignacionsTronc[posicioOrigen.posId];
+      }
+      cas.assignacionsTronc[posicioSeleccionada] = membreId;
+    }
+    desaSessio();
+    tancaModal('modal-seleccio-persona');
+    renderitzaPinyaSessio();
+  } else if (ctx === 'pinya') {
+    const pos = pinyaActual.posicions.find(p => p.id === posicioSeleccionada);
+    if (pos) {
+      if (posicioOrigen && membreDesplaçat) {
+        if (posicioOrigen.tipus === 'pinya') { const o = pinyaActual.posicions.find(p => p.id === posicioOrigen.posId); if (o) o.personaId = membreDesplaçat; }
+        else if (posicioOrigen.tipus === 'tronc') { const o = (pinyaActual.tronc || []).find(t => t.id === posicioOrigen.posId); if (o) o.personaId = membreDesplaçat; }
+      } else if (posicioOrigen) {
+        if (posicioOrigen.tipus === 'pinya') { const o = pinyaActual.posicions.find(p => p.id === posicioOrigen.posId); if (o) o.personaId = null; }
+        else if (posicioOrigen.tipus === 'tronc') { const o = (pinyaActual.tronc || []).find(t => t.id === posicioOrigen.posId); if (o) o.personaId = null; }
+      }
+      pos.personaId = membreId;
+    }
+    desaPinyaActual();
+    tancaModal('modal-seleccio-persona');
+    pintaPinyaDetall();
+  } else if (ctx === 'tronc') {
+    const t = (pinyaActual.tronc || []).find(t => t.id === posicioSeleccionada);
+    if (t) {
+      if (posicioOrigen && membreDesplaçat) {
+        if (posicioOrigen.tipus === 'tronc') { const o = (pinyaActual.tronc || []).find(t => t.id === posicioOrigen.posId); if (o) o.personaId = membreDesplaçat; }
+        else if (posicioOrigen.tipus === 'pinya') { const o = pinyaActual.posicions.find(p => p.id === posicioOrigen.posId); if (o) o.personaId = membreDesplaçat; }
+      } else if (posicioOrigen) {
+        if (posicioOrigen.tipus === 'tronc') { const o = (pinyaActual.tronc || []).find(t => t.id === posicioOrigen.posId); if (o) o.personaId = null; }
+        else if (posicioOrigen.tipus === 'pinya') { const o = pinyaActual.posicions.find(p => p.id === posicioOrigen.posId); if (o) o.personaId = null; }
+      }
+      t.personaId = membreId;
+    }
+    desaPinyaActual();
+    tancaModal('modal-seleccio-persona');
+    pintaPinyaDetall();
+  }
+}
+
+function desassignaPosicio(posId, context) {
+  if (context && context.startsWith('sessio-cas-')) {
+    const casId = context.replace('sessio-cas-', '');
+    const cas = sessioActual.castells.find(c => c.id === casId);
+    if (cas && cas.assignacions) delete cas.assignacions[posId];
+    desaSessio();
+    renderitzaPinyaSessio();
+  } else if (context === 'pinya') {
+    const pos = pinyaActual.posicions.find(p => p.id === posId);
+    if (pos) pos.personaId = null;
+    desaPinyaActual();
+    pintaPinyaDetall();
+  }
+}
+
+// ===================== MODALS =====================
+function obreModal(id) {
+  document.getElementById(id).classList.add('obert');
+  document.body.style.overflow = 'hidden';
+}
+function tancaModal(id) {
+  document.getElementById(id).classList.remove('obert');
+  document.body.style.overflow = '';
+  if (id === 'modal-seleccio-persona') {
+    contextAssignacio = null;
+    document.getElementById('cerca-persona').style.display = 'block';
+  }
+}
+
+// Substitueix confirm() per un modal propi (confirm() no funciona en WebViews)
+function confirma(text, callback) {
+  document.getElementById('modal-confirm-titol').textContent = 'Confirmar';
+  document.getElementById('modal-confirm-text').textContent = text;
+  const btn = document.getElementById('modal-confirm-ok');
+  btn.onclick = () => { tancaModal('modal-confirm'); callback(); };
+  obreModal('modal-confirm');
+}
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) tancaModal(el.id); });
+});
+
+
+// ===================== RECUPERADES =====================
+
+
+function maxCastells(tipus) {
+  if (tipus === 'assaig') return 15;
+  if (tipus === 'diada') return 5;
+  return 1; // actuacio
+}
+
+function asseguraCastells() {
+  if (!sessioActual.castells) {
+    sessioActual.castells = [];
+    desaSessio();
+  }
+  sessioActual.castells.forEach(cas => {
+    if (cas.pinyaId && !cas.pinya) {
+      const p = estat.pinyes && estat.pinyes.find(p => p.id === cas.pinyaId);
+      if (p) cas.pinya = p;
+      delete cas.pinyaId;
+    }
+  });
+}
+
+function desaSessio() {
+  const i = estat.sessions.findIndex(s => s.id === sessioActual.id);
+  estat.sessions[i] = sessioActual;
+  desa();
+  desaSessioSupa(sessioActual);
+}
+
+function toggleAssistCard() {
+  assistCardObert = !assistCardObert;
+  document.getElementById('assist-cos').style.display = assistCardObert ? '' : 'none';
+  document.getElementById('assist-chevron').style.transform = assistCardObert ? '' : 'rotate(-90deg)';
+}
+
+function toggleCastell(casId) {
+  castellPlegat[casId] = !castellPlegat[casId];
+  renderitzaPinyaSessio();
+}
+
+function togglePinya(casId) {
+  pinyaOculta[casId] = !pinyaOculta[casId];
+  renderitzaPinyaSessio();
+}
+
+// ===================== SUPABASE =====================
+const SUPABASE_URL = 'https://djxugrnyvbmziwttaszo.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqeHVncm55dmJteml3dHRhc3pvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkzNzgzNDEsImV4cCI6MjEwNDk1NDM0MX0.d33KiYWYbsmLKmTkik8W2gmeRNL5dnFPDxCfjzjoPHE';
+const SUPABASE_EMAIL = 'validacio-tecnica@brivalls.cat';
+let supabaseToken = null;
+
+async function sbFetch(path, opts = {}) {
+  const defaultPrefer = 'return=representation';
+  const extraPrefer = opts.headers && opts.headers['Prefer'] ? opts.headers['Prefer'] : null;
+  const prefer = extraPrefer ? `${defaultPrefer},${extraPrefer}` : defaultPrefer;
+  const authToken = supabaseToken || SUPABASE_KEY;
+  const headers = {
+    'apikey': SUPABASE_KEY,
+    'Authorization': 'Bearer ' + authToken,
+    'Content-Type': 'application/json',
+    'Prefer': prefer,
+    ...opts.headers
+  };
+  const res = await fetch(SUPABASE_URL + '/rest/v1/' + path, { ...opts, headers });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(err);
+  }
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
+}
+
+// Estat de l'app
+let estat = { membres: [], sessions: [], pinyes: [] };
+let pinAutenticat = false;
+
+function estaAutenticat() { return pinAutenticat; }
+
+async function carregaDades() {
+  mostrarCarregant(true);
+  try {
+    const [sessions, membres] = await Promise.all([
+      sbFetch('sessions?select=*&order=data.desc'),
+      sbFetch('membres?select=*&order=nom.asc')
+    ]);
+    estat.sessions = sessions || [];
+    estat.membres = pinAutenticat ? (membres || []) : [];
+    console.log('Dades carregades:', estat.sessions.length, 'sessions,', estat.membres.length, 'membres');
+  } catch(e) {
+    console.error('Error carregant de Supabase:', e.message);
+    alert('Error connectant amb Supabase: ' + e.message);
+    const local = JSON.parse(localStorage.getItem('pinya-castellers') || '{}');
+    if (local.membres) estat.membres = local.membres;
+    if (local.sessions) estat.sessions = local.sessions;
+  }
+  mostrarCarregant(false);
+}
+
+function mostrarCarregant(show) {
+  let el = document.getElementById('loading-overlay');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'loading-overlay';
+    el.style.cssText = 'position:fixed;inset:0;background:rgba(255,255,255,0.85);display:flex;align-items:center;justify-content:center;z-index:9999;font-size:18px;';
+    el.innerHTML = '⏳ Carregant...';
+    document.body.appendChild(el);
+  }
+  el.style.display = show ? 'flex' : 'none';
+}
+if (!estat.membres) estat.membres = [];
+if (!estat.sessions) estat.sessions = [];
+if (!estat.pinyes) estat.pinyes = [];
+let sessioActual = null;
+let pinyaActual = null;
+let posicioSeleccionada = null;
+let contextAssignacio = null;
+
+function canviaPanell(id) {
+  document.querySelectorAll('.panell').forEach(p => p.classList.remove('actiu'));
+  document.getElementById('panell-' + id).classList.add('actiu');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('actiu'));
+  const nb = document.getElementById('nav-' + id);
+  if (nb) nb.classList.add('actiu');
+  document.getElementById('cap-back').classList.remove('visible');
+  document.getElementById('nav-principal').style.display = 'flex';
+  document.getElementById('cap-title').textContent = 'Brivalls de Cornudella';
+  document.getElementById('cap-subtitle').textContent = '';
+  historial = [id];
+}
+
+function obreSessioDetall(id) {
+  sessioActual = estat.sessions.find(s => s.id === id);
+  if (!sessioActual) return;
+  renderitzaAssistencia();
+  renderitzaPinyaSessio();
+  document.querySelectorAll('.panell').forEach(p => p.classList.remove('actiu'));
+  document.getElementById('panell-sessio-detall').classList.add('actiu');
+  document.getElementById('nav-principal').style.display = 'flex';
+  document.getElementById('cap-back').classList.add('visible');
+  document.getElementById('cap-title').textContent = formatData(sessioActual.data);
+  document.getElementById('cap-subtitle').textContent = (sessioActual.lloc || '') + ' \u00b7 ' + tipusSessio(sessioActual.tipus);
+}
+
+function tornarEnrere() {
+  canviaPanell('sessions');
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('actiu'));
+  document.getElementById('nav-sessions').classList.add('actiu');
+}
+
+function desa() {
+  // Desa còpia local com a backup
+  localStorage.setItem('pinya-castellers', JSON.stringify(estat));
+}
+
+async function desaMembresSupa(m) {
+  if (!estaAutenticat()) { console.log('desaMembresSupa: no autenticat'); return; }
+  try {
+    const r = await sbFetch('membres?id=eq.' + m.id, { method: 'PATCH', body: JSON.stringify(m) });
+    if (!r || r.length === 0) {
+      // No existia, inserir
+      await sbFetch('membres', { method: 'POST', body: JSON.stringify(m) });
+    }
+    console.log('Membre desat OK:', m.nom);
+  } catch(e) {
+    console.error('Error desant membre a Supabase:', e.message);
+    alert('Error desant membre: ' + e.message);
+  }
+}
+
+async function desaSessioSupa(s) {
+  try {
+    const r = await sbFetch('sessions?id=eq.' + s.id, { method: 'PATCH', body: JSON.stringify(s) });
+    if (!r || r.length === 0) {
+      await sbFetch('sessions', { method: 'POST', body: JSON.stringify(s) });
+    }
+    console.log('Sessió desada OK:', s.data);
+  } catch(e) {
+    console.error('Error desant sessió a Supabase:', e.message);
+    alert('Error desant sessió: ' + e.message);
+  }
+}
+
+function id() { return Date.now().toString(36) + Math.random().toString(36).slice(2,5); }
+
+function formatData(str) {
+  if (!str) return '';
+  const d = new Date(str + 'T00:00:00');
+  return d.toLocaleDateString('ca-ES', { weekday:'short', day:'numeric', month:'long' });
+}
+
+function tipusSessio(t) {
+  return { assaig:'Assaig', actuacio:'Actuaci\u00f3', diada:'Diada' }[t] || t;
+}
+
+function inicials(nom) {
+  return nom.split(' ').slice(0,2).map(n=>n[0]).join('').toUpperCase();
+}
+
+function colorAvatar(nom) {
+  const colors = ['av0','av1','av2','av3','av4','av5'];
+  let h = 0;
+  for (let c of nom) h = (h*31 + c.charCodeAt(0)) % colors.length;
+  return colors[h];
+}
+
+function rolTag(pos) {
+  const baixos = ['baixos','segons'];
+  const mig = ['ter\u00e7os','quarts'];
+  const dalt = ['cinquens','agulla'];
+  const esp = ['enxaneta','cap-de-colla'];
+  if (baixos.includes(pos)) return 'rol-baix';
+  if (mig.includes(pos)) return 'rol-mig';
+  if (dalt.includes(pos)) return 'rol-dalt';
+  return 'rol-especial';
+}
+
+function processaFotoMembre(input) {
+  if (!input.files || !input.files[0]) return;
+  const file = input.files[0];
+  const reader = new FileReader();
+  reader.onload = e => {
+    const img = new Image();
+    img.onload = () => {
+      // Comprimir a màx 200x200px, qualitat 0.6
+      const canvas = document.createElement('canvas');
+      const maxSize = 200;
+      let w = img.width, h = img.height;
+      if (w > h) { if (w > maxSize) { h = h * maxSize / w; w = maxSize; } }
+      else { if (h > maxSize) { w = w * maxSize / h; h = maxSize; } }
+      canvas.width = w; canvas.height = h;
+      const ctx = canvas.getContext('2d');
+      ctx.drawImage(img, 0, 0, w, h);
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.6);
+      // Previsualitzar
+      const prev = document.getElementById('membre-foto-preview');
+      prev.innerHTML = `<img src="${dataUrl}" style="width:100%;height:100%;object-fit:cover;">`;
+      prev.dataset.foto = dataUrl;
+      document.getElementById('membre-foto-esborrar').style.display = '';
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function esborraFotoMembre() {
+  const prev = document.getElementById('membre-foto-preview');
+  prev.innerHTML = '👤';
+  prev.dataset.foto = '';
+  document.getElementById('membre-foto-input').value = '';
+  document.getElementById('membre-foto-esborrar').style.display = 'none';
+}
+
+function obreModalMembre(membreId) {
+  if (!estaAutenticat()) { requereixPin(() => obreModalMembre(membreId)); return; }
+  const prev = document.getElementById('membre-foto-preview');
+  document.getElementById('membre-foto-input').value = '';
+  document.getElementById('membre-id-edit').value = membreId || '';
+  if (membreId) {
+    const m = estat.membres.find(x => x.id === membreId);
+    document.getElementById('modal-membre-titol').textContent = 'Editar membre';
+    document.getElementById('membre-nom').value = m.nom;
+    document.getElementById('membre-tel').value = m.tel || '';
+    document.getElementById('membre-mida').value = m.mida || '';
+    document.getElementById('membre-naixement').value = m.naixement || '';
+    document.getElementById('membre-notes').value = m.notes || '';
+    if (m.foto) {
+      prev.innerHTML = `<img src="${m.foto}" style="width:100%;height:100%;object-fit:cover;">`;
+      prev.dataset.foto = m.foto;
+      document.getElementById('membre-foto-esborrar').style.display = '';
+    } else {
+      prev.innerHTML = '👤'; prev.dataset.foto = '';
+      document.getElementById('membre-foto-esborrar').style.display = 'none';
+    }
+  } else {
+    document.getElementById('modal-membre-titol').textContent = 'Nou membre';
+    document.getElementById('membre-nom').value = '';
+    document.getElementById('membre-tel').value = '';
+    document.getElementById('membre-mida').value = '';
+    document.getElementById('membre-naixement').value = '';
+    document.getElementById('membre-notes').value = '';
+    prev.innerHTML = '👤'; prev.dataset.foto = '';
+    document.getElementById('membre-foto-esborrar').style.display = 'none';
+  }
+  obreModal('modal-membre');
+}
+
+function guardarMembre() {
+  if (!estaAutenticat()) { obreModalPin(); return; }
+  const nom = document.getElementById('membre-nom').value.trim();
+  if (!nom) { alert('Cal posar el nom'); return; }
+  const editId = document.getElementById('membre-id-edit').value;
+  const foto = document.getElementById('membre-foto-preview').dataset.foto || '';
+  const data = {
+    nom,
+    tel: document.getElementById('membre-tel').value.trim(),
+    mida: parseInt(document.getElementById('membre-mida').value) || null,
+    naixement: document.getElementById('membre-naixement').value || null,
+    notes: document.getElementById('membre-notes').value.trim(),
+    foto
+  };
+  if (editId) {
+    const i = estat.membres.findIndex(m => m.id === editId);
+    estat.membres[i] = { ...estat.membres[i], ...data };
+    desaMembresSupa(estat.membres[i]);
+  } else {
+    const nou = { id: id(), ...data };
+    estat.membres.push(nou);
+    desaMembresSupa(nou);
+  }
+  desa();
+  tancaModal('modal-membre');
+  renderitzaMembres();
+}
+
+function eliminarMembre(membreId) {
+  if (!estaAutenticat()) { requereixPin(() => eliminarMembre(membreId)); return; }
+  confirma('Eliminar aquest membre?', async () => {
+    estat.membres = estat.membres.filter(m => m.id !== membreId);
+    desa();
+    try { await sbFetch('membres?id=eq.' + membreId, { method: 'DELETE' }); } catch(e) {}
+    renderitzaMembres();
+  });
+}
+
+function renderitzaMembres() {
+  const cont = document.getElementById('llista-membres');
+  if (!estaAutenticat()) {
+    document.getElementById('comptador-membres').textContent = '';
+    cont.innerHTML = `<div class="buit" style="padding:32px 16px;">
+      <div class="buit-ico">🔐</div>
+      <div class="buit-text" style="margin-bottom:16px;">Cal el PIN per veure els membres</div>
+      <button class="btn btn-primari" style="width:auto;padding:10px 24px;" onclick="requereixPin(()=>canviaPanell('membres'))">Introduir PIN</button>
+    </div>`;
+    return;
+  }
+  document.getElementById('comptador-membres').textContent = estat.membres.length + ' membres';
+  if (!estat.membres.length) {
+    cont.innerHTML = '<div class="buit"><div class="buit-ico">👥</div><div class="buit-text">Afegeix el primer membre!</div></div>';
+    return;
+  }
+  cont.innerHTML = estat.membres.map(m => `
+    <div class=\"membre-item\">
+      <div class=\"membre-avatar ${colorAvatar(m.nom)}\" style=\"${m.foto ? `background-image:url('${m.foto}');background-size:cover;background-position:center;` : ''}\">${m.foto ? '' : inicials(m.nom)}</div>
+      <div class=\"membre-info\">
+        <div class=\"membre-nom\">${m.nom}</div>
+        <div class=\"membre-detall\">
+          
+          ${m.tel ? ' \u00b7 \ud83d\udcde ' + m.tel : ''}
+        </div>
+      </div>
+      <div class=\"membre-accions\">
+        <button class=\"btn btn-petit btn-groc\" onclick=\"obreModalMembre('${m.id}')\">\u270f\ufe0f</button>
+        <button class=\"btn btn-petit btn-perill\" onclick=\"eliminarMembre('${m.id}')\">\ud83d\uddd1\ufe0f</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function obreModalSessio() {
+  document.getElementById('sessio-data').value = new Date().toISOString().slice(0,10);
+  obreModal('modal-sessio');
+}
+
+function guardarSessio() {
+  if (!estaAutenticat()) { obreModalPin(); return; }
+  const data = document.getElementById('sessio-data').value;
+  if (!data) { alert('Cal posar la data'); return; }
+  const s = { id: id(), data,
+    hora: document.getElementById('sessio-hora').value,
+    lloc: document.getElementById('sessio-lloc').value.trim(),
+    tipus: document.getElementById('sessio-tipus').value,
+    assistencia: {}, castells: []
+  };
+  estat.sessions.push(s);
+  estat.sessions.sort((a,b) => b.data.localeCompare(a.data));
+  desa();
+  tancaModal('modal-sessio');
+  renderitzaSessions();
+  desaSessioSupa(s);
+}
+
+function eliminarSessio(sid) {
+  if (!estaAutenticat()) { requereixPin(() => eliminarSessio(sid)); return; }
+  confirma('Eliminar aquesta sessió?', async () => {
+    estat.sessions = estat.sessions.filter(s => s.id !== sid);
+    desa();
+    try { await sbFetch('sessions?id=eq.' + sid, { method: 'DELETE' }); } catch(e) {}
+    renderitzaSessions();
+  });
+}
+
+function renderitzaSessions() {
+  const cont = document.getElementById('llista-sessions');
+  if (!estat.sessions.length) {
+    cont.innerHTML = '<div class=\"buit\"><div class=\"buit-ico\">\ud83d\udcc5</div><div class=\"buit-text\">Crea la primera sessi\u00f3!</div></div>';
+    return;
+  }
+  cont.innerHTML = estat.sessions.map(s => {
+    const nAssist = estat.membres.filter(m => s.assistencia && s.assistencia[m.id]).length;
+    const icona = { assaig:'\ud83c\udfcb\ufe0f', actuacio:'\ud83c\udff0', diada:'\ud83c\udf89' }[s.tipus] || '\ud83d\udcc5';
+    return `<div class=\"sessio-item\" onclick=\"obreSessioDetall('${s.id}')\">
+      <span style=\"font-size:24px;\">${icona}</span>
+      <div class=\"sessio-info\">
+        <div class=\"sessio-data\">${formatData(s.data)} ${s.hora ? '\u00b7 ' + s.hora : ''}</div>
+        <div class=\"sessio-assistents\">${s.lloc || 'Sense lloc'} \u00b7 ${tipusSessio(s.tipus)} \u00b7 ${nAssist} assistents</div>
+      </div>
+      <button class=\"btn btn-petit btn-perill\" onclick=\"event.stopPropagation();eliminarSessio('${s.id}')\">\ud83d\uddd1\ufe0f</button>
+    </div>`;
+  }).join('');
+}
+
+function renderitzaPinyaSessio() {
+  if (!sessioActual) return;
+  asseguraCastells();
+  const cont = document.getElementById('pinya-sessio-area');
+  if (!cont) return;
+  const castells = sessioActual.castells || [];
+  const max = maxCastells(sessioActual.tipus);
+  let html = '';
+
+  castells.forEach((cas, idx) => {
+    const pinya = cas.pinya || null;
+    const info = pinya ? (NOMS_TIPUS[pinya.tipus] || { nom: pinya.tipus, ico: '🏛️' }) : null;
+    const num = castells.length > 1 ? ` ${idx+1}` : '';
+
+    if (!pinya) {
+      html += `<div class="card" style="margin-bottom:14px;">
+        <div class="card-cap">
+          <span class="card-titol">Castell${num}</span>
+          <button class="btn btn-petit btn-perill" onclick="eliminarCastellSessio('${cas.id}')">🗑️</button>
+        </div>
+        <div class="buit" style="padding:20px;">
+          <div class="buit-ico">🏛️</div>
+          <div class="buit-text">Selecciona el tipus de castell per a configurar la pinya</div>
+        </div>
+      </div>`;
+      return;
+    }
+
+    html += `<div class="card" style="margin-bottom:14px;">
+      <div class="card-cap">
+        <span class="card-titol">${info.ico} ${pinya.nom}${num}</span>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-petit" style="background:none;border:none;font-size:15px;cursor:pointer;color:${pinyaOculta[cas.id]?'var(--text-suau)':'var(--blau)'};" onclick="togglePinya('${cas.id}')" title="${pinyaOculta[cas.id]?'Mostrar pinya':'Amagar pinya'}">${pinyaOculta[cas.id]?'🫣':'👁️'}</button>
+          <button class="btn btn-petit" style="background:none;border:none;font-size:16px;cursor:pointer;color:var(--text-suau);transition:transform 0.2s;transform:${castellPlegat[cas.id]?'rotate(-90deg)':''}" onclick="toggleCastell('${cas.id}')">▼</button>
+          <button class="btn btn-petit btn-perill" onclick="eliminarCastellSessio('${cas.id}')">🗑️</button>
+        </div>
+      </div>
+      <div id="vista-cas-${cas.id}" ${castellPlegat[cas.id] ? 'style="display:none"' : ''}></div>
+    </div>`;
+  });
+
+  if (castells.length < max) {
+    const label = sessioActual.tipus === 'assaig'
+      ? `➕ Afegir prova`
+      : `➕ Afegir castell (${castells.length}/${max})`;
+    html += `<button class="btn btn-secundari" style="width:100%;margin-bottom:14px;" onclick="afegirCastellSessio()">
+      ${label}
+    </button>`;
+  }
+
+  cont.innerHTML = html;
+
+  castells.forEach(cas => {
+    const pinya = cas.pinya || null;
+    if (!pinya || castellPlegat[cas.id]) return;
+    if (!pinyaOculta[cas.id]) {
+      renderitzaVistaPinya(pinya, cas.assignacions || {}, 'sessio-cas-' + cas.id, 'vista-cas-' + cas.id);
+    }
+    const tObert = troncSessioObert[cas.id] !== false;
+    const tHTML = renderitzaTroncSessio(cas, pinya, tObert);
+    if (tHTML) {
+      const el = document.getElementById('vista-cas-' + cas.id);
+      if (el) el.insertAdjacentHTML('afterend', tHTML);
+    }
+  });
+}
+
+function renderitzaAssistencia() {
+  if (!sessioActual) return;
+  if (!sessioActual.assistencia) sessioActual.assistencia = {};
+  const nAssist = estat.membres.filter(m => sessioActual.assistencia[m.id]).length;
+  document.getElementById('resum-assist').textContent = nAssist + ' / ' + estat.membres.length;
+  const cont = document.getElementById('llista-assistencia');
+  if (!estat.membres.length) {
+    cont.innerHTML = '<div class=\"buit\"><div class=\"buit-ico\">\ud83d\udc65</div><div class=\"buit-text\">Primer afegeix membres</div></div>';
+    return;
+  }
+  cont.innerHTML = estat.membres.map(m => `
+    <div class=\"assist-item\">
+      <div class=\"membre-avatar ${colorAvatar(m.nom)}\" style=\"${m.foto ? `background-image:url('${m.foto}');background-size:cover;background-position:center;` : ''}\">${m.foto ? '' : inicials(m.nom)}</div>
+      <div class=\"membre-info\">
+        <div class=\"membre-nom\">${m.nom}</div>
+        <div class=\"membre-detall\"></div>
+      </div>
+      <label class=\"toggle\">
+        <input type=\"checkbox\" ${sessioActual.assistencia[m.id] ? 'checked' : ''} onchange=\"toggleAssistencia('${m.id}', this.checked)\">
+        <span class=\"toggle-slider\"></span>
+      </label>
+    </div>
+  `).join('');
+}
+
+function toggleAssistencia(membreId, val) {
+  if (!estaAutenticat()) { requereixPin(() => {}); return; }
+  if (!sessioActual.assistencia) sessioActual.assistencia = {};
+  sessioActual.assistencia[membreId] = val;
+  const i = estat.sessions.findIndex(s => s.id === sessioActual.id);
+  estat.sessions[i] = sessioActual;
+  desa();
+  const nAssist = estat.membres.filter(m => sessioActual.assistencia[m.id]).length;
+  document.getElementById('resum-assist').textContent = nAssist + ' / ' + estat.membres.length;
+  // Update pinya sessio area persones disponibles
+  renderitzaPinyaSessio();
+}
+
+// ===================== PIN I AUTENTICACIÓ =====================
+function obreModalPin() {
+  document.getElementById('pin-input').value = '';
+  document.getElementById('pin-error').style.display = 'none';
+  obreModal('modal-pin');
+  setTimeout(() => document.getElementById('pin-input').focus(), 100);
+}
+
+function requereixPin(callback) {
+  if (estaAutenticat()) {
+    callback();
+  } else {
+    window._pinCallback = callback;
+    obreModalPin();
+  }
+}
+
+async function verificaPin() {
+  const pin = document.getElementById('pin-input').value;
+  document.getElementById('pin-error').style.display = 'none';
+  const btnAccedir = document.querySelector('#modal-pin .btn-primari');
+  if (btnAccedir) { btnAccedir.textContent = '⏳ Verificant...'; btnAccedir.disabled = true; }
+  try {
+    const res = await fetch(SUPABASE_URL + '/auth/v1/token?grant_type=password', {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: SUPABASE_EMAIL, password: pin })
+    });
+    if (btnAccedir) { btnAccedir.textContent = 'Accedir'; btnAccedir.disabled = false; }
+    if (!res.ok) throw new Error('PIN incorrecte');
+    const data = await res.json();
+    supabaseToken = data.access_token;
+    pinAutenticat = true;
+    tancaModal('modal-pin');
+    actualitzaBotoPin();
+    carregaDades().then(() => { renderitzaMembres(); renderitzaSessions(); });
+    if (window._pinCallback) {
+      const cb = window._pinCallback;
+      window._pinCallback = null;
+      cb();
+    }
+  } catch(e) {
+    if (btnAccedir) { btnAccedir.textContent = 'Accedir'; btnAccedir.disabled = false; }
+    document.getElementById('pin-error').style.display = 'block';
+    document.getElementById('pin-input').value = '';
+  }
+}
+
+function tancarSessioPin() {
+  // Logout de Supabase
+  if (supabaseToken) {
+    fetch(SUPABASE_URL + '/auth/v1/logout', {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + supabaseToken }
+    }).catch(() => {});
+  }
+  supabaseToken = null;
+  pinAutenticat = false;
+  actualitzaBotoPin();
+  carregaDades().then(() => { renderitzaMembres(); renderitzaSessions(); });
+}
+
+function actualitzaBotoPin() {
+  const btn = document.getElementById('btn-pin');
+  if (!btn) return;
+  if (pinAutenticat) {
+    btn.textContent = '🔓';
+    btn.title = 'Tancar sessió';
+    btn.onclick = tancarSessioPin;
+  } else {
+    btn.textContent = '🔐';
+    btn.title = 'Accedir amb PIN';
+    btn.onclick = obreModalPin;
+  }
+}
+
+// ===================== INIT =====================
+(async () => {
+  await carregaDades();
+  renderitzaMembres();
+  renderitzaSessions();
+  canviaPanell('sessions');
+  actualitzaBotoPin();
+})();
+</script>
+</body>
+</html>
