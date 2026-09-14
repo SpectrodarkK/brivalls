@@ -43,11 +43,11 @@
   .tag { display: inline-block; padding: 2px 8px; border-radius: 20px; font-size: 11px; font-weight: 600; background: var(--blau-clar); color: var(--blau); }
   .buit { padding: 40px 20px; text-align: center; color: var(--text-suau); }
   .buit-ico { font-size: 40px; margin-bottom: 8px; }
-  .detall-back { display: flex; align-items: center; gap: 8px; padding: 12px 16px; cursor: pointer; color: var(--blau); font-weight: 600; border-bottom: 1px solid var(--vora); }
-  .castell-card { background: #fff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); margin-bottom: 12px; overflow: hidden; }
+  
+  
   .castell-nom { padding: 12px 16px; font-size: 15px; font-weight: 600; border-bottom: 1px solid var(--vora); }
-  svg { width: 100%; height: auto; display: block; cursor: default; }
-  .loading { padding: 40px; text-align: center; color: var(--text-suau); font-size: 16px; }
+  
+  
 </style>
 </head>
 <body>
@@ -69,35 +69,19 @@
 const SUPABASE_URL = 'https://djxugrnyvbmziwttaszo.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqeHVncm55dmJteml3dHRhc3pvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkzNzgzNDEsImV4cCI6MjEwNDk1NDM0MX0.d33KiYWYbsmLKmTkik8W2gmeRNL5dnFPDxCfjzjoPHE';
 
-const NOMS_TIPUS = {
-  'pilar': {nom:'Pilar', ico:'🏛️'},
-  '2':     {nom:'Castell de 2', ico:'🏛️'},
-  '3':     {nom:'Castell de 3', ico:'🏛️'},
-  '3ag':   {nom:'3 amb agulla', ico:'🏰'},
-  '4':     {nom:'Castell de 4', ico:'🏛️'},
-  '5':     {nom:'Castell de 5', ico:'🏆'},
-};
-
 function tipusSessio(t) {
   return {assaig:'Assaig', actuacio:'Actuació', diada:'Diada'}[t] || t;
 }
-
 function formatData(str) {
   if (!str) return '';
-  const d = new Date(str + 'T00:00:00');
-  return d.toLocaleDateString('ca-ES', {day:'2-digit', month:'long', year:'numeric'});
+  return new Date(str + 'T00:00:00').toLocaleDateString('ca-ES', {weekday:'long', day:'numeric', month:'long', year:'numeric'});
 }
-
 function diaNum(str) {
-  if (!str) return '';
-  return new Date(str + 'T00:00:00').getDate();
+  return str ? new Date(str + 'T00:00:00').getDate() : '';
 }
-
 function mesAbreujat(str) {
-  if (!str) return '';
-  return new Date(str + 'T00:00:00').toLocaleDateString('ca-ES', {month:'short'});
+  return str ? new Date(str + 'T00:00:00').toLocaleDateString('ca-ES', {month:'short'}) : '';
 }
-
 function anaTecnica() {
   document.getElementById('pin-input').value = '';
   document.getElementById('pin-error').style.display = 'none';
@@ -105,11 +89,9 @@ function anaTecnica() {
   document.getElementById('modal-pin').style.display = 'flex';
   setTimeout(() => document.getElementById('pin-input').focus(), 100);
 }
-
 function tancaModal() {
   document.getElementById('modal-pin').style.display = 'none';
 }
-
 async function verificaPin() {
   const pin = document.getElementById('pin-input').value;
   const btn = document.getElementById('btn-accedir');
@@ -124,7 +106,6 @@ async function verificaPin() {
     });
     if (!res.ok) throw new Error();
     const data = await res.json();
-    // Guardar token per a tecnica.html
     sessionStorage.setItem('sb-token', data.access_token);
     window.location.href = 'tecnica.html';
   } catch(e) {
@@ -137,11 +118,14 @@ async function verificaPin() {
 
 async function carregaSessions() {
   try {
-    const res = await fetch(SUPABASE_URL + '/rest/v1/sessions?select=*&order=data.desc', {
+    const res = await fetch(SUPABASE_URL + '/rest/v1/sessions?select=*&order=data.asc', {
       headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + SUPABASE_KEY }
     });
     const sessions = await res.json();
-    renderitzaSessions(sessions || []);
+    const avui = new Date(); avui.setHours(0,0,0,0);
+    const limite = new Date(avui); limite.setDate(limite.getDate() - 7);
+    const properes = (sessions || []).filter(s => new Date(s.data + 'T00:00:00') >= limite);
+    renderitzaSessions(properes);
   } catch(e) {
     document.getElementById('contingut').innerHTML = '<div class="buit"><div class="buit-ico">⚠️</div><div>Error carregant les sessions</div></div>';
   }
@@ -149,43 +133,53 @@ async function carregaSessions() {
 
 function renderitzaSessions(sessions) {
   const cont = document.getElementById('contingut');
-  document.getElementById('cap-sub').textContent = sessions.length + ' sessions';
+  const avui = new Date(); avui.setHours(0,0,0,0);
+  document.getElementById('cap-sub').textContent = sessions.length + ' properes sessions';
   if (!sessions.length) {
-    cont.innerHTML = '<div class="buit"><div class="buit-ico">📅</div><div>Encara no hi ha sessions</div></div>';
+    cont.innerHTML = '<div class="buit"><div class="buit-ico">📅</div><div>No hi ha sessions properes</div></div>';
     return;
   }
-  cont.innerHTML = '<div class="card">' + sessions.map(s => `
-    <div class="sessio-item" onclick="obreDetall(${JSON.stringify(s).replace(/"/g,'&quot;')})">
-      <div style="text-align:center;min-width:40px;">
-        <div class="sessio-data">${diaNum(s.data)}</div>
+  cont.innerHTML = '<div class="card">' + sessions.map(s => {
+    const data = new Date(s.data + 'T00:00:00');
+    const esAvui = data.getTime() === avui.getTime();
+    const esPast = data < avui;
+    const esDiada = s.tipus === 'diada';
+    return `<div class="sessio-item" style="${esPast?'opacity:0.5':''}" ${esDiada?`onclick="obreDetallDiada(${JSON.stringify(JSON.stringify(s)).slice(1,-1).replace(/&/g,'&amp;').replace(/"/g,'&quot;')})"`:''}>
+      <div style="text-align:center;min-width:44px;">
+        <div class="sessio-data" style="${esAvui?'color:#e74c3c;':''}">${diaNum(s.data)}</div>
         <div class="sessio-mes">${mesAbreujat(s.data)}</div>
       </div>
       <div class="sessio-info">
-        <div class="sessio-titol">${tipusSessio(s.tipus)}${s.lloc ? ' · ' + s.lloc : ''}</div>
-        <div class="sessio-subtitol">${formatData(s.data)}${s.hora ? ' · ' + s.hora : ''}</div>
+        <div class="sessio-titol">${esAvui?'<strong>Avui · </strong>':''}${tipusSessio(s.tipus)}${s.lloc?' · '+s.lloc:''}</div>
+        <div class="sessio-subtitol">${formatData(s.data)}${s.hora?' · '+s.hora:''}</div>
       </div>
-      <span class="tag">${(s.castells||[]).length || 0} ${(s.castells||[]).length===1?'castell':'castells'}</span>
-    </div>
-  `).join('') + '</div>';
+      ${esDiada?'<span style="font-size:18px;color:#29327a;">›</span>':''}
+    </div>`;
+  }).join('') + '</div>';
 }
 
-function obreDetall(s) {
+function obreDetallDiada(sJson) {
+  const s = JSON.parse(sJson);
   const castells = (s.castells || []).filter(c => c.pinya);
   const cont = document.getElementById('contingut');
-  document.getElementById('cap-sub').textContent = tipusSessio(s.tipus);
+  document.getElementById('cap-sub').textContent = 'Diada · ' + (s.lloc || '');
 
-  let html = `<div class="detall-back" onclick="carregaSessions()">← Sessions</div>`;
-  html += `<div style="padding:12px 0 4px;font-size:13px;color:var(--text-suau);">${formatData(s.data)}${s.lloc?' · '+s.lloc:''}</div>`;
+  let html = `<div class="sessio-item" style="cursor:pointer;background:#f8f8f8;" onclick="carregaSessions()">
+    <span style="color:#29327a;font-size:18px;">‹</span>
+    <span style="font-size:14px;font-weight:600;color:#29327a;">Tornar</span>
+  </div>`;
+  html += `<div style="padding:12px 16px 4px;font-size:13px;color:#888;">${formatData(s.data)}${s.lloc?' · '+s.lloc:''}</div>`;
 
   if (!castells.length) {
     html += '<div class="buit"><div class="buit-ico">🏛️</div><div>Sense castells assignats</div></div>';
   } else {
     castells.forEach((cas, idx) => {
       const p = cas.pinya;
-      const info = NOMS_TIPUS[p.tipus] || {ico:'🏛️', nom:p.tipus};
+      const NOMS_TIPUS = {pilar:{nom:'Pilar',ico:'🏛️'},'2':{nom:'Castell de 2',ico:'🏛️'},'3':{nom:'Castell de 3',ico:'🏛️'},'3ag':{nom:'3 amb agulla',ico:'🏰'},'4':{nom:'Castell de 4',ico:'🏛️'},'5':{nom:'Castell de 5',ico:'🏆'}};
+      const info = NOMS_TIPUS[p.tipus] || {ico:'🏛️'};
       const num = castells.length > 1 ? ` ${idx+1}` : '';
-      html += `<div class="castell-card">
-        <div class="castell-nom">${info.ico} ${p.nom}${num}</div>
+      html += `<div class="card" style="margin-bottom:12px;">
+        <div style="padding:12px 16px;font-size:15px;font-weight:600;border-bottom:1px solid #eee;">${info.ico} ${p.nom}${num}</div>
         <div id="svg-cas-${idx}" style="padding:8px;"></div>
         <div id="tronc-cas-${idx}"></div>
       </div>`;
@@ -194,16 +188,16 @@ function obreDetall(s) {
 
   cont.innerHTML = html;
 
-  // Renderitzar SVGs i troncs
   castells.forEach((cas, idx) => {
     const p = cas.pinya;
     const elSvg = document.getElementById('svg-cas-' + idx);
     const elTronc = document.getElementById('tronc-cas-' + idx);
-    if (!elSvg) return;
-    if (cas.pinyaOculta) {
-      elSvg.innerHTML = '<div style="padding:12px 16px;font-size:13px;color:#999;font-style:italic;">Pinya oculta per a aquesta prova</div>';
-    } else if (p && p.posicions) {
-      elSvg.innerHTML = generaSVG(p);
+    if (elSvg) {
+      if (cas.pinyaOculta) {
+        elSvg.innerHTML = '<div style="padding:12px 16px;font-size:13px;color:#999;font-style:italic;">Pinya oculta per a aquest castell</div>';
+      } else if (p && p.posicions) {
+        elSvg.innerHTML = generaSVG(p);
+      }
     }
     if (elTronc && p && p.tronc && p.tronc.length) {
       elTronc.innerHTML = generaTroncHTML(cas, p);
@@ -211,120 +205,41 @@ function obreDetall(s) {
   });
 }
 
-function generaTroncHTML(cas, pinya) {
-  const NOMS_PILARS = {
-    '2':   ['Carregada','Descarregada'],
-    '3':   ['Rengla','Plena','Buida'],
-    '3ag': ['Rengla','Plena','Buida','Agulla'],
-    '4':   ['Esquerre','Rengla','Dreta','Contra'],
-    '5':   ['Rengla','Plena','Buida','Carregada','Descarregada'],
-  };
-  const INDEX_BAIX = {
-    '2':[1,0],'3':[0,2,1],'3ag':[0,2,1,-1],'4':[3,2,1,0],'5':[0,1,2,3,4]
-  };
-  const tronc = pinya.tronc || [];
-  const assignTronc = cas.assignacionsTronc || {};
-  const assignPinya = cas.assignacions || {};
-
-  // Comptar pilars
-  const nPilars = {pilar:1,'2':2,'3':3,'3ag':4,'4':4,'5':5}[pinya.tipus];
-  if (!nPilars) return '';
-
-  const noms = NOMS_PILARS[pinya.tipus] || [];
-  const mapa = INDEX_BAIX[pinya.tipus] || [];
-  const baixos = pinya.posicions ? pinya.posicions.filter(p=>p.rol==='baix') : [];
-  const baixPilar = pinya.posicions ? pinya.posicions.find(p=>p.rol==='baix_pilar') : null;
-
-  function nomPersona(membreId) {
-    return membreId ? '✓' : '–';
-  }
-
-  const pisos = ['quartes','terços','segons'];
-  const cols = `repeat(${nPilars},1fr)`;
-
-  let html = '<div style="padding:12px 16px;border-top:1px solid #eee;">';
-  html += '<div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">🏗️ Tronc</div>';
-
-  // Pom (enxaneta, acotxador, dos)
-  const enx = tronc.find(t=>t.pis==='enxaneta');
-  const acot = tronc.filter(t=>t.pis==='acotxador');
-  const dos = tronc.filter(t=>t.pis==='dos');
-
-  function cellaSimple(t) {
-    const mId = t && assignTronc[t.id];
-    const te = !!mId;
-    return `<div style="background:${te?'#29327a':'#f4f4f8'};color:${te?'#fff':'#bbb'};border-radius:6px;padding:4px;text-align:center;font-size:11px;font-weight:600;">${te?'✓':'–'}</div>`;
-  }
-
-  if (enx) html += `<div style="margin-bottom:4px;">${cellaSimple(enx)}</div>`;
-  if (acot.length || dos.length) {
-    const pomA = [...dos.filter((_,i)=>i<2), ...acot.filter((_,i)=>i<1)];
-    const pomB = [...dos.filter((_,i)=>i>=2), ...acot.filter((_,i)=>i>=1)];
-    if (pomA.length || pomB.length) {
-      html += `<div style="display:grid;grid-template-columns:${pomB.length?'3fr 2fr':'1fr'};gap:6px;margin-bottom:4px;">`;
-      if (pomA.length) html += `<div style="display:grid;grid-template-columns:repeat(${pomA.length},1fr);gap:4px;">${pomA.map(cellaSimple).join('')}</div>`;
-      if (pomB.length) html += `<div style="display:grid;grid-template-columns:repeat(${pomB.length},1fr);gap:4px;">${pomB.map(cellaSimple).join('')}</div>`;
-      html += '</div>';
-    }
-  }
-
-  // Separador
-  html += '<div style="border-top:1px dashed #ddd;margin:6px 0;"></div>';
-
-  // Etiquetes
-  html += `<div style="display:grid;grid-template-columns:${cols};gap:4px;margin-bottom:4px;">`;
-  for (let i=0;i<nPilars;i++) {
-    const nom = noms[i]||`P${i+1}`;
-    const color = pinya.tipus==='3ag'&&i===3?'color:#27ae60;':'';
-    html += `<div style="text-align:center;font-size:9px;font-weight:600;color:#888;${color}">${nom}</div>`;
-  }
-  html += '</div>';
-
-  // Pisos
-  pisos.forEach(pis => {
-    html += `<div style="display:grid;grid-template-columns:${cols};gap:4px;margin-bottom:4px;">`;
-    for (let i=0;i<nPilars;i++) {
-      const t = tronc.find(x=>x.pilar===i+1&&x.pis===pis);
-      html += cellaSimple(t);
-    }
-    html += '</div>';
-  });
-
-  // Baixos
-  html += '<div style="border-top:1px dashed #ddd;margin:6px 0;"></div>';
-  html += `<div style="display:grid;grid-template-columns:${cols};gap:4px;margin-bottom:4px;">`;
-  for (let i=0;i<nPilars;i++) {
-    const idx = mapa[i];
-    const pos = idx===-1 ? baixPilar : baixos[idx];
-    const mId = pos && assignPinya[pos.id];
-    const te = !!mId;
-    const nom = noms[i]||`P${i+1}`;
-    html += `<div style="background:${te?'#1a1a2e':'#f4f4f8'};color:${te?'#fff':'#bbb'};border-radius:6px;padding:4px;text-align:center;font-size:9px;font-weight:700;">${te?'✓':'–'}</div>`;
-  }
-  html += '</div>';
-  html += '</div>';
-  return html;
+function generaSVG(pinya) {
+  const COLORS = {baix:'#1a1a2e',baix_pilar:'#1a1a2e',agulla:'#27ae60',crossa:'#f1c40f',contrafort:'#e8e8e8',vent:'#c0392b',lateral:'#2980b9',diagonal:'#2980b9',mans:'#8e44ad',tap:'#95a5a6',envoltant:'#27ae60'};
+  const R = 5.2, pos = pinya.posicions || [];
+  if (!pos.length) return '';
+  const xs = pos.map(p=>p.cx), ys = pos.map(p=>p.cy);
+  const marge = R+4, minX=Math.min(...xs)-marge, maxX=Math.max(...xs)+marge, minY=Math.min(...ys)-marge, maxY=Math.max(...ys)+marge;
+  return `<svg viewBox="${minX} ${minY} ${maxX-minX} ${maxY-minY}" xmlns="http://www.w3.org/2000/svg">${pos.map(p=>`<circle cx="${p.cx}" cy="${p.cy}" r="${R}" fill="${COLORS[p.rol]||'#999'}" stroke="#fff" stroke-width="0.3" opacity="0.9"/>`).join('')}</svg>`;
 }
 
-function generaSVG(pinya) {
-  const COLORS = {
-    baix:'#1a1a2e', baix_pilar:'#1a1a2e', agulla:'#27ae60', crossa:'#f1c40f',
-    contrafort:'#e8e8e8', vent:'#c0392b', lateral:'#2980b9', diagonal:'#2980b9',
-    mans:'#8e44ad', tap:'#95a5a6', envoltant:'#27ae60'
-  };
-  const R = 5.2;
-  const pos = pinya.posicions || [];
-  if (!pos.length) return '';
-  const xs = pos.map(p => p.cx), ys = pos.map(p => p.cy);
-  const marge = R + 4;
-  const minX = Math.min(...xs)-marge, maxX = Math.max(...xs)+marge;
-  const minY = Math.min(...ys)-marge, maxY = Math.max(...ys)+marge;
-  const W = maxX-minX, H = maxY-minY;
-  const cercles = pos.map(p => {
-    const color = COLORS[p.rol] || '#999';
-    return `<circle cx="${p.cx}" cy="${p.cy}" r="${R}" fill="${color}" stroke="#fff" stroke-width="0.3" opacity="0.9"/>`;
-  }).join('');
-  return `<svg viewBox="${minX} ${minY} ${W} ${H}" xmlns="http://www.w3.org/2000/svg">${cercles}</svg>`;
+function generaTroncHTML(cas, pinya) {
+  const NOMS_PILARS = {'2':['Carregada','Descarregada'],'3':['Rengla','Plena','Buida'],'3ag':['Rengla','Plena','Buida','Agulla'],'4':['Esquerre','Rengla','Dreta','Contra'],'5':['Rengla','Plena','Buida','Carregada','Descarregada']};
+  const INDEX_BAIX = {'2':[1,0],'3':[0,2,1],'3ag':[0,2,1,-1],'4':[3,2,1,0],'5':[0,1,2,3,4]};
+  const tronc = pinya.tronc||[], assignTronc=cas.assignacionsTronc||{}, assignPinya=cas.assignacions||{};
+  const nPilars = {pilar:1,'2':2,'3':3,'3ag':4,'4':4,'5':5}[pinya.tipus];
+  if (!nPilars) return '';
+  const noms=NOMS_PILARS[pinya.tipus]||[], mapa=INDEX_BAIX[pinya.tipus]||[];
+  const baixos=(pinya.posicions||[]).filter(p=>p.rol==='baix');
+  const baixPilar=(pinya.posicions||[]).find(p=>p.rol==='baix_pilar');
+  const cols=`repeat(${nPilars},1fr)`;
+  function cella(t,assignMap){const mId=t&&assignMap[t.id];return `<div style="background:${mId?'#29327a':'#f4f4f8'};color:${mId?'#fff':'#ccc'};border-radius:6px;padding:4px;text-align:center;font-size:11px;font-weight:600;">${mId?'✓':'–'}</div>`;}
+  const enx=tronc.find(t=>t.pis==='enxaneta');
+  const acot=tronc.filter(t=>t.pis==='acotxador');
+  const dos=tronc.filter(t=>t.pis==='dos');
+  let html='<div style="padding:12px 16px;border-top:1px solid #eee;">';
+  html+='<div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">🏗️ Tronc</div>';
+  if(enx) html+=`<div style="margin-bottom:4px;">${cella(enx,assignTronc)}</div>`;
+  const tots=[...dos,...acot];
+  if(tots.length){html+=`<div style="display:grid;grid-template-columns:repeat(${tots.length},1fr);gap:4px;margin-bottom:4px;">${tots.map(t=>cella(t,assignTronc)).join('')}</div>`;}
+  html+=`<div style="border-top:1px dashed #ddd;margin:6px 0;"></div>`;
+  html+=`<div style="display:grid;grid-template-columns:${cols};gap:4px;margin-bottom:4px;">${Array.from({length:nPilars},(_,i)=>`<div style="text-align:center;font-size:9px;font-weight:600;color:#888;">${noms[i]||'P'+(i+1)}</div>`).join('')}</div>`;
+  ['quartes','terços','segons'].forEach(pis=>{html+=`<div style="display:grid;grid-template-columns:${cols};gap:4px;margin-bottom:4px;">${Array.from({length:nPilars},(_,i)=>cella(tronc.find(x=>x.pilar===i+1&&x.pis===pis),assignTronc)).join('')}</div>`;});
+  html+=`<div style="border-top:1px dashed #ddd;margin:6px 0;"></div>`;
+  html+=`<div style="display:grid;grid-template-columns:${cols};gap:4px;margin-bottom:4px;">${Array.from({length:nPilars},(_,i)=>{const idx=mapa[i];const pos=idx===-1?baixPilar:baixos[idx];const mId=pos&&assignPinya[pos.id];return `<div style="background:${mId?'#1a1a2e':'#f4f4f8'};color:${mId?'#fff':'#ccc'};border-radius:6px;padding:4px;text-align:center;font-size:9px;font-weight:700;">${mId?'✓':'–'}</div>`;}).join('')}</div>`;
+  html+='</div>';
+  return html;
 }
 
 carregaSessions();
