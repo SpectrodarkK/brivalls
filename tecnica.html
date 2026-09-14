@@ -241,6 +241,9 @@
       <span class="card-titol">Llistat de membres</span>
       <span id="comptador-membres" style="font-size:12px;color:var(--text-suau);"></span>
     </div>
+    <div style="padding:8px 12px 4px;">
+      <input type="text" id="cerca-membre" placeholder="🔍 Cerca membre..." oninput="filtraMembres()" style="font-size:13px;padding:7px 10px;">
+    </div>
     <div id="llista-membres">
       <div class="buit"><div class="buit-ico">👥</div><div class="buit-text">Encara no hi ha membres. Afegeix el primer!</div></div>
     </div>
@@ -1518,8 +1521,12 @@ function assignaPersona(membreId) {
 
   // Funció per trobar on està assignada una persona en el context actual
   function trobaPosicioActual(membreId) {
-    if (ctx && ctx.startsWith('sessio-cas-')) {
-      const casId = ctx.replace('sessio-cas-', '');
+    // Obtenir el cas actual independentment del context
+    let casId = null;
+    if (ctx && ctx.startsWith('sessio-cas-')) casId = ctx.replace('sessio-cas-', '');
+    else if (ctx === 'sessio-tronc') casId = window._casIdTronc;
+
+    if (casId) {
       const cas = sessioActual.castells.find(c => c.id === casId);
       if (!cas) return null;
       const assignacions = cas.assignacions || {};
@@ -1550,6 +1557,10 @@ function assignaPersona(membreId) {
       const casId = ctx.replace('sessio-cas-', '');
       const cas = sessioActual.castells.find(c => c.id === casId);
       return cas && cas.assignacions && cas.assignacions[posicioSeleccionada] || null;
+    } else if (ctx === 'sessio-tronc') {
+      const casId = window._casIdTronc;
+      const cas = sessioActual.castells.find(c => c.id === casId);
+      return cas && cas.assignacionsTronc && cas.assignacionsTronc[posicioSeleccionada] || null;
     } else if (ctx === 'pinya') {
       return pinyaActual.posicions.find(p => p.id === posicioSeleccionada)?.personaId || null;
     } else if (ctx === 'tronc') {
@@ -1715,7 +1726,13 @@ function toggleCastell(casId) {
 }
 
 function togglePinya(casId) {
+  if (!estaAutenticat()) { requereixPin(() => togglePinya(casId)); return; }
   pinyaOculta[casId] = !pinyaOculta[casId];
+  // Guardar a la sessió
+  asseguraCastells();
+  const cas = sessioActual.castells.find(c => c.id === casId);
+  if (cas) cas.pinyaOculta = pinyaOculta[casId];
+  desaSessio();
   renderitzaPinyaSessio();
 }
 
@@ -1807,14 +1824,26 @@ function canviaPanell(id) {
 function obreSessioDetall(id) {
   sessioActual = estat.sessions.find(s => s.id === id);
   if (!sessioActual) return;
+  // Restaurar estat pinyaOculta des de la sessió guardada
+  pinyaOculta = {};
+  (sessioActual.castells || []).forEach(cas => {
+    if (cas.pinyaOculta) pinyaOculta[cas.id] = true;
+  });
+  assistCardObert = true;
   renderitzaAssistencia();
+  const campCerca = document.getElementById('cerca-assistent');
+  if (campCerca) campCerca.value = '';
+  const cos = document.getElementById('assist-cos');
+  if (cos) cos.style.display = '';
+  const chev = document.getElementById('assist-chevron');
+  if (chev) chev.style.transform = '';
   renderitzaPinyaSessio();
   document.querySelectorAll('.panell').forEach(p => p.classList.remove('actiu'));
   document.getElementById('panell-sessio-detall').classList.add('actiu');
   document.getElementById('nav-principal').style.display = 'flex';
   document.getElementById('cap-back').classList.add('visible');
   document.getElementById('cap-title').textContent = formatData(sessioActual.data);
-  document.getElementById('cap-subtitle').textContent = (sessioActual.lloc || '') + ' \u00b7 ' + tipusSessio(sessioActual.tipus);
+  document.getElementById('cap-subtitle').textContent = (sessioActual.lloc || '') + ' · ' + tipusSessio(sessioActual.tipus);
 }
 
 function tornarEnrere() {
@@ -1998,7 +2027,12 @@ function eliminarMembre(membreId) {
   });
 }
 
-function renderitzaMembres() {
+function filtraMembres() {
+  const cerca = normalitza(document.getElementById('cerca-membre').value);
+  renderitzaMembres(cerca);
+}
+
+function renderitzaMembres(filtre) {
   const cont = document.getElementById('llista-membres');
   if (!estaAutenticat()) {
     document.getElementById('comptador-membres').textContent = '';
@@ -2014,7 +2048,13 @@ function renderitzaMembres() {
     cont.innerHTML = '<div class="buit"><div class="buit-ico">👥</div><div class="buit-text">Afegeix el primer membre!</div></div>';
     return;
   }
-  cont.innerHTML = estat.membres.map(m => `
+  let membres = estat.membres;
+  if (filtre) membres = membres.filter(m => normalitza(m.nom).includes(filtre));
+  if (!membres.length) {
+    cont.innerHTML = '<div class="buit" style="padding:16px;"><div class="buit-text">Cap resultat</div></div>';
+    return;
+  }
+  cont.innerHTML = membres.map(m => `
     <div class=\"membre-item\">
       <div class=\"membre-avatar ${colorAvatar(m.nom)}\" style=\"${m.foto ? `background-image:url('${m.foto}');background-size:cover;background-position:center;` : ''}\">${m.foto ? '' : inicials(m.nom)}</div>
       <div class=\"membre-info\">
@@ -2152,26 +2192,32 @@ function renderitzaPinyaSessio() {
   });
 }
 
-function renderitzaAssistencia() {
+function renderitzaAssistencia(filtre) {
   if (!sessioActual) return;
   if (!sessioActual.assistencia) sessioActual.assistencia = {};
   const nAssist = estat.membres.filter(m => sessioActual.assistencia[m.id]).length;
   document.getElementById('resum-assist').textContent = nAssist + ' / ' + estat.membres.length;
   const cont = document.getElementById('llista-assistencia');
   if (!estat.membres.length) {
-    cont.innerHTML = '<div class=\"buit\"><div class=\"buit-ico\">\ud83d\udc65</div><div class=\"buit-text\">Primer afegeix membres</div></div>';
+    cont.innerHTML = '<div class="buit"><div class="buit-ico">👥</div><div class="buit-text">Primer afegeix membres</div></div>';
     return;
   }
-  cont.innerHTML = estat.membres.map(m => `
-    <div class=\"assist-item\">
-      <div class=\"membre-avatar ${colorAvatar(m.nom)}\" style=\"${m.foto ? `background-image:url('${m.foto}');background-size:cover;background-position:center;` : ''}\">${m.foto ? '' : inicials(m.nom)}</div>
-      <div class=\"membre-info\">
-        <div class=\"membre-nom\">${m.nom}</div>
-        <div class=\"membre-detall\"></div>
+  let membres = estat.membres;
+  if (filtre) membres = membres.filter(m => normalitza(m.nom).includes(filtre));
+  if (!membres.length) {
+    cont.innerHTML = '<div class="buit" style="padding:16px;"><div class="buit-text">Cap resultat</div></div>';
+    return;
+  }
+  cont.innerHTML = membres.map(m => `
+    <div class="assist-item">
+      <div class="membre-avatar ${colorAvatar(m.nom)}" style="${m.foto ? `background-image:url('${m.foto}');background-size:cover;background-position:center;` : ''}">${m.foto ? '' : inicials(m.nom)}</div>
+      <div class="membre-info">
+        <div class="membre-nom">${m.nom}</div>
+        <div class="membre-detall"></div>
       </div>
-      <label class=\"toggle\">
-        <input type=\"checkbox\" ${sessioActual.assistencia[m.id] ? 'checked' : ''} onchange=\"toggleAssistencia('${m.id}', this.checked)\">
-        <span class=\"toggle-slider\"></span>
+      <label class="toggle">
+        <input type="checkbox" ${sessioActual.assistencia[m.id] ? 'checked' : ''} onchange="toggleAssistencia('${m.id}', this.checked)">
+        <span class="toggle-slider"></span>
       </label>
     </div>
   `).join('');
