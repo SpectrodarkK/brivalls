@@ -1090,6 +1090,7 @@ function renderitzaTroncSessio(cas, pinya, obert) {
 }
 
 function desassignaPosSessio(casId, posId) {
+  if (!estaAutenticat()) { requereixPin(() => desassignaPosSessio(casId, posId)); return; }
   const cas = sessioActual.castells && sessioActual.castells.find(c => c.id === casId);
   if (cas && cas.assignacions) delete cas.assignacions[posId];
   desaSessio();
@@ -1112,6 +1113,7 @@ function afegirCastellSessio() {
 }
 
 function eliminarCastellSessio(casId) {
+  if (!estaAutenticat()) { requereixPin(() => eliminarCastellSessio(casId)); return; }
   confirma('Eliminar aquest castell de la sessió?', () => {
     sessioActual.castells = sessioActual.castells.filter(c => c.id !== casId);
     desaSessio();
@@ -1120,6 +1122,7 @@ function eliminarCastellSessio(casId) {
 }
 
 function obreAssignacioTroncSessio(casId, troncId) {
+  if (!estaAutenticat()) { requereixPin(() => obreAssignacioTroncSessio(casId, troncId)); return; }
   posicioSeleccionada = troncId;
   contextAssignacio = 'sessio-tronc';
   window._casIdTronc = casId;
@@ -1141,6 +1144,7 @@ function obreAssignacioTroncSessio(casId, troncId) {
 }
 
 function desassignaTroncSessio(casId, troncId) {
+  if (!estaAutenticat()) { requereixPin(() => desassignaTroncSessio(casId, troncId)); return; }
   const cas = sessioActual.castells.find(c => c.id === casId);
   if (cas && cas.assignacionsTronc) delete cas.assignacionsTronc[troncId];
   desaSessio();
@@ -1348,6 +1352,7 @@ function llegendaRols(castell) {
 // Quan es toca una posició al dibuix SVG: si ja té persona obre el modal d'acció,
 // si està buida obre directament el selector de persona.
 function obreAccioPos(posId, context, tePersona) {
+  if (!estaAutenticat()) { requereixPin(() => obreAccioPos(posId, context, tePersona)); return; }
   if (!tePersona) {
     obreAssignacioPosicio(posId, context);
     return;
@@ -1384,11 +1389,13 @@ function obreAccioPos(posId, context, tePersona) {
 }
 
 function reassignaDesDeAccio() {
+  if (!estaAutenticat()) { requereixPin(reassignaDesDeAccio); return; }
   tancaModal('modal-accio-pos');
   obreAssignacioPosicio(posicioSeleccionada, contextAssignacio);
 }
 
 function desassignaDesDeAccio() {
+  if (!estaAutenticat()) { requereixPin(desassignaDesDeAccio); return; }
   desassignaPosicio(posicioSeleccionada, contextAssignacio);
   tancaModal('modal-accio-pos');
 }
@@ -1860,6 +1867,7 @@ function esborraFotoMembre() {
 }
 
 function obreModalMembre(membreId) {
+  if (!estaAutenticat()) { requereixPin(() => obreModalMembre(membreId)); return; }
   const prev = document.getElementById('membre-foto-preview');
   document.getElementById('membre-foto-input').value = '';
   document.getElementById('membre-id-edit').value = membreId || '';
@@ -1915,6 +1923,7 @@ function guardarMembre() {
 }
 
 function eliminarMembre(membreId) {
+  if (!estaAutenticat()) { requereixPin(() => eliminarMembre(membreId)); return; }
   confirma('Eliminar aquest membre?', async () => {
     estat.membres = estat.membres.filter(m => m.id !== membreId);
     desa();
@@ -1972,6 +1981,7 @@ function guardarSessio() {
 }
 
 function eliminarSessio(sid) {
+  if (!estaAutenticat()) { requereixPin(() => eliminarSessio(sid)); return; }
   confirma('Eliminar aquesta sessió?', async () => {
     estat.sessions = estat.sessions.filter(s => s.id !== sid);
     desa();
