@@ -227,28 +227,55 @@ function generaSVG(pinya) {
 function generaTroncHTML(cas, pinya) {
   const NOMS_PILARS = {'2':['Carregada','Descarregada'],'3':['Rengla','Plena','Buida'],'3ag':['Rengla','Plena','Buida','Agulla'],'4':['Esquerre','Rengla','Dreta','Contra'],'5':['Rengla','Plena','Buida','Carregada','Descarregada']};
   const INDEX_BAIX = {'2':[1,0],'3':[0,2,1],'3ag':[0,2,1,-1],'4':[3,2,1,0],'5':[0,1,2,3,4]};
-  const tronc = pinya.tronc||[], assignTronc=cas.assignacionsTronc||{}, assignPinya=cas.assignacions||{};
-  const nPilars = {pilar:1,'2':2,'3':3,'3ag':4,'4':4,'5':5}[pinya.tipus];
+  const tronc=pinya.tronc||[], aT=cas.assignacionsTronc||{}, aP=cas.assignacions||{};
+  const nPilars={pilar:1,'2':2,'3':3,'3ag':4,'4':4,'5':5}[pinya.tipus];
   if (!nPilars) return '';
   const noms=NOMS_PILARS[pinya.tipus]||[], mapa=INDEX_BAIX[pinya.tipus]||[];
   const baixos=(pinya.posicions||[]).filter(p=>p.rol==='baix');
   const baixPilar=(pinya.posicions||[]).find(p=>p.rol==='baix_pilar');
   const cols=`repeat(${nPilars},1fr)`;
-  function cella(t,assignMap){const mId=t&&assignMap[t.id];return `<div style="background:${mId?'#29327a':'#f4f4f8'};color:${mId?'#fff':'#ccc'};border-radius:6px;padding:4px;text-align:center;font-size:11px;font-weight:600;">${mId?'✓':'–'}</div>`;}
-  const enx=tronc.find(t=>t.pis==='enxaneta');
-  const acot=tronc.filter(t=>t.pis==='acotxador');
-  const dos=tronc.filter(t=>t.pis==='dos');
-  let html='<div style="padding:12px 16px;border-top:1px solid #eee;">';
-  html+='<div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">🏗️ Tronc</div>';
-  if(enx) html+=`<div style="margin-bottom:4px;">${cella(enx,assignTronc)}</div>`;
-  const tots=[...dos,...acot];
-  if(tots.length){html+=`<div style="display:grid;grid-template-columns:repeat(${tots.length},1fr);gap:4px;margin-bottom:4px;">${tots.map(t=>cella(t,assignTronc)).join('')}</div>`;}
-  html+=`<div style="border-top:1px dashed #ddd;margin:6px 0;"></div>`;
-  html+=`<div style="display:grid;grid-template-columns:${cols};gap:4px;margin-bottom:4px;">${Array.from({length:nPilars},(_,i)=>`<div style="text-align:center;font-size:9px;font-weight:600;color:#888;">${noms[i]||'P'+(i+1)}</div>`).join('')}</div>`;
-  ['quartes','terços','segons'].forEach(pis=>{html+=`<div style="display:grid;grid-template-columns:${cols};gap:4px;margin-bottom:4px;">${Array.from({length:nPilars},(_,i)=>cella(tronc.find(x=>x.pilar===i+1&&x.pis===pis),assignTronc)).join('')}</div>`;});
-  html+=`<div style="border-top:1px dashed #ddd;margin:6px 0;"></div>`;
-  html+=`<div style="display:grid;grid-template-columns:${cols};gap:4px;margin-bottom:4px;">${Array.from({length:nPilars},(_,i)=>{const idx=mapa[i];const pos=idx===-1?baixPilar:baixos[idx];const mId=pos&&assignPinya[pos.id];return `<div style="background:${mId?'#1a1a2e':'#f4f4f8'};color:${mId?'#fff':'#ccc'};border-radius:6px;padding:4px;text-align:center;font-size:9px;font-weight:700;">${mId?'✓':'–'}</div>`;}).join('')}</div>`;
-  html+='</div>';
+
+  function cella(assignat, negre) {
+    return `<div style="background:${assignat?(negre?'#1a1a2e':'#29327a'):'#f0f0f0'};color:${assignat?'#fff':'#ccc'};border-radius:6px;padding:6px 4px;text-align:center;font-size:12px;font-weight:700;min-height:28px;display:flex;align-items:center;justify-content:center;">${assignat?'✓':'–'}</div>`;
+  }
+
+  let html = '<div style="padding:12px 16px;border-top:1px solid #eee;">';
+  html += '<div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">🏗️ Tronc</div>';
+
+  // Pom de dalt: enxaneta → acotxador → dos (de dalt a baix)
+  const enx = tronc.find(t=>t.pis==='enxaneta');
+  const acots = tronc.filter(t=>t.pis==='acotxador');
+  const dosos = tronc.filter(t=>t.pis==='dos');
+
+  if (enx) html += `<div style="max-width:80px;margin:0 auto 4px;">${cella(!!aT[enx.id])}</div>`;
+
+  // Acotxador(s)
+  if (acots.length) {
+    const w = acots.length === 1 ? 'max-width:80px;margin:0 auto 4px;' : `display:grid;grid-template-columns:repeat(${acots.length},1fr);gap:4px;margin-bottom:4px;`;
+    html += `<div style="${w}">${acots.map(t=>cella(!!aT[t.id])).join('')}</div>`;
+  }
+
+  // Dos
+  if (dosos.length) {
+    html += `<div style="display:grid;grid-template-columns:repeat(${dosos.length},1fr);gap:4px;margin-bottom:4px;">${dosos.map(t=>cella(!!aT[t.id])).join('')}</div>`;
+  }
+
+  html += '<div style="border-top:1px dashed #ddd;margin:8px 0;"></div>';
+
+  // Etiquetes pilars
+  html += `<div style="display:grid;grid-template-columns:${cols};gap:4px;margin-bottom:4px;">${Array.from({length:nPilars},(_,i)=>`<div style="text-align:center;font-size:9px;font-weight:600;color:#888;">${noms[i]||'P'+(i+1)}</div>`).join('')}</div>`;
+
+  // Pisos: quarta → terç → segon
+  ['quartes','terços','segons'].forEach(pis => {
+    html += `<div style="display:grid;grid-template-columns:${cols};gap:4px;margin-bottom:4px;">${Array.from({length:nPilars},(_,i)=>{const t=tronc.find(x=>x.pilar===i+1&&x.pis===pis);return cella(t&&!!aT[t.id]);}).join('')}</div>`;
+  });
+
+  html += '<div style="border-top:1px dashed #ddd;margin:8px 0;"></div>';
+
+  // Baixos
+  html += `<div style="display:grid;grid-template-columns:${cols};gap:4px;margin-bottom:4px;">${Array.from({length:nPilars},(_,i)=>{const idx=mapa[i];const pos=idx===-1?baixPilar:baixos[idx];return cella(pos&&!!aP[pos.id], true);}).join('')}</div>`;
+
+  html += '</div>';
   return html;
 }
 
