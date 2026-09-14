@@ -131,7 +131,10 @@ async function carregaSessions() {
   }
 }
 
+let _sessions = [];
+
 function renderitzaSessions(sessions) {
+  _sessions = sessions;
   const cont = document.getElementById('contingut');
   const avui = new Date(); avui.setHours(0,0,0,0);
   document.getElementById('cap-sub').textContent = sessions.length + ' properes sessions';
@@ -139,12 +142,12 @@ function renderitzaSessions(sessions) {
     cont.innerHTML = '<div class="buit"><div class="buit-ico">📅</div><div>No hi ha sessions properes</div></div>';
     return;
   }
-  cont.innerHTML = '<div class="card">' + sessions.map(s => {
+  cont.innerHTML = '<div class="card">' + sessions.map((s, idx) => {
     const data = new Date(s.data + 'T00:00:00');
     const esAvui = data.getTime() === avui.getTime();
     const esPast = data < avui;
     const esDiada = s.tipus === 'diada';
-    return `<div class="sessio-item" style="${esPast?'opacity:0.5':''}" ${esDiada?`onclick="obreDetallDiada(${JSON.stringify(JSON.stringify(s)).slice(1,-1).replace(/&/g,'&amp;').replace(/"/g,'&quot;')})"`:''}>
+    return `<div class="sessio-item" style="${esPast?'opacity:0.5':''};${esDiada?'cursor:pointer':''}" ${esDiada?`onclick="_obreDiada(${idx})"`:''}>
       <div style="text-align:center;min-width:44px;">
         <div class="sessio-data" style="${esAvui?'color:#e74c3c;':''}">${diaNum(s.data)}</div>
         <div class="sessio-mes">${mesAbreujat(s.data)}</div>
@@ -158,9 +161,16 @@ function renderitzaSessions(sessions) {
   }).join('') + '</div>';
 }
 
-function obreDetallDiada(sJson) {
-  const s = JSON.parse(sJson);
-  const castells = (s.castells || []).filter(c => c.pinya);
+function _obreDiada(idx) {
+  const s = _sessions[idx];
+  console.log('Diada:', s);
+  console.log('Castells:', s.castells);
+  obreDetallDiada(s);
+}
+
+function obreDetallDiada(s) {
+  // castells pot venir com null de Supabase si no s'ha guardat mai
+  const castells = Array.isArray(s.castells) ? s.castells.filter(c => c && c.pinya) : [];
   const cont = document.getElementById('contingut');
   document.getElementById('cap-sub').textContent = 'Diada · ' + (s.lloc || '');
 
