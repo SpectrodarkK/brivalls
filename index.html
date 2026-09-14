@@ -187,23 +187,123 @@ function obreDetall(s) {
       html += `<div class="castell-card">
         <div class="castell-nom">${info.ico} ${p.nom}${num}</div>
         <div id="svg-cas-${idx}" style="padding:8px;"></div>
+        <div id="tronc-cas-${idx}"></div>
       </div>`;
     });
   }
 
   cont.innerHTML = html;
 
-  // Renderitzar SVGs
+  // Renderitzar SVGs i troncs
   castells.forEach((cas, idx) => {
     const p = cas.pinya;
-    const el = document.getElementById('svg-cas-' + idx);
-    if (!el) return;
+    const elSvg = document.getElementById('svg-cas-' + idx);
+    const elTronc = document.getElementById('tronc-cas-' + idx);
+    if (!elSvg) return;
     if (cas.pinyaOculta) {
-      el.innerHTML = '<div style="padding:12px 16px;font-size:13px;color:#999;font-style:italic;">Pinya oculta per a aquesta prova</div>';
+      elSvg.innerHTML = '<div style="padding:12px 16px;font-size:13px;color:#999;font-style:italic;">Pinya oculta per a aquesta prova</div>';
     } else if (p && p.posicions) {
-      el.innerHTML = generaSVG(p);
+      elSvg.innerHTML = generaSVG(p);
+    }
+    if (elTronc && p && p.tronc && p.tronc.length) {
+      elTronc.innerHTML = generaTroncHTML(cas, p);
     }
   });
+}
+
+function generaTroncHTML(cas, pinya) {
+  const NOMS_PILARS = {
+    '2':   ['Carregada','Descarregada'],
+    '3':   ['Rengla','Plena','Buida'],
+    '3ag': ['Rengla','Plena','Buida','Agulla'],
+    '4':   ['Esquerre','Rengla','Dreta','Contra'],
+    '5':   ['Rengla','Plena','Buida','Carregada','Descarregada'],
+  };
+  const INDEX_BAIX = {
+    '2':[1,0],'3':[0,2,1],'3ag':[0,2,1,-1],'4':[3,2,1,0],'5':[0,1,2,3,4]
+  };
+  const tronc = pinya.tronc || [];
+  const assignTronc = cas.assignacionsTronc || {};
+  const assignPinya = cas.assignacions || {};
+
+  // Comptar pilars
+  const nPilars = {pilar:1,'2':2,'3':3,'3ag':4,'4':4,'5':5}[pinya.tipus];
+  if (!nPilars) return '';
+
+  const noms = NOMS_PILARS[pinya.tipus] || [];
+  const mapa = INDEX_BAIX[pinya.tipus] || [];
+  const baixos = pinya.posicions ? pinya.posicions.filter(p=>p.rol==='baix') : [];
+  const baixPilar = pinya.posicions ? pinya.posicions.find(p=>p.rol==='baix_pilar') : null;
+
+  function nomPersona(membreId) {
+    return membreId ? '✓' : '–';
+  }
+
+  const pisos = ['quartes','terços','segons'];
+  const cols = `repeat(${nPilars},1fr)`;
+
+  let html = '<div style="padding:12px 16px;border-top:1px solid #eee;">';
+  html += '<div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">🏗️ Tronc</div>';
+
+  // Pom (enxaneta, acotxador, dos)
+  const enx = tronc.find(t=>t.pis==='enxaneta');
+  const acot = tronc.filter(t=>t.pis==='acotxador');
+  const dos = tronc.filter(t=>t.pis==='dos');
+
+  function cellaSimple(t) {
+    const mId = t && assignTronc[t.id];
+    const te = !!mId;
+    return `<div style="background:${te?'#29327a':'#f4f4f8'};color:${te?'#fff':'#bbb'};border-radius:6px;padding:4px;text-align:center;font-size:11px;font-weight:600;">${te?'✓':'–'}</div>`;
+  }
+
+  if (enx) html += `<div style="margin-bottom:4px;">${cellaSimple(enx)}</div>`;
+  if (acot.length || dos.length) {
+    const pomA = [...dos.filter((_,i)=>i<2), ...acot.filter((_,i)=>i<1)];
+    const pomB = [...dos.filter((_,i)=>i>=2), ...acot.filter((_,i)=>i>=1)];
+    if (pomA.length || pomB.length) {
+      html += `<div style="display:grid;grid-template-columns:${pomB.length?'3fr 2fr':'1fr'};gap:6px;margin-bottom:4px;">`;
+      if (pomA.length) html += `<div style="display:grid;grid-template-columns:repeat(${pomA.length},1fr);gap:4px;">${pomA.map(cellaSimple).join('')}</div>`;
+      if (pomB.length) html += `<div style="display:grid;grid-template-columns:repeat(${pomB.length},1fr);gap:4px;">${pomB.map(cellaSimple).join('')}</div>`;
+      html += '</div>';
+    }
+  }
+
+  // Separador
+  html += '<div style="border-top:1px dashed #ddd;margin:6px 0;"></div>';
+
+  // Etiquetes
+  html += `<div style="display:grid;grid-template-columns:${cols};gap:4px;margin-bottom:4px;">`;
+  for (let i=0;i<nPilars;i++) {
+    const nom = noms[i]||`P${i+1}`;
+    const color = pinya.tipus==='3ag'&&i===3?'color:#27ae60;':'';
+    html += `<div style="text-align:center;font-size:9px;font-weight:600;color:#888;${color}">${nom}</div>`;
+  }
+  html += '</div>';
+
+  // Pisos
+  pisos.forEach(pis => {
+    html += `<div style="display:grid;grid-template-columns:${cols};gap:4px;margin-bottom:4px;">`;
+    for (let i=0;i<nPilars;i++) {
+      const t = tronc.find(x=>x.pilar===i+1&&x.pis===pis);
+      html += cellaSimple(t);
+    }
+    html += '</div>';
+  });
+
+  // Baixos
+  html += '<div style="border-top:1px dashed #ddd;margin:6px 0;"></div>';
+  html += `<div style="display:grid;grid-template-columns:${cols};gap:4px;margin-bottom:4px;">`;
+  for (let i=0;i<nPilars;i++) {
+    const idx = mapa[i];
+    const pos = idx===-1 ? baixPilar : baixos[idx];
+    const mId = pos && assignPinya[pos.id];
+    const te = !!mId;
+    const nom = noms[i]||`P${i+1}`;
+    html += `<div style="background:${te?'#1a1a2e':'#f4f4f8'};color:${te?'#fff':'#bbb'};border-radius:6px;padding:4px;text-align:center;font-size:9px;font-weight:700;">${te?'✓':'–'}</div>`;
+  }
+  html += '</div>';
+  html += '</div>';
+  return html;
 }
 
 function generaSVG(pinya) {
