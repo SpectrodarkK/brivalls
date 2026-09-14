@@ -225,7 +225,7 @@
   <button class="nav-btn actiu" onclick="canviaPanell('sessions')" id="nav-sessions">
     <span class="ico">📅</span><span>Sessions</span>
   </button>
-  <button class="nav-btn" onclick="canviaPanell('membres')" id="nav-membres">
+  <button class="nav-btn" onclick="requereixPin(()=>canviaPanell('membres'))" id="nav-membres">
     <span class="ico">👥</span><span>Membres</span>
   </button>
 
@@ -313,6 +313,16 @@
     <div class="input-grup">
       <label class="input-etiqueta">Telèfon (opcional)</label>
       <input type="tel" id="membre-tel" placeholder="600 000 000">
+    </div>
+    <div class="input-grup" style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div>
+        <label class="input-etiqueta">Mida (cm)</label>
+        <input type="number" id="membre-mida" placeholder="170" min="100" max="220">
+      </div>
+      <div>
+        <label class="input-etiqueta">Data de naixement</label>
+        <input type="date" id="membre-naixement">
+      </div>
     </div>
     <div class="input-grup">
       <label class="input-etiqueta">Notes</label>
@@ -988,7 +998,24 @@ function renderitzaTroncSessio(cas, pinya, obert) {
       const cels=Array.from({length:5},(_,i)=>{const t=tronc.find(x=>x.pilar===i+1&&x.pis===pis);return t?cellaTroncSessio(t):'<div></div>';}).join('');
       return `<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:4px;">${cels}</div>`;
     }).join('');
-    const etiq5=Array.from({length:5},(_,i)=>`<div style="text-align:center;font-size:9px;font-weight:600;color:var(--text-suau);">${getNomPilar('5',i)}</div>`).join('');
+    const etiq5=Array.from({length:5},(_,i)=>{
+      const nom=getNomPilar('5',i);
+      // Calcular suma mides pilar i del 5
+      let suma=0;
+      const mapa5Local=INDEX_BAIX_PER_PILAR['5']||[];
+      const baixos5=pinya.posicions.filter(p=>p.rol==='baix');
+      const posBaix5=baixos5[mapa5Local[i]];
+      if(posBaix5){const mId=cas.assignacions&&cas.assignacions[posBaix5.id];const mb=mId&&estat.membres.find(m=>m.id===mId);if(mb&&mb.mida)suma+=mb.mida;}
+      ['segons','terços','quartes'].forEach(pis=>{
+        const t=tronc.find(x=>x.pilar===i+1&&x.pis===pis);
+        if(t){const mId=cas.assignacionsTronc&&cas.assignacionsTronc[t.id];const mb=mId&&estat.membres.find(m=>m.id===mId);if(mb&&mb.mida)suma+=mb.mida;}
+      });
+      const sumaStr=suma>0?suma+' cm':'';
+      return `<div style="text-align:center;">
+        <div style="font-size:9px;font-weight:600;color:var(--text-suau);">${nom}</div>
+        ${sumaStr?`<div style="font-size:9px;color:var(--text-suau);">${sumaStr}</div>`:''}
+      </div>`;
+    }).join('');
     const baixosPinya5=pinya.posicions.filter(p=>p.rol==='baix');
     const mapa5=INDEX_BAIX_PER_PILAR['5']||[];
     const filaBaixos5=Array.from({length:5},(_,i)=>{
@@ -1036,10 +1063,41 @@ function renderitzaTroncSessio(cas, pinya, obert) {
     }).join('');
 
     // Etiquetes amb noms de pilar correctes
+    // Calcular suma de mides per pilar (baix + segon + terç + quarta)
+    function sumaMidesPilar(pilarNum) {
+      const pisos = ['baix', 'segons', 'terços', 'quartes'];
+      let suma = 0;
+      // Baix: ve de cas.assignacions (pinya)
+      const mapaBaixosLocal = INDEX_BAIX_PER_PILAR[pinya.tipus] || [];
+      const baixosPinyaLocal = pinya.posicions.filter(p => p.rol === 'baix');
+      const baixPilarCentralLocal = pinya.posicions.find(p => p.rol === 'baix_pilar');
+      const idx = mapaBaixosLocal[pilarNum];
+      const posBaix = (idx === -1) ? baixPilarCentralLocal : baixosPinyaLocal[idx];
+      if (posBaix) {
+        const mId = cas.assignacions && cas.assignacions[posBaix.id];
+        const mb = mId && estat.membres.find(m => m.id === mId);
+        if (mb && mb.mida) suma += mb.mida;
+      }
+      // Segon, terç, quarta: ve del tronc
+      ['segons','terços','quartes'].forEach(pis => {
+        const t = tronc.find(x => x.pilar === pilarNum+1 && x.pis === pis);
+        if (t) {
+          const mId = cas.assignacionsTronc && cas.assignacionsTronc[t.id];
+          const mb = mId && estat.membres.find(m => m.id === mId);
+          if (mb && mb.mida) suma += mb.mida;
+        }
+      });
+      return suma > 0 ? suma + ' cm' : '';
+    }
+
     const etiq=Array.from({length:nPilars},(_,i)=>{
       const nom=getNomPilar(pinya.tipus,i);
       const color=pinya.tipus==='3ag'&&i===3?'color:#27ae60;font-weight:700;':'';
-      return `<div style="text-align:center;font-size:10px;font-weight:600;color:var(--text-suau);${color}">${nom}</div>`;
+      const suma=sumaMidesPilar(i);
+      return `<div style="text-align:center;${color}">
+        <div style="font-size:10px;font-weight:600;color:var(--text-suau);">${nom}</div>
+        ${suma?`<div style="font-size:9px;color:var(--text-suau);font-weight:500;">${suma}</div>`:''}
+      </div>`;
     }).join('');
 
     // Fila de baixos: mapping correcte per cada castell
@@ -1664,15 +1722,17 @@ function togglePinya(casId) {
 // ===================== SUPABASE =====================
 const SUPABASE_URL = 'https://djxugrnyvbmziwttaszo.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqeHVncm55dmJteml3dHRhc3pvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkzNzgzNDEsImV4cCI6MjEwNDk1NDM0MX0.d33KiYWYbsmLKmTkik8W2gmeRNL5dnFPDxCfjzjoPHE';
-const PIN_HASH = '3377';
+const SUPABASE_EMAIL = 'validacio-tecnica@brivalls.cat';
+let supabaseToken = null;
 
 async function sbFetch(path, opts = {}) {
   const defaultPrefer = 'return=representation';
   const extraPrefer = opts.headers && opts.headers['Prefer'] ? opts.headers['Prefer'] : null;
   const prefer = extraPrefer ? `${defaultPrefer},${extraPrefer}` : defaultPrefer;
+  const authToken = supabaseToken || SUPABASE_KEY;
   const headers = {
     'apikey': SUPABASE_KEY,
-    'Authorization': 'Bearer ' + SUPABASE_KEY,
+    'Authorization': 'Bearer ' + authToken,
     'Content-Type': 'application/json',
     'Prefer': prefer,
     ...opts.headers
@@ -1688,7 +1748,7 @@ async function sbFetch(path, opts = {}) {
 
 // Estat de l'app
 let estat = { membres: [], sessions: [], pinyes: [] };
-let pinAutenticat = false; // Sempre comença sense autenticar
+let pinAutenticat = false;
 
 function estaAutenticat() { return pinAutenticat; }
 
@@ -1700,7 +1760,7 @@ async function carregaDades() {
       sbFetch('membres?select=*&order=nom.asc')
     ]);
     estat.sessions = sessions || [];
-    estat.membres = (membres || []).map(m => pinAutenticat ? m : { id: m.id, nom: m.nom });
+    estat.membres = pinAutenticat ? (membres || []) : [];
     console.log('Dades carregades:', estat.sessions.length, 'sessions,', estat.membres.length, 'membres');
   } catch(e) {
     console.error('Error carregant de Supabase:', e.message);
@@ -1876,6 +1936,8 @@ function obreModalMembre(membreId) {
     document.getElementById('modal-membre-titol').textContent = 'Editar membre';
     document.getElementById('membre-nom').value = m.nom;
     document.getElementById('membre-tel').value = m.tel || '';
+    document.getElementById('membre-mida').value = m.mida || '';
+    document.getElementById('membre-naixement').value = m.naixement || '';
     document.getElementById('membre-notes').value = m.notes || '';
     if (m.foto) {
       prev.innerHTML = `<img src="${m.foto}" style="width:100%;height:100%;object-fit:cover;">`;
@@ -1889,6 +1951,8 @@ function obreModalMembre(membreId) {
     document.getElementById('modal-membre-titol').textContent = 'Nou membre';
     document.getElementById('membre-nom').value = '';
     document.getElementById('membre-tel').value = '';
+    document.getElementById('membre-mida').value = '';
+    document.getElementById('membre-naixement').value = '';
     document.getElementById('membre-notes').value = '';
     prev.innerHTML = '👤'; prev.dataset.foto = '';
     document.getElementById('membre-foto-esborrar').style.display = 'none';
@@ -1905,6 +1969,8 @@ function guardarMembre() {
   const data = {
     nom,
     tel: document.getElementById('membre-tel').value.trim(),
+    mida: parseInt(document.getElementById('membre-mida').value) || null,
+    naixement: document.getElementById('membre-naixement').value || null,
     notes: document.getElementById('membre-notes').value.trim(),
     foto
   };
@@ -1934,9 +2000,18 @@ function eliminarMembre(membreId) {
 
 function renderitzaMembres() {
   const cont = document.getElementById('llista-membres');
+  if (!estaAutenticat()) {
+    document.getElementById('comptador-membres').textContent = '';
+    cont.innerHTML = `<div class="buit" style="padding:32px 16px;">
+      <div class="buit-ico">🔐</div>
+      <div class="buit-text" style="margin-bottom:16px;">Cal el PIN per veure els membres</div>
+      <button class="btn btn-primari" style="width:auto;padding:10px 24px;" onclick="requereixPin(()=>canviaPanell('membres'))">Introduir PIN</button>
+    </div>`;
+    return;
+  }
   document.getElementById('comptador-membres').textContent = estat.membres.length + ' membres';
   if (!estat.membres.length) {
-    cont.innerHTML = '<div class=\"buit\"><div class=\"buit-ico\">\ud83d\udc65</div><div class=\"buit-text\">Afegeix el primer membre!</div></div>';
+    cont.innerHTML = '<div class="buit"><div class="buit-ico">👥</div><div class="buit-text">Afegeix el primer membre!</div></div>';
     return;
   }
   cont.innerHTML = estat.membres.map(m => `
@@ -2132,26 +2207,46 @@ function requereixPin(callback) {
   }
 }
 
-function verificaPin() {
+async function verificaPin() {
   const pin = document.getElementById('pin-input').value;
-  if (pin === PIN_HASH) {
+  document.getElementById('pin-error').style.display = 'none';
+  const btnAccedir = document.querySelector('#modal-pin .btn-primari');
+  if (btnAccedir) { btnAccedir.textContent = '⏳ Verificant...'; btnAccedir.disabled = true; }
+  try {
+    const res = await fetch(SUPABASE_URL + '/auth/v1/token?grant_type=password', {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: SUPABASE_EMAIL, password: pin })
+    });
+    if (btnAccedir) { btnAccedir.textContent = 'Accedir'; btnAccedir.disabled = false; }
+    if (!res.ok) throw new Error('PIN incorrecte');
+    const data = await res.json();
+    supabaseToken = data.access_token;
     pinAutenticat = true;
     tancaModal('modal-pin');
     actualitzaBotoPin();
     carregaDades().then(() => { renderitzaMembres(); renderitzaSessions(); });
-    // Executar callback pendent si n'hi ha
     if (window._pinCallback) {
       const cb = window._pinCallback;
       window._pinCallback = null;
       cb();
     }
-  } else {
+  } catch(e) {
+    if (btnAccedir) { btnAccedir.textContent = 'Accedir'; btnAccedir.disabled = false; }
     document.getElementById('pin-error').style.display = 'block';
     document.getElementById('pin-input').value = '';
   }
 }
 
 function tancarSessioPin() {
+  // Logout de Supabase
+  if (supabaseToken) {
+    fetch(SUPABASE_URL + '/auth/v1/logout', {
+      method: 'POST',
+      headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + supabaseToken }
+    }).catch(() => {});
+  }
+  supabaseToken = null;
   pinAutenticat = false;
   actualitzaBotoPin();
   carregaDades().then(() => { renderitzaMembres(); renderitzaSessions(); });
