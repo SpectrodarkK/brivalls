@@ -1769,12 +1769,18 @@ function toggleCastell(casId) {
 function togglePinya(casId) {
   if (!estaAutenticat()) { requereixPin(() => togglePinya(casId)); return; }
   pinyaOculta[casId] = !pinyaOculta[casId];
-  // Guardar a la sessió
   asseguraCastells();
   const cas = sessioActual.castells.find(c => c.id === casId);
   if (cas) cas.pinyaOculta = pinyaOculta[casId];
   desaSessio();
-  renderitzaPinyaSessio();
+  // Actualitzar visualment sense re-renderitzar tot
+  const cos = document.getElementById('pinya-cos-' + casId);
+  const fletxa = cos && cos.previousElementSibling && cos.previousElementSibling.querySelector('span:last-child');
+  if (cos) cos.style.display = pinyaOculta[casId] ? 'none' : '';
+  if (fletxa) fletxa.style.transform = pinyaOculta[casId] ? 'rotate(-90deg)' : '';
+  if (!pinyaOculta[casId] && cas && cas.pinya) {
+    renderitzaVistaPinya(cas.pinya, cas.assignacions || {}, 'sessio-cas-' + casId, 'pinya-cos-' + casId);
+  }
 }
 
 // ===================== SUPABASE =====================
@@ -2243,12 +2249,17 @@ function renderitzaPinyaSessio() {
       <div class="card-cap">
         <span class="card-titol">${info.ico} ${pinya.nom}${num}</span>
         <div style="display:flex;gap:6px;">
-          <button class="btn btn-petit" style="background:none;border:none;font-size:15px;cursor:pointer;color:${pinyaOculta[cas.id]?'var(--text-suau)':'var(--blau)'};" onclick="togglePinya('${cas.id}')" title="${pinyaOculta[cas.id]?'Mostrar pinya':'Amagar pinya'}">${pinyaOculta[cas.id]?'🫣':'👁️'}</button>
           <button class="btn btn-petit" style="background:none;border:none;font-size:16px;cursor:pointer;color:var(--text-suau);transition:transform 0.2s;transform:${castellPlegat[cas.id]?'rotate(-90deg)':''}" onclick="toggleCastell('${cas.id}')">▼</button>
           <button class="btn btn-petit btn-perill" onclick="eliminarCastellSessio('${cas.id}')">🗑️</button>
         </div>
       </div>
-      <div id="vista-cas-${cas.id}" ${castellPlegat[cas.id] ? 'style="display:none"' : ''}></div>
+      <div id="vista-cas-${cas.id}" ${castellPlegat[cas.id] ? 'style="display:none"' : ''}>
+        <div onclick="togglePinya('${cas.id}')" style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;cursor:pointer;background:var(--gris-clar);border-bottom:1px solid var(--vora);">
+          <span style="font-size:12px;font-weight:700;color:var(--text-suau);text-transform:uppercase;letter-spacing:0.5px;">🏛️ Pinya</span>
+          <span style="font-size:14px;color:var(--text-suau);transition:transform 0.2s;transform:${pinyaOculta[cas.id]?'rotate(-90deg)':''}">▼</span>
+        </div>
+        <div id="pinya-cos-${cas.id}" ${pinyaOculta[cas.id]?'style="display:none"':''}></div>
+      </div>
     </div>`;
   });
 
@@ -2273,7 +2284,7 @@ function renderitzaPinyaSessio() {
       if (el) el.insertAdjacentHTML('beforebegin', tHTML);
     }
     if (!pinyaOculta[cas.id]) {
-      renderitzaVistaPinya(pinya, cas.assignacions || {}, 'sessio-cas-' + cas.id, 'vista-cas-' + cas.id);
+      renderitzaVistaPinya(pinya, cas.assignacions || {}, 'sessio-cas-' + cas.id, 'pinya-cos-' + cas.id);
     }
   });
 }
