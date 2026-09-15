@@ -1290,20 +1290,10 @@ function obreAssignacioTroncSessio(casId, troncId) {
   posicioSeleccionada = troncId;
   contextAssignacio = 'sessio-tronc';
   window._casIdTronc = casId;
-  const cas = sessioActual.castells.find(c => c.id === casId);
-  const pinya = cas && cas.pinyaId ? estat.pinyes.find(p => p.id === cas.pinyaId) : null;
-  // Invalida: assignats a la pinya d'aquesta sessió + altres posicions del tronc d'aquesta sessió
-  const usats = new Set();
-  if (cas) {
-    Object.values(cas.assignacions || {}).forEach(m => usats.add(m));
-    Object.entries(cas.assignacionsTronc || {}).forEach(([tid, mid]) => { if (tid !== troncId) usats.add(mid); });
-  }
-  const assistents = estat.membres.filter(m => sessioActual.assistencia && sessioActual.assistencia[m.id]);
-  const persones = assistents.filter(m => !usats.has(m.id));
   document.getElementById('cerca-persona').style.display = 'block';
   document.getElementById('cerca-persona').value = '';
   document.getElementById('modal-sel-titol').textContent = 'Assignar al tronc';
-  renderitzaOpcionsPersones(persones, usats);
+  renderitzaOpcionsPersones(estat.membres, true);
   obreModal('modal-seleccio-persona');
 }
 
@@ -1571,39 +1561,44 @@ function obreAssignacioPosicio(posId, context) {
   document.getElementById('cerca-persona').style.display = 'block';
   document.getElementById('cerca-persona').value = '';
   document.getElementById('modal-sel-titol').textContent = 'Assignar persona';
-  renderitzaOpcionsPersones(estat.membres);
+  // Tronc: tots els membres. Pinya: només confirmats
+  const esTronc = context === 'sessio-tronc' || context === 'tronc';
+  const persones = esTronc ? estat.membres
+    : (sessioActual ? estat.membres.filter(m => sessioActual.assistencia && sessioActual.assistencia[m.id]) : estat.membres);
+  renderitzaOpcionsPersones(persones, esTronc);
   obreModal('modal-seleccio-persona');
 }
 
-function renderitzaOpcionsPersones(persones) {
+function renderitzaOpcionsPersones(persones, mostrarNoConfirmats) {
   const cont = document.getElementById('llista-sel-persones');
   if (!persones.length) {
-    cont.innerHTML = '<div class="buit"><div class="buit-ico">\u{1F465}</div><div class="buit-text">No hi ha persones disponibles</div></div>';
+    cont.innerHTML = '<div class="buit"><div class="buit-ico">👥</div><div class="buit-text">No hi ha persones disponibles</div></div>';
     return;
   }
   const jaAssignats = getIdsJaAssignats(posicioSeleccionada);
   const assistencia = sessioActual && sessioActual.assistencia ? sessioActual.assistencia : {};
-  const esSessio = contextAssignacio && (contextAssignacio.startsWith('sessio-cas-') || contextAssignacio === 'sessio-tronc');
   cont.innerHTML = persones.map(m => {
     const ocupat = jaAssignats.has(m.id);
-    const confirmat = !esSessio || !!assistencia[m.id];
+    const confirmat = !!assistencia[m.id];
+    const colorNom = mostrarNoConfirmats && !confirmat ? 'color:#e74c3c;' : '';
     return `<div class="persona-opcio ${ocupat ? 'deshabilitada' : ''}" onclick="assignaPersona('${m.id}')">
-      <div class="membre-avatar ${colorAvatar(m.nom)}" style="width:32px;height:32px;font-size:11px;${m.foto ? `background-image:url('${m.foto}');background-size:cover;background-position:center;` : ''}">${m.foto ? '' : inicials(m.nom)}</div>
+      <div class="membre-avatar ${colorAvatar(m.nom)}" style="width:32px;height:32px;font-size:11px;${ocupat?'opacity:0.5;':''}${m.foto ? `background-image:url('${m.foto}');background-size:cover;background-position:center;` : ''}">${m.foto ? '' : inicials(m.nom)}</div>
       <div style="flex:1;">
-        <div class="persona-opcio-nom" style="font-size:14px;font-weight:600;">${m.nom}</div>
-        ${!confirmat ? `<div style="font-size:11px;color:#e74c3c;font-weight:600;">No confirmat</div>` : ''}
+        <div class="persona-opcio-nom" style="font-size:14px;font-weight:600;${colorNom}">${m.nom}</div>
+        ${mostrarNoConfirmats && !confirmat ? `<div style="font-size:11px;color:#e74c3c;">No confirmat</div>` : ''}
       </div>
-      ${!confirmat ? `<span style="color:#e74c3c;font-size:18px;font-weight:700;flex-shrink:0;">!</span>` : ''}
-      ${ocupat ? `<span class="tag-ocupat" style="font-size:10px;">\u21D4 Intercanviar</span>` : ''}
+      ${ocupat ? `<span class="tag-ocupat" style="font-size:10px;">↔ Intercanviar</span>` : ''}
     </div>`;
   }).join('');
 }
 
 function filtraPersones() {
   const cerca = normalitza(document.getElementById('cerca-persona').value);
-  let persones = estat.membres;
+  const esTronc = contextAssignacio === 'sessio-tronc' || contextAssignacio === 'tronc';
+  let persones = esTronc ? estat.membres
+    : (sessioActual ? estat.membres.filter(m => sessioActual.assistencia && sessioActual.assistencia[m.id]) : estat.membres);
   if (cerca) persones = persones.filter(m => normalitza(m.nom).includes(cerca));
-  renderitzaOpcionsPersones(persones);
+  renderitzaOpcionsPersones(persones, esTronc);
 }
 
 function filtraAssistents() {
@@ -2268,15 +2263,24 @@ async function carregaAccesMembre(membreId) {
       cont.innerHTML = '<div class="buit" style="padding:16px;"><div class="buit-ico">🔓</div><div class="buit-text">Sense usuaris vinculats</div></div>';
       return;
     }
-    // Obtenir info dels usuaris via Edge Function o mostrar user_id
+    // Per cada user_id, buscar tots els membres vinculats per mostrar el nom
+    const items = await Promise.all(vinc.map(async v => {
+      const altres = await sbFetch(`membre_usuari?user_id=eq.${v.user_id}&select=membre_id,membres(nom)`);
+      // Trobar el nom del membre principal (el primer que no sigui el membre actual, o l'email)
+      const nomsMembres = (altres || [])
+        .filter(a => a.membres)
+        .map(a => a.membres.nom);
+      const nomDisplay = nomsMembres.length ? nomsMembres.join(', ') : v.user_id.slice(0,8) + '...';
+      return { userId: v.user_id, nom: nomDisplay };
+    }));
+
     cont.innerHTML = '<div style="font-size:12px;color:var(--text-suau);margin-bottom:8px;">Usuaris amb accés a aquesta fitxa:</div>' +
-      vinc.map(v => `
+      items.map(item => `
         <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--gris-clar);border-radius:8px;margin-bottom:6px;">
           <div>
-            <div style="font-size:13px;font-weight:600;">Usuari vinculat</div>
-            <div style="font-size:11px;color:var(--text-suau);font-family:monospace;">${v.user_id.slice(0,8)}...</div>
+            <div style="font-size:13px;font-weight:600;">${item.nom}</div>
           </div>
-          <button class="btn btn-petit btn-perill" onclick="desvincula('${v.user_id}')">Desvincular</button>
+          <button class="btn btn-petit btn-perill" onclick="desvincula('${item.userId}')">Desvincular</button>
         </div>
       `).join('');
   } catch(e) {
