@@ -118,15 +118,21 @@ async function recuperaContrasenya() {
   const email = document.getElementById('email').value.trim();
   if (!email) { document.getElementById('error-msg').textContent='Posa el teu correu primer'; document.getElementById('error-msg').style.display='block'; return; }
   try {
-    await fetch(SUPABASE_URL + '/auth/v1/recover', {
+    const res = await fetch(SUPABASE_URL + '/auth/v1/recover', {
       method:'POST',
       headers:{'apikey':SUPABASE_KEY,'Content-Type':'application/json'},
-      body: JSON.stringify({email})
+      body: JSON.stringify({
+        email,
+        redirectTo: 'https://spectrodarkk.github.io/brivalls/casteller.html'
+      })
     });
     document.getElementById('error-msg').style.color='#27ae60';
-    document.getElementById('error-msg').textContent='Email de recuperació enviat!';
+    document.getElementById('error-msg').textContent='Email de recuperació enviat! Revisa el correu.';
     document.getElementById('error-msg').style.display='block';
-  } catch(e) {}
+  } catch(e) {
+    document.getElementById('error-msg').textContent='Error enviant el correu';
+    document.getElementById('error-msg').style.display='block';
+  }
 }
 </script>
 </body>
