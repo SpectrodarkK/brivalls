@@ -46,17 +46,41 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
 const EMAIL_TECNIC = 'validacio-tecnica@brivalls.cat';
 
 // Detectar si venim d'un email d'invitació o recuperació
-(function detectaToken() {
+(async function detectaToken() {
+  // Format 1: fragment (#access_token=...)
   const hash = window.location.hash;
-  const params = new URLSearchParams(hash.replace('#', ''));
-  const type = params.get('type');
-  const accessToken = params.get('access_token');
-  const refreshToken = params.get('refresh_token');
+  const hashParams = new URLSearchParams(hash.replace('#', ''));
+
+  // Format 2: query params (?token=...&type=invite)
+  const queryParams = new URLSearchParams(window.location.search);
+
+  const type = hashParams.get('type') || queryParams.get('type');
+  const accessToken = hashParams.get('access_token');
+  const refreshToken = hashParams.get('refresh_token');
+  const tokenHash = queryParams.get('token_hash') || queryParams.get('token');
+
   if (accessToken && (type === 'invite' || type === 'recovery' || type === 'signup')) {
+    // Token directe al fragment
     sessionStorage.setItem('sb-token', accessToken);
     if (refreshToken) sessionStorage.setItem('sb-refresh', refreshToken);
     sessionStorage.setItem('sb-canvia-pwd', '1');
     window.location.href = 'casteller.html';
+  } else if (tokenHash && type) {
+    // Token hash — cal verificar-lo primer per obtenir el JWT
+    try {
+      const res = await fetch(SUPABASE_URL + '/auth/v1/verify', {
+        method: 'POST',
+        headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token_hash: tokenHash, type })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        sessionStorage.setItem('sb-token', data.access_token);
+        if (data.refresh_token) sessionStorage.setItem('sb-refresh', data.refresh_token);
+        sessionStorage.setItem('sb-canvia-pwd', '1');
+        window.location.href = 'casteller.html';
+      }
+    } catch(e) { console.error('Error verificant token:', e); }
   }
 })();
 
