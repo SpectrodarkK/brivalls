@@ -45,6 +45,21 @@ const SUPABASE_URL = 'https://djxugrnyvbmziwttaszo.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqeHVncm55dmJteml3dHRhc3pvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkzNzgzNDEsImV4cCI6MjEwNDk1NDM0MX0.d33KiYWYbsmLKmTkik8W2gmeRNL5dnFPDxCfjzjoPHE';
 const EMAIL_TECNIC = 'validacio-tecnica@brivalls.cat';
 
+// Detectar si venim d'un email d'invitació o recuperació
+(function detectaToken() {
+  const hash = window.location.hash;
+  const params = new URLSearchParams(hash.replace('#', ''));
+  const type = params.get('type');
+  const accessToken = params.get('access_token');
+  const refreshToken = params.get('refresh_token');
+  if (accessToken && (type === 'invite' || type === 'recovery' || type === 'signup')) {
+    sessionStorage.setItem('sb-token', accessToken);
+    if (refreshToken) sessionStorage.setItem('sb-refresh', refreshToken);
+    sessionStorage.setItem('sb-canvia-pwd', '1');
+    window.location.href = 'casteller.html';
+  }
+})();
+
 async function login() {
   const email = document.getElementById('email').value.trim();
   const pwd = document.getElementById('pwd').value;
