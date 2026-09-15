@@ -884,7 +884,7 @@ function generaTronc(tipus) {
     '2':   ['Carregada', 'Descarregada'],
     '3':   ['Rengla', 'Plena', 'Buida'],
     '3ag': ['Rengla', 'Plena', 'Buida', 'Agulla'],
-    '4':   ['Esquerre', 'Rengla', 'Dreta', 'Contra'],
+    '4':   ['Esquerra', 'Rengla', 'Dreta', 'Contra'],
     '5':   ['Rengla', 'Plena', 'Buida', 'Carregada', 'Descarregada'],
   };
   const noms = nomsPilars[tipus] || [];
@@ -927,7 +927,7 @@ function getNomPilar(tipus, pilarIdx) {
     '2':   ['Carregada', 'Descarregada'],
     '3':   ['Rengla', 'Plena', 'Buida'],
     '3ag': ['Rengla', 'Plena', 'Buida', 'Agulla'],
-    '4':   ['Esquerre', 'Rengla', 'Dreta', 'Contra'],
+    '4':   ['Esquerra', 'Rengla', 'Dreta', 'Contra'],
     '5':   ['Rengla', 'Plena', 'Buida', 'Carregada', 'Descarregada'],
   };
   return (noms[tipus] || [])[pilarIdx] || `Pilar ${pilarIdx+1}`;
@@ -1011,7 +1011,7 @@ function renderitzaTroncSessio(cas, pinya, obert) {
     cos = `<div style="max-width:180px;margin:0 auto;display:flex;flex-direction:column;gap:6px;">
       <div style="text-align:center;font-size:10px;font-weight:700;color:var(--text-suau);text-transform:uppercase;">▲ Dalt</div>
       ${files}
-      <div style="text-align:center;font-size:10px;font-weight:700;color:var(--text-suau);text-transform:uppercase;">▼ Base</div>
+      <div style="text-align:center;font-size:10px;font-weight:700;color:var(--text-suau);text-transform:uppercase;">▼ Baixos</div>
     </div>`;
   } else if (pinya.tipus === '5') {
     const pomA=tronc.filter(t=>t.pilar===6), pomB=tronc.filter(t=>t.pilar===7);
@@ -1074,7 +1074,7 @@ function renderitzaTroncSessio(cas, pinya, obert) {
       ${fp}
       <div style="border-top:2px dashed var(--vora);margin:8px 0;"></div>
       <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:4px;">${filaBaixos5}</div>
-      <div style="text-align:center;font-size:10px;font-weight:700;color:var(--text-suau);text-transform:uppercase;margin-top:4px;">▼ Base</div>`;
+      <div style="text-align:center;font-size:10px;font-weight:700;color:var(--text-suau);text-transform:uppercase;margin-top:4px;">▼ Baixos</div>`;
   } else {
     const pisosPom = ['enxaneta','acotxador','dos'];
     const filaPom = pisosPom.map(pis=>{
@@ -1159,7 +1159,7 @@ function renderitzaTroncSessio(cas, pinya, obert) {
       ${fp}
       <div style="border-top:2px dashed var(--vora);margin:8px 0;"></div>
       <div style="display:grid;grid-template-columns:repeat(${nPilars},1fr);gap:6px;margin-bottom:4px;">${filaBaixosSessio}</div>
-      <div style="text-align:center;font-size:10px;font-weight:700;color:var(--text-suau);text-transform:uppercase;margin-top:4px;">▼ Base</div>`;
+      <div style="text-align:center;font-size:10px;font-weight:700;color:var(--text-suau);text-transform:uppercase;margin-top:4px;">▼ Baixos</div>`;
   }
 
   pinyaActual = pinyaBak;
@@ -1191,7 +1191,8 @@ function afegirCastellSessio() {
   if (!estaAutenticat()) { requereixPin(afegirCastellSessio); return; }
   asseguraCastells();
   const casId = id();
-  sessioActual.castells.push({ id: casId, pinya: null, assignacions: {}, assignacionsTronc: {} });
+  sessioActual.castells.push({ id: casId, pinya: null, assignacions: {}, assignacionsTronc: {}, pinyaOculta: true });
+  pinyaOculta[casId] = true;
   desaSessio();
   window._casIdPendent = casId;
   obreModalPinya();
@@ -1869,7 +1870,7 @@ function obreSessioDetall(id) {
   (sessioActual.castells || []).forEach(cas => {
     if (cas.pinyaOculta) pinyaOculta[cas.id] = true;
   });
-  assistCardObert = true;
+  assistCardObert = false;
   renderitzaAssistencia();
   const campCerca = document.getElementById('cerca-assistent');
   if (campCerca) campCerca.value = '';
@@ -2265,14 +2266,14 @@ function renderitzaPinyaSessio() {
   castells.forEach(cas => {
     const pinya = cas.pinya || null;
     if (!pinya || castellPlegat[cas.id]) return;
-    if (!pinyaOculta[cas.id]) {
-      renderitzaVistaPinya(pinya, cas.assignacions || {}, 'sessio-cas-' + cas.id, 'vista-cas-' + cas.id);
-    }
     const tObert = troncSessioObert[cas.id] !== false;
     const tHTML = renderitzaTroncSessio(cas, pinya, tObert);
     if (tHTML) {
       const el = document.getElementById('vista-cas-' + cas.id);
-      if (el) el.insertAdjacentHTML('afterend', tHTML);
+      if (el) el.insertAdjacentHTML('beforebegin', tHTML);
+    }
+    if (!pinyaOculta[cas.id]) {
+      renderitzaVistaPinya(pinya, cas.assignacions || {}, 'sessio-cas-' + cas.id, 'vista-cas-' + cas.id);
     }
   });
 }
