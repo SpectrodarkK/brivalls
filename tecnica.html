@@ -1568,48 +1568,40 @@ function obreAssignacioPosicio(posId, context) {
   if (!estaAutenticat()) { requereixPin(() => obreAssignacioPosicio(posId, context)); return; }
   posicioSeleccionada = posId;
   contextAssignacio = context;
-  let persones;
-  if (context && context.startsWith('sessio-cas-')) {
-    persones = estat.membres.filter(m => sessioActual.assistencia && sessioActual.assistencia[m.id]);
-  } else {
-    persones = estat.membres;
-  }
   document.getElementById('cerca-persona').style.display = 'block';
   document.getElementById('cerca-persona').value = '';
   document.getElementById('modal-sel-titol').textContent = 'Assignar persona';
-  renderitzaOpcionsPersones(persones);
+  renderitzaOpcionsPersones(estat.membres);
   obreModal('modal-seleccio-persona');
 }
 
 function renderitzaOpcionsPersones(persones) {
   const cont = document.getElementById('llista-sel-persones');
   if (!persones.length) {
-    cont.innerHTML = '<div class="buit"><div class="buit-ico">👥</div><div class="buit-text">No hi ha persones disponibles</div></div>';
+    cont.innerHTML = '<div class="buit"><div class="buit-ico">\u{1F465}</div><div class="buit-text">No hi ha persones disponibles</div></div>';
     return;
   }
   const jaAssignats = getIdsJaAssignats(posicioSeleccionada);
+  const assistencia = sessioActual && sessioActual.assistencia ? sessioActual.assistencia : {};
+  const esSessio = contextAssignacio && (contextAssignacio.startsWith('sessio-cas-') || contextAssignacio === 'sessio-tronc');
   cont.innerHTML = persones.map(m => {
     const ocupat = jaAssignats.has(m.id);
+    const confirmat = !esSessio || !!assistencia[m.id];
     return `<div class="persona-opcio ${ocupat ? 'deshabilitada' : ''}" onclick="assignaPersona('${m.id}')">
       <div class="membre-avatar ${colorAvatar(m.nom)}" style="width:32px;height:32px;font-size:11px;${m.foto ? `background-image:url('${m.foto}');background-size:cover;background-position:center;` : ''}">${m.foto ? '' : inicials(m.nom)}</div>
       <div style="flex:1;">
         <div class="persona-opcio-nom" style="font-size:14px;font-weight:600;">${m.nom}</div>
+        ${!confirmat ? `<div style="font-size:11px;color:#e74c3c;font-weight:600;">No confirmat</div>` : ''}
       </div>
-      ${ocupat ? `<span class="tag-ocupat" style="font-size:10px;">↔ Intercanviar</span>` : ''}
+      ${!confirmat ? `<span style="color:#e74c3c;font-size:18px;font-weight:700;flex-shrink:0;">!</span>` : ''}
+      ${ocupat ? `<span class="tag-ocupat" style="font-size:10px;">\u21D4 Intercanviar</span>` : ''}
     </div>`;
   }).join('');
 }
 
-// Normalitza un text per a cerques sense distinció d'accents ni majúscules
-function normalitza(str) {
-  return str.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
-}
-
 function filtraPersones() {
   const cerca = normalitza(document.getElementById('cerca-persona').value);
-  let persones = (contextAssignacio && contextAssignacio.startsWith('sessio-cas-'))
-    ? estat.membres.filter(m => sessioActual.assistencia && sessioActual.assistencia[m.id])
-    : estat.membres;
+  let persones = estat.membres;
   if (cerca) persones = persones.filter(m => normalitza(m.nom).includes(cerca));
   renderitzaOpcionsPersones(persones);
 }
@@ -2544,7 +2536,6 @@ function renderitzaPinyaSessio() {
         <span style="color:var(--text-suau);font-size:16px;margin-right:6px;cursor:grab;">⠿</span>
         <div style="flex:1;min-width:0;">
           <span class="card-titol">${info.ico} ${pinya.nom}${num}</span>
-          ${pinya.desc ? `<div style="font-size:11px;color:var(--text-suau);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${pinya.desc}</div>` : ''}
         </div>
         <div style="display:flex;gap:6px;flex-shrink:0;">
           <button class="btn btn-petit btn-groc" onclick="obreEditaCastell('${cas.id}')" title="Editar nom i descripció">✏️</button>
