@@ -206,7 +206,7 @@ function obreDetallDiada(s) {
       if (cas.pinyaOculta) {
         elSvg.innerHTML = '<div style="padding:12px 16px;font-size:13px;color:#999;font-style:italic;">Pinya oculta per a aquest castell</div>';
       } else if (p && p.posicions) {
-        elSvg.innerHTML = generaSVG(p);
+        elSvg.innerHTML = generaSVG(p, cas.nomsAssignats);
       }
     }
     if (elTronc && p && p.tronc && p.tronc.length) {
@@ -215,13 +215,19 @@ function obreDetallDiada(s) {
   });
 }
 
-function generaSVG(pinya) {
+function generaSVG(pinya, nomsAssignats) {
   const COLORS = {baix:'#1a1a2e',baix_pilar:'#1a1a2e',agulla:'#27ae60',crossa:'#f1c40f',contrafort:'#e8e8e8',vent:'#c0392b',lateral:'#2980b9',diagonal:'#2980b9',mans:'#8e44ad',tap:'#95a5a6',envoltant:'#27ae60'};
-  const R = 5.2, pos = pinya.posicions || [];
+  const R = 5.2, pos = pinya.posicions || [], nA = nomsAssignats || {};
   if (!pos.length) return '';
   const xs = pos.map(p=>p.cx), ys = pos.map(p=>p.cy);
-  const marge = R+4, minX=Math.min(...xs)-marge, maxX=Math.max(...xs)+marge, minY=Math.min(...ys)-marge, maxY=Math.max(...ys)+marge;
-  return `<svg viewBox="${minX} ${minY} ${maxX-minX} ${maxY-minY}" xmlns="http://www.w3.org/2000/svg">${pos.map(p=>`<circle cx="${p.cx}" cy="${p.cy}" r="${R}" fill="${COLORS[p.rol]||'#999'}" stroke="#fff" stroke-width="0.3" opacity="0.9"/>`).join('')}</svg>`;
+  const marge = R+8, minX=Math.min(...xs)-marge, maxX=Math.max(...xs)+marge, minY=Math.min(...ys)-marge, maxY=Math.max(...ys)+marge;
+  const cercles = pos.map(p => {
+    const color = COLORS[p.rol] || '#999';
+    const nom = nA[p.id];
+    const nomEl = nom ? `<foreignObject x="${p.cx-R}" y="${p.cy-R}" width="${R*2}" height="${R*2}"><div xmlns="http://www.w3.org/1999/xhtml" style="width:${R*2}px;height:${R*2}px;display:flex;align-items:center;justify-content:center;text-align:center;overflow:hidden;"><span style="font-size:2px;font-weight:700;color:#fff;line-height:1;">${nom}</span></div></foreignObject>` : '';
+    return `<circle cx="${p.cx}" cy="${p.cy}" r="${R}" fill="${color}" stroke="#fff" stroke-width="0.3" opacity="0.9"/>${nomEl}`;
+  }).join('');
+  return `<svg viewBox="${minX} ${minY} ${maxX-minX} ${maxY-minY}" xmlns="http://www.w3.org/2000/svg">${cercles}</svg>`;
 }
 
 function generaTroncHTML(cas, pinya) {
@@ -235,45 +241,42 @@ function generaTroncHTML(cas, pinya) {
   const baixPilar=(pinya.posicions||[]).find(p=>p.rol==='baix_pilar');
   const cols=`repeat(${nPilars},1fr)`;
 
-  function cella(assignat, negre) {
-    return `<div style="background:${assignat?(negre?'#1a1a2e':'#29327a'):'#f0f0f0'};color:${assignat?'#fff':'#ccc'};border-radius:6px;padding:6px 4px;text-align:center;font-size:12px;font-weight:700;min-height:28px;display:flex;align-items:center;justify-content:center;">${assignat?'✓':'–'}</div>`;
+  function cella(assignat, negre, nom) {
+    const bg = assignat ? (negre?'#1a1a2e':'#29327a') : '#f0f0f0';
+    const color = assignat ? '#fff' : '#ccc';
+    const text = assignat ? (nom || '✓') : '–';
+    const fs = nom && nom.length > 6 ? '9px' : '11px';
+    return `<div style="background:${bg};color:${color};border-radius:6px;padding:4px 2px;text-align:center;font-size:${fs};font-weight:700;min-height:28px;display:flex;align-items:center;justify-content:center;overflow:hidden;">${text}</div>`;
   }
 
   let html = '<div style="padding:12px 16px;border-top:1px solid #eee;">';
   html += '<div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:10px;">🏗️ Tronc</div>';
 
-  // Pom de dalt: enxaneta → acotxador → dos (de dalt a baix)
+  const nA = cas.nomsAssignats || {};
+  const nT = cas.nomsTronc || {};
+
   const enx = tronc.find(t=>t.pis==='enxaneta');
   const acots = tronc.filter(t=>t.pis==='acotxador');
   const dosos = tronc.filter(t=>t.pis==='dos');
 
-  if (enx) html += `<div style="max-width:80px;margin:0 auto 4px;">${cella(!!aT[enx.id])}</div>`;
-
-  // Acotxador(s)
+  if (enx) html += `<div style="max-width:80px;margin:0 auto 4px;">${cella(!!aT[enx.id], false, nT[enx.id])}</div>`;
   if (acots.length) {
     const w = acots.length === 1 ? 'max-width:80px;margin:0 auto 4px;' : `display:grid;grid-template-columns:repeat(${acots.length},1fr);gap:4px;margin-bottom:4px;`;
-    html += `<div style="${w}">${acots.map(t=>cella(!!aT[t.id])).join('')}</div>`;
+    html += `<div style="${w}">${acots.map(t=>cella(!!aT[t.id], false, nT[t.id])).join('')}</div>`;
   }
-
-  // Dos
   if (dosos.length) {
-    html += `<div style="display:grid;grid-template-columns:repeat(${dosos.length},1fr);gap:4px;margin-bottom:4px;">${dosos.map(t=>cella(!!aT[t.id])).join('')}</div>`;
+    html += `<div style="display:grid;grid-template-columns:repeat(${dosos.length},1fr);gap:4px;margin-bottom:4px;">${dosos.map(t=>cella(!!aT[t.id], false, nT[t.id])).join('')}</div>`;
   }
 
   html += '<div style="border-top:1px dashed #ddd;margin:8px 0;"></div>';
-
-  // Etiquetes pilars
   html += `<div style="display:grid;grid-template-columns:${cols};gap:4px;margin-bottom:4px;">${Array.from({length:nPilars},(_,i)=>`<div style="text-align:center;font-size:9px;font-weight:600;color:#888;">${noms[i]||'P'+(i+1)}</div>`).join('')}</div>`;
 
-  // Pisos: quarta → terç → segon
   ['quartes','terços','segons'].forEach(pis => {
-    html += `<div style="display:grid;grid-template-columns:${cols};gap:4px;margin-bottom:4px;">${Array.from({length:nPilars},(_,i)=>{const t=tronc.find(x=>x.pilar===i+1&&x.pis===pis);return cella(t&&!!aT[t.id]);}).join('')}</div>`;
+    html += `<div style="display:grid;grid-template-columns:${cols};gap:4px;margin-bottom:4px;">${Array.from({length:nPilars},(_,i)=>{const t=tronc.find(x=>x.pilar===i+1&&x.pis===pis);return cella(t&&!!aT[t.id], false, t&&nT[t.id]);}).join('')}</div>`;
   });
 
   html += '<div style="border-top:1px dashed #ddd;margin:8px 0;"></div>';
-
-  // Baixos
-  html += `<div style="display:grid;grid-template-columns:${cols};gap:4px;margin-bottom:4px;">${Array.from({length:nPilars},(_,i)=>{const idx=mapa[i];const pos=idx===-1?baixPilar:baixos[idx];return cella(pos&&!!aP[pos.id], true);}).join('')}</div>`;
+  html += `<div style="display:grid;grid-template-columns:${cols};gap:4px;margin-bottom:4px;">${Array.from({length:nPilars},(_,i)=>{const idx=mapa[i];const pos=idx===-1?baixPilar:baixos[idx];const te=pos&&!!aP[pos.id];return cella(te, true, pos&&nA[pos.id]);}).join('')}</div>`;
 
   html += '</div>';
   return html;

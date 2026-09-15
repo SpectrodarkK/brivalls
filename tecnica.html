@@ -1572,22 +1572,37 @@ function assignaPersona(membreId) {
   const posicioOrigen = trobaPosicioActual(membreId);
   const membreDesplaçat = membreActualEnPosicio();
 
+  function nomPila(mId) {
+    const m = mId && estat.membres.find(x => x.id === mId);
+    return m ? m.nom.split(' ')[0] : null;
+  }
+  function guardaNom(cas, posId, mId, tipus) {
+    if (tipus === 'pinya') {
+      if (!cas.nomsAssignats) cas.nomsAssignats = {};
+      if (mId) cas.nomsAssignats[posId] = nomPila(mId);
+      else delete cas.nomsAssignats[posId];
+    } else {
+      if (!cas.nomsTronc) cas.nomsTronc = {};
+      if (mId) cas.nomsTronc[posId] = nomPila(mId);
+      else delete cas.nomsTronc[posId];
+    }
+  }
+
   // Fer l'assignació (o intercanvi)
   if (ctx && ctx.startsWith('sessio-cas-')) {
     const casId = ctx.replace('sessio-cas-', '');
     const cas = sessioActual.castells.find(c => c.id === casId);
     if (cas) {
       if (!cas.assignacions) cas.assignacions = {};
-      // Si intercanvi: posar el membre desplaçat a la posició origen
       if (posicioOrigen && membreDesplaçat) {
-        if (posicioOrigen.tipus === 'sessio-pinya') posicioOrigen.cas.assignacions[posicioOrigen.posId] = membreDesplaçat;
-        else if (posicioOrigen.tipus === 'sessio-tronc') posicioOrigen.cas.assignacionsTronc[posicioOrigen.posId] = membreDesplaçat;
+        if (posicioOrigen.tipus === 'sessio-pinya') { posicioOrigen.cas.assignacions[posicioOrigen.posId] = membreDesplaçat; guardaNom(posicioOrigen.cas, posicioOrigen.posId, membreDesplaçat, 'pinya'); }
+        else if (posicioOrigen.tipus === 'sessio-tronc') { posicioOrigen.cas.assignacionsTronc[posicioOrigen.posId] = membreDesplaçat; guardaNom(posicioOrigen.cas, posicioOrigen.posId, membreDesplaçat, 'tronc'); }
       } else if (posicioOrigen) {
-        // Buidar la posició origen
-        if (posicioOrigen.tipus === 'sessio-pinya') delete posicioOrigen.cas.assignacions[posicioOrigen.posId];
-        else if (posicioOrigen.tipus === 'sessio-tronc') delete posicioOrigen.cas.assignacionsTronc[posicioOrigen.posId];
+        if (posicioOrigen.tipus === 'sessio-pinya') { delete posicioOrigen.cas.assignacions[posicioOrigen.posId]; guardaNom(posicioOrigen.cas, posicioOrigen.posId, null, 'pinya'); }
+        else if (posicioOrigen.tipus === 'sessio-tronc') { delete posicioOrigen.cas.assignacionsTronc[posicioOrigen.posId]; guardaNom(posicioOrigen.cas, posicioOrigen.posId, null, 'tronc'); }
       }
       cas.assignacions[posicioSeleccionada] = membreId;
+      guardaNom(cas, posicioSeleccionada, membreId, 'pinya');
     }
     desaSessio();
     tancaModal('modal-seleccio-persona');
@@ -1598,13 +1613,14 @@ function assignaPersona(membreId) {
     if (cas) {
       if (!cas.assignacionsTronc) cas.assignacionsTronc = {};
       if (posicioOrigen && membreDesplaçat) {
-        if (posicioOrigen.tipus === 'sessio-pinya') posicioOrigen.cas.assignacions[posicioOrigen.posId] = membreDesplaçat;
-        else if (posicioOrigen.tipus === 'sessio-tronc') posicioOrigen.cas.assignacionsTronc[posicioOrigen.posId] = membreDesplaçat;
+        if (posicioOrigen.tipus === 'sessio-pinya') { posicioOrigen.cas.assignacions[posicioOrigen.posId] = membreDesplaçat; guardaNom(posicioOrigen.cas, posicioOrigen.posId, membreDesplaçat, 'pinya'); }
+        else if (posicioOrigen.tipus === 'sessio-tronc') { posicioOrigen.cas.assignacionsTronc[posicioOrigen.posId] = membreDesplaçat; guardaNom(posicioOrigen.cas, posicioOrigen.posId, membreDesplaçat, 'tronc'); }
       } else if (posicioOrigen) {
-        if (posicioOrigen.tipus === 'sessio-pinya') delete posicioOrigen.cas.assignacions[posicioOrigen.posId];
-        else if (posicioOrigen.tipus === 'sessio-tronc') delete posicioOrigen.cas.assignacionsTronc[posicioOrigen.posId];
+        if (posicioOrigen.tipus === 'sessio-pinya') { delete posicioOrigen.cas.assignacions[posicioOrigen.posId]; guardaNom(posicioOrigen.cas, posicioOrigen.posId, null, 'pinya'); }
+        else if (posicioOrigen.tipus === 'sessio-tronc') { delete posicioOrigen.cas.assignacionsTronc[posicioOrigen.posId]; guardaNom(posicioOrigen.cas, posicioOrigen.posId, null, 'tronc'); }
       }
       cas.assignacionsTronc[posicioSeleccionada] = membreId;
+      guardaNom(cas, posicioSeleccionada, membreId, 'tronc');
     }
     desaSessio();
     tancaModal('modal-seleccio-persona');
