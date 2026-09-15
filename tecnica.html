@@ -362,8 +362,9 @@
 <!-- Modal Sessió -->
 <div class="modal-overlay" id="modal-sessio">
   <div class="modal">
-    <div class="modal-titol">Nova sessió</div>
+    <div class="modal-titol" id="modal-sessio-titol">Nova sessió</div>
     <button class="modal-tanca" onclick="tancaModal('modal-sessio')">✕</button>
+    <input type="hidden" id="sessio-id-edit">
     <div class="input-grup">
       <label class="input-etiqueta">Data</label>
       <input type="date" id="sessio-data">
@@ -418,6 +419,23 @@
     <div id="pin-error" style="color:#e74c3c;font-size:13px;margin-top:8px;display:none;">PIN incorrecte</div>
     <button class="btn btn-primari" style="margin-top:12px;" onclick="verificaPin()">Accedir</button>
     <button class="btn" style="margin-top:8px;background:none;color:var(--text-suau);" onclick="tancaModal('modal-pin')">Cancel·lar</button>
+  </div>
+</div>
+
+<!-- Modal editar castell -->
+<div class="modal-overlay" id="modal-edita-castell">
+  <div class="modal">
+    <div class="modal-titol">✏️ Editar castell</div>
+    <div class="input-grup">
+      <label class="input-etiqueta">Nom</label>
+      <input type="text" id="edita-castell-nom" placeholder="Nom del castell">
+    </div>
+    <div class="input-grup">
+      <label class="input-etiqueta">Descripció</label>
+      <textarea id="edita-castell-desc" placeholder="Notes sobre la formació..." style="min-height:80px;"></textarea>
+    </div>
+    <button class="btn btn-primari" onclick="desaEditaCastell()">Desar</button>
+    <button class="btn" style="margin-top:8px;width:100%;background:none;color:var(--text-suau);" onclick="tancaModal('modal-edita-castell')">Cancel·lar</button>
   </div>
 </div>
 
@@ -1184,6 +1202,30 @@ function desassignaPosSessio(casId, posId) {
 
 function toggleTroncSessio(casId) {
   troncSessioObert[casId] = !(troncSessioObert[casId] !== false);
+  renderitzaPinyaSessio();
+}
+
+let _casIdEditant = null;
+
+function obreEditaCastell(casId) {
+  if (!estaAutenticat()) { requereixPin(() => obreEditaCastell(casId)); return; }
+  _casIdEditant = casId;
+  const cas = sessioActual.castells.find(c => c.id === casId);
+  const p = cas && cas.pinya;
+  if (!p) return;
+  document.getElementById('edita-castell-nom').value = p.nom || '';
+  document.getElementById('edita-castell-desc').value = p.desc || '';
+  obreModal('modal-edita-castell');
+  setTimeout(() => document.getElementById('edita-castell-nom').focus(), 100);
+}
+
+function desaEditaCastell() {
+  const cas = sessioActual.castells.find(c => c.id === _casIdEditant);
+  if (!cas || !cas.pinya) return;
+  cas.pinya.nom = document.getElementById('edita-castell-nom').value.trim() || cas.pinya.nom;
+  cas.pinya.desc = document.getElementById('edita-castell-desc').value.trim();
+  desaSessio();
+  tancaModal('modal-edita-castell');
   renderitzaPinyaSessio();
 }
 
@@ -2164,8 +2206,15 @@ async function enviaConvit() {
   }
 }
 
-function obreModalSessio() {
-  document.getElementById('sessio-data').value = new Date().toISOString().slice(0,10);
+function obreModalSessio(sessioId) {
+  if (!estaAutenticat()) { requereixPin(() => obreModalSessio(sessioId)); return; }
+  const sessio = sessioId ? estat.sessions.find(s => s.id === sessioId) : null;
+  document.getElementById('modal-sessio-titol').textContent = sessio ? 'Editar sessió' : 'Nova sessió';
+  document.getElementById('sessio-id-edit').value = sessioId || '';
+  document.getElementById('sessio-data').value = sessio ? sessio.data : new Date().toISOString().slice(0,10);
+  document.getElementById('sessio-hora').value = sessio ? (sessio.hora || '10:00') : '10:00';
+  document.getElementById('sessio-lloc').value = sessio ? (sessio.lloc || '') : '';
+  document.getElementById('sessio-tipus').value = sessio ? sessio.tipus : 'assaig';
   obreModal('modal-sessio');
 }
 
@@ -2173,18 +2222,29 @@ function guardarSessio() {
   if (!estaAutenticat()) { obreModalPin(); return; }
   const data = document.getElementById('sessio-data').value;
   if (!data) { alert('Cal posar la data'); return; }
-  const s = { id: id(), data,
+  const editId = document.getElementById('sessio-id-edit').value;
+  const camps = {
+    data,
     hora: document.getElementById('sessio-hora').value,
     lloc: document.getElementById('sessio-lloc').value.trim(),
     tipus: document.getElementById('sessio-tipus').value,
-    assistencia: {}, castells: []
   };
-  estat.sessions.push(s);
-  estat.sessions.sort((a,b) => b.data.localeCompare(a.data));
-  desa();
+  if (editId) {
+    // Editar sessió existent
+    const i = estat.sessions.findIndex(s => s.id === editId);
+    if (i >= 0) Object.assign(estat.sessions[i], camps);
+    desa();
+    desaSessioSupa(estat.sessions[i >= 0 ? i : 0]);
+  } else {
+    // Nova sessió
+    const s = { id: id(), ...camps, assistencia: {}, castells: [] };
+    estat.sessions.push(s);
+    estat.sessions.sort((a,b) => b.data.localeCompare(a.data));
+    desa();
+    desaSessioSupa(s);
+  }
   tancaModal('modal-sessio');
   renderitzaSessions();
-  desaSessioSupa(s);
 }
 
 function eliminarSessio(sid) {
@@ -2200,21 +2260,60 @@ function eliminarSessio(sid) {
 function renderitzaSessions() {
   const cont = document.getElementById('llista-sessions');
   if (!estat.sessions.length) {
-    cont.innerHTML = '<div class=\"buit\"><div class=\"buit-ico\">\ud83d\udcc5</div><div class=\"buit-text\">Crea la primera sessi\u00f3!</div></div>';
+    cont.innerHTML = '<div class="buit"><div class="buit-ico">📅</div><div class="buit-text">Crea la primera sessió!</div></div>';
     return;
   }
-  cont.innerHTML = estat.sessions.map(s => {
+  const avui = new Date(); avui.setHours(0,0,0,0);
+  const properes = estat.sessions.filter(s => new Date(s.data+'T00:00:00') >= avui)
+    .sort((a,b) => a.data.localeCompare(b.data));
+  const passades = estat.sessions.filter(s => new Date(s.data+'T00:00:00') < avui)
+    .sort((a,b) => b.data.localeCompare(a.data));
+
+  function renderSessio(s) {
     const nAssist = estat.membres.filter(m => s.assistencia && s.assistencia[m.id]).length;
-    const icona = { assaig:'\ud83c\udfcb\ufe0f', actuacio:'\ud83c\udff0', diada:'\ud83c\udf89' }[s.tipus] || '\ud83d\udcc5';
-    return `<div class=\"sessio-item\" onclick=\"obreSessioDetall('${s.id}')\">
-      <span style=\"font-size:24px;\">${icona}</span>
-      <div class=\"sessio-info\">
-        <div class=\"sessio-data\">${formatData(s.data)} ${s.hora ? '\u00b7 ' + s.hora : ''}</div>
-        <div class=\"sessio-assistents\">${s.lloc || 'Sense lloc'} \u00b7 ${tipusSessio(s.tipus)} \u00b7 ${nAssist} assistents</div>
+    const icona = {assaig:'🏋️', actuacio:'🏰', diada:'🎉'}[s.tipus] || '📅';
+    return `<div class="sessio-item" onclick="obreSessioDetall('${s.id}')">
+      <span style="font-size:24px;">${icona}</span>
+      <div class="sessio-info">
+        <div class="sessio-data">${formatData(s.data)} ${s.hora ? '· ' + s.hora : ''}</div>
+        <div class="sessio-assistents">${s.lloc || 'Sense lloc'} · ${tipusSessio(s.tipus)} · ${nAssist} assistents</div>
       </div>
-      <button class=\"btn btn-petit btn-perill\" onclick=\"event.stopPropagation();eliminarSessio('${s.id}')\">\ud83d\uddd1\ufe0f</button>
+      <div style="display:flex;gap:4px;flex-shrink:0;">
+        <button class="btn btn-petit btn-groc" onclick="event.stopPropagation();obreModalSessio('${s.id}')">✏️</button>
+        <button class="btn btn-petit btn-perill" onclick="event.stopPropagation();eliminarSessio('${s.id}')">🗑️</button>
+      </div>
     </div>`;
-  }).join('');
+  }
+
+  let html = '';
+  if (properes.length) {
+    html += properes.map(renderSessio).join('');
+  } else {
+    html += '<div class="buit" style="padding:16px;"><div class="buit-text">No hi ha sessions properes</div></div>';
+  }
+
+  if (passades.length) {
+    const historicId = 'historic-block';
+    html += `<div style="padding:8px 16px;margin-top:8px;">
+      <div onclick="toggleHistoric()" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:8px 0;border-top:1px solid var(--vora);">
+        <span style="font-size:13px;font-weight:700;color:var(--text-suau);text-transform:uppercase;letter-spacing:0.5px;">📦 Històric (${passades.length})</span>
+        <span id="historic-chevron" style="font-size:14px;color:var(--text-suau);transform:rotate(-90deg);transition:transform 0.2s;">▼</span>
+      </div>
+    </div>
+    <div id="${historicId}" style="display:none;">
+      ${passades.map(renderSessio).join('')}
+    </div>`;
+  }
+
+  cont.innerHTML = '<div class="card">' + html + '</div>';
+}
+
+function toggleHistoric() {
+  const bloc = document.getElementById('historic-block');
+  const chev = document.getElementById('historic-chevron');
+  const obert = bloc.style.display !== 'none';
+  bloc.style.display = obert ? 'none' : '';
+  chev.style.transform = obert ? 'rotate(-90deg)' : '';
 }
 
 function renderitzaPinyaSessio() {
@@ -2247,8 +2346,12 @@ function renderitzaPinyaSessio() {
 
     html += `<div class="card" style="margin-bottom:14px;">
       <div class="card-cap">
-        <span class="card-titol">${info.ico} ${pinya.nom}${num}</span>
-        <div style="display:flex;gap:6px;">
+        <div style="flex:1;min-width:0;">
+          <span class="card-titol">${info.ico} ${pinya.nom}${num}</span>
+          ${pinya.desc ? `<div style="font-size:11px;color:var(--text-suau);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${pinya.desc}</div>` : ''}
+        </div>
+        <div style="display:flex;gap:6px;flex-shrink:0;">
+          <button class="btn btn-petit btn-groc" onclick="obreEditaCastell('${cas.id}')" title="Editar nom i descripció">✏️</button>
           <button class="btn btn-petit" style="background:none;border:none;font-size:16px;cursor:pointer;color:var(--text-suau);transition:transform 0.2s;transform:${castellPlegat[cas.id]?'rotate(-90deg)':''}" onclick="toggleCastell('${cas.id}')">▼</button>
           <button class="btn btn-petit btn-perill" onclick="eliminarCastellSessio('${cas.id}')">🗑️</button>
         </div>
