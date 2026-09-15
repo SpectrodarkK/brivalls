@@ -434,14 +434,26 @@ function mostraPanell(id) {
 
 function generaSVG(pinya, nomsAssignats) {
   const COLORS = {baix:'#1a1a2e',baix_pilar:'#1a1a2e',agulla:'#27ae60',crossa:'#f1c40f',contrafort:'#e8e8e8',vent:'#c0392b',lateral:'#2980b9',diagonal:'#2980b9',mans:'#8e44ad',tap:'#95a5a6',envoltant:'#27ae60'};
-  const R=5.2, pos=pinya.posicions||[], nA=nomsAssignats||{};
+  const R=6.5, pos=pinya.posicions||[], nA=nomsAssignats||{};
   if(!pos.length)return'';
   const xs=pos.map(p=>p.cx),ys=pos.map(p=>p.cy);
   const marge=R+8,minX=Math.min(...xs)-marge,maxX=Math.max(...xs)+marge,minY=Math.min(...ys)-marge,maxY=Math.max(...ys)+marge;
   const cercles=pos.map(p=>{
     const color=COLORS[p.rol]||'#999';
     const nom=nA[p.id];
-    const txt=nom?`<text x="${p.cx}" y="${p.cy+1.5}" text-anchor="middle" dominant-baseline="middle" font-size="3.5" font-weight="700" fill="#fff" font-family="sans-serif">${nom.slice(0,6)}</text>`:'';
+    let txt='';
+    if(nom){
+      const parts=nom.trim().split(' ');
+      if(parts.length===1){
+        txt=`<text x="${p.cx}" y="${p.cy+1}" text-anchor="middle" dominant-baseline="middle" font-size="3.8" font-weight="700" fill="#fff" font-family="sans-serif">${nom}</text>`;
+      } else {
+        // Dividir en dues línies: primer nom / resta
+        const linia1=parts[0];
+        const linia2=parts.slice(1).join(' ');
+        txt=`<text x="${p.cx}" y="${p.cy-1.5}" text-anchor="middle" dominant-baseline="middle" font-size="3.5" font-weight="700" fill="#fff" font-family="sans-serif">${linia1}</text>
+             <text x="${p.cx}" y="${p.cy+2.5}" text-anchor="middle" dominant-baseline="middle" font-size="3.2" font-weight="600" fill="rgba(255,255,255,0.85)" font-family="sans-serif">${linia2}</text>`;
+      }
+    }
     return `<circle cx="${p.cx}" cy="${p.cy}" r="${R}" fill="${color}" stroke="#fff" stroke-width="0.3" opacity="0.9"/>${txt}`;
   }).join('');
   return `<svg viewBox="${minX} ${minY} ${maxX-minX} ${maxY-minY}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;padding:8px;">${cercles}</svg>`;
