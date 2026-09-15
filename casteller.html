@@ -128,27 +128,67 @@ textarea { min-height:80px; resize:vertical; }
 const SUPABASE_URL = 'https://djxugrnyvbmziwttaszo.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqeHVncm55dmJteml3dHRhc3pvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkzNzgzNDEsImV4cCI6MjEwNDk1NDM0MX0.d33KiYWYbsmLKmTkik8W2gmeRNL5dnFPDxCfjzjoPHE';
 
+// Detectar token d'invitació o recuperació al fragment de la URL
+(async function detectaToken() {
+  const hash = window.location.hash;
+  const hashParams = new URLSearchParams(hash.replace('#', ''));
+  const queryParams = new URLSearchParams(window.location.search);
+
+  const type = hashParams.get('type') || queryParams.get('type');
+  const accessToken = hashParams.get('access_token');
+  const refreshToken = hashParams.get('refresh_token');
+  const tokenHash = queryParams.get('token_hash') || queryParams.get('token');
+
+  if (accessToken && (type === 'invite' || type === 'recovery' || type === 'signup' || type === 'magiclink')) {
+    sessionStorage.setItem('sb-token', accessToken);
+    if (refreshToken) sessionStorage.setItem('sb-refresh', refreshToken);
+    sessionStorage.setItem('sb-canvia-pwd', '1');
+    // Netejar la URL sense recarregar
+    history.replaceState(null, '', window.location.pathname);
+  } else if (tokenHash && type) {
+    try {
+      const res = await fetch('https://djxugrnyvbmziwttaszo.supabase.co/auth/v1/verify', {
+        method: 'POST',
+        headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqeHVncm55dmJteml3dHRhc3pvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkzNzgzNDEsImV4cCI6MjEwNDk1NDM0MX0.d33KiYWYbsmLKmTkik8W2gmeRNL5dnFPDxCfjzjoPHE', 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token_hash: tokenHash, type })
+      });
+      if (res.ok) {
+        const data = await res.json();
+        sessionStorage.setItem('sb-token', data.access_token);
+        if (data.refresh_token) sessionStorage.setItem('sb-refresh', data.refresh_token);
+        sessionStorage.setItem('sb-canvia-pwd', '1');
+        history.replaceState(null, '', window.location.pathname);
+      }
+    } catch(e) { console.error('Error verificant token:', e); }
+  }
+})();
+
 let token = sessionStorage.getItem('sb-token');
 let refreshToken = sessionStorage.getItem('sb-refresh');
-let membres = []; // fitxes associades a aquest usuari
-let membreActiu = null; // fitxa activa per a l'assistència
+let membres = [];
+let membreActiu = null;
 let sessions = [];
 
-// Verificar autenticació
-if (!token) window.location.href = 'index.html';
+// Verificar autenticació (després de detectaToken que pot haver actualitzat el token)
+setTimeout(() => {
+  token = sessionStorage.getItem('sb-token');
+  if (!token) { window.location.href = 'index.html'; return; }
 
-// Si venim d'una invitació, mostrar directament el panell de contrasenya
-const primerAcces = sessionStorage.getItem('sb-canvia-pwd');
-if (primerAcces) {
-  sessionStorage.removeItem('sb-canvia-pwd');
-  document.addEventListener('DOMContentLoaded', () => {
-    mostraPanell('compte');
-    const info = document.createElement('div');
-    info.style.cssText = 'background:#eafaf1;border:1.5px solid #27ae60;border-radius:10px;padding:14px 16px;margin-bottom:16px;font-size:14px;color:#1a6b3a;';
-    info.innerHTML = '👋 <strong>Benvingut/da!</strong> Estableix la teva contrasenya per accedir en el futur.';
-    document.getElementById('panell-compte').prepend(info);
-  });
-}
+  // Si venim d'una invitació o recuperació
+  const primerAcces = sessionStorage.getItem('sb-canvia-pwd');
+  if (primerAcces) {
+    sessionStorage.removeItem('sb-canvia-pwd');
+    document.addEventListener('DOMContentLoaded', () => {
+      mostraPanell('compte');
+      const info = document.createElement('div');
+      info.style.cssText = 'background:#eafaf1;border:1.5px solid #27ae60;border-radius:10px;padding:14px 16px;margin-bottom:16px;font-size:14px;color:#1a6b3a;';
+      info.innerHTML = '👋 <strong>Benvingut/da!</strong> Estableix la teva contrasenya per accedir en el futur.';
+      document.getElementById('panell-compte').prepend(info);
+    });
+  }
+
+  carrega();
+}, 300);
 
 async function sbFetch(path, opts={}) {
   const headers = {
@@ -351,8 +391,6 @@ function sortir() {
   sessionStorage.clear();
   window.location.href='index.html';
 }
-
-carrega();
 </script>
 </body>
 </html>
