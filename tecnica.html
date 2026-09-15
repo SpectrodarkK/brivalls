@@ -981,7 +981,7 @@ function renderitzaTroncSessio(cas, pinya, obert) {
       display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;">
       <div style="font-size:9px;font-weight:700;color:${membre?'#fff':'var(--text-suau)'};text-transform:uppercase;letter-spacing:0.4px;">${nomPisTronc(t.pis)}</div>
       ${membre
-        ? `<div style="font-size:10px;font-weight:600;color:#fff;margin-top:2px;word-break:break-word;">${membre.nom.split(' ')[0]}</div>
+        ? `<div style="font-size:10px;font-weight:700;color:#fff;margin-top:2px;line-height:1.2;word-break:break-word;">${membre.nom.split(' ')[0]}</div><div style="font-size:9px;font-weight:500;color:rgba(255,255,255,0.85);line-height:1.2;word-break:break-word;">${membre.nom.split(' ').slice(1).join(' ')}</div>
            <button onclick="event.stopPropagation();desassignaTroncSessio('${casId}','${t.id}')" style="position:absolute;top:2px;right:3px;background:none;border:none;color:rgba(255,255,255,0.8);font-size:11px;cursor:pointer;">✕</button>`
         : `<div style="font-size:9px;color:var(--text-suau);margin-top:2px;">+</div>`}
     </div>`;
@@ -1057,7 +1057,7 @@ function renderitzaTroncSessio(cas, pinya, obert) {
         border-radius:8px;padding:5px 4px;text-align:center;cursor:pointer;min-height:44px;
         display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;">
         <div style="font-size:9px;font-weight:700;color:${membre?'#fff':'var(--text-suau)'};text-transform:uppercase;">${nomP}</div>
-        ${membre?`<div style="font-size:10px;font-weight:600;color:#fff;margin-top:2px;">${membre.nom.split(' ')[0]}</div>
+        ${membre?`<div style="font-size:10px;font-weight:700;color:#fff;margin-top:2px;line-height:1.2;word-break:break-word;">${membre.nom.split(' ')[0]}</div><div style="font-size:9px;font-weight:500;color:rgba(255,255,255,0.85);line-height:1.2;word-break:break-word;">${membre.nom.split(' ').slice(1).join(' ')}</div>
           <button onclick="event.stopPropagation();desassignaPosSessio('${casId}','${pos.id}')" style="position:absolute;top:2px;right:3px;background:none;border:none;color:rgba(255,255,255,0.8);font-size:11px;cursor:pointer;">✕</button>`
         :`<div style="font-size:9px;color:var(--text-suau);margin-top:2px;">+</div>`}
       </div>`;
@@ -1146,7 +1146,7 @@ function renderitzaTroncSessio(cas, pinya, obert) {
         display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;">
         <div style="font-size:9px;font-weight:700;color:${membre?'#fff':'var(--text-suau)'};text-transform:uppercase;letter-spacing:0.4px;">${nomP}</div>
         ${membre
-          ?`<div style="font-size:10px;font-weight:600;color:#fff;margin-top:2px;word-break:break-word;">${membre.nom.split(' ')[0]}</div>
+          ?`<div style="font-size:10px;font-weight:700;color:#fff;margin-top:2px;line-height:1.2;word-break:break-word;">${membre.nom.split(' ')[0]}</div><div style="font-size:9px;font-weight:500;color:rgba(255,255,255,0.85);line-height:1.2;word-break:break-word;">${membre.nom.split(' ').slice(1).join(' ')}</div>
             <button onclick="event.stopPropagation();desassignaPosSessio('${casId}','${pos.id}')" style="position:absolute;top:2px;right:3px;background:none;border:none;color:rgba(255,255,255,0.8);font-size:11px;cursor:pointer;">✕</button>`
           :`<div style="font-size:9px;color:var(--text-suau);margin-top:2px;">+</div>`}
       </div>`;
@@ -1599,7 +1599,7 @@ function assignaPersona(membreId) {
 
   function nomPila(mId) {
     const m = mId && estat.membres.find(x => x.id === mId);
-    return m ? m.nom.split(' ')[0] : null;
+    return m ? m.nom : null;
   }
   function guardaNom(cas, posId, mId, tipus) {
     if (tipus === 'pinya') {
