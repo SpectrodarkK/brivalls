@@ -236,7 +236,7 @@ function renderitzaSessions() {
         <div class="sessio-mes">${mesAbr(s.data)}</div>
       </div>
       <div class="sessio-info">
-        <div class="sessio-titol">${esAvui?'<strong>Avui · </strong>':''}{}{}</div>
+        <div class="sessio-titol">${esAvui?'<strong>Avui · </strong>':''}${s.hora||''}</div>
         <div style="margin-top:4px;">${tagTipus(s.tipus)}</div>
         <div class="sessio-subtitol">${s.lloc||''}</div>
       </div>
