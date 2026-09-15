@@ -129,7 +129,7 @@ const SUPABASE_URL = 'https://djxugrnyvbmziwttaszo.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqeHVncm55dmJteml3dHRhc3pvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkzNzgzNDEsImV4cCI6MjEwNDk1NDM0MX0.d33KiYWYbsmLKmTkik8W2gmeRNL5dnFPDxCfjzjoPHE';
 
 // Detectar token d'invitació o recuperació al fragment de la URL
-(async function detectaToken() {
+async function detectaToken() {
   const hash = window.location.hash;
   const hashParams = new URLSearchParams(hash.replace('#', ''));
   const queryParams = new URLSearchParams(window.location.search);
@@ -143,13 +143,12 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
     sessionStorage.setItem('sb-token', accessToken);
     if (refreshToken) sessionStorage.setItem('sb-refresh', refreshToken);
     sessionStorage.setItem('sb-canvia-pwd', '1');
-    // Netejar la URL sense recarregar
     history.replaceState(null, '', window.location.pathname);
   } else if (tokenHash && type) {
     try {
       const res = await fetch('https://djxugrnyvbmziwttaszo.supabase.co/auth/v1/verify', {
         method: 'POST',
-        headers: { 'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqeHVncm55dmJteml3dHRhc3pvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODkzNzgzNDEsImV4cCI6MjEwNDk1NDM0MX0.d33KiYWYbsmLKmTkik8W2gmeRNL5dnFPDxCfjzjoPHE', 'Content-Type': 'application/json' },
+        headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
         body: JSON.stringify({ token_hash: tokenHash, type })
       });
       if (res.ok) {
@@ -161,34 +160,34 @@ const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZ
       }
     } catch(e) { console.error('Error verificant token:', e); }
   }
-})();
+}
 
-let token = sessionStorage.getItem('sb-token');
-let refreshToken = sessionStorage.getItem('sb-refresh');
+let token, refreshToken;
 let membres = [];
 let membreActiu = null;
 let sessions = [];
 
-// Verificar autenticació (després de detectaToken que pot haver actualitzat el token)
-setTimeout(() => {
+// Inicialitzar de forma seqüencial
+(async () => {
+  await detectaToken();
   token = sessionStorage.getItem('sb-token');
+  refreshToken = sessionStorage.getItem('sb-refresh');
+
   if (!token) { window.location.href = 'index.html'; return; }
 
-  // Si venim d'una invitació o recuperació
   const primerAcces = sessionStorage.getItem('sb-canvia-pwd');
   if (primerAcces) {
     sessionStorage.removeItem('sb-canvia-pwd');
-    document.addEventListener('DOMContentLoaded', () => {
-      mostraPanell('compte');
-      const info = document.createElement('div');
-      info.style.cssText = 'background:#eafaf1;border:1.5px solid #27ae60;border-radius:10px;padding:14px 16px;margin-bottom:16px;font-size:14px;color:#1a6b3a;';
-      info.innerHTML = '👋 <strong>Benvingut/da!</strong> Estableix la teva contrasenya per accedir en el futur.';
-      document.getElementById('panell-compte').prepend(info);
-    });
+    mostraPanell('compte');
+    const info = document.createElement('div');
+    info.style.cssText = 'background:#eafaf1;border:1.5px solid #27ae60;border-radius:10px;padding:14px 16px;margin-bottom:16px;font-size:14px;color:#1a6b3a;';
+    info.innerHTML = '👋 <strong>Benvingut/da!</strong> Estableix la teva contrasenya per accedir en el futur.';
+    document.getElementById('panell-compte').prepend(info);
+    return; // No carregar dades fins que hagi posat contrasenya
   }
 
   carrega();
-}, 300);
+})();
 
 async function sbFetch(path, opts={}) {
   const headers = {
