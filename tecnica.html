@@ -1028,14 +1028,19 @@ function renderitzaTroncSessio(cas, pinya, obert) {
   function cellaTroncSessio(t) {
     const personaId = cas.assignacionsTronc[t.id] || null;
     const membre = personaId ? estat.membres.find(m => m.id === personaId) : null;
+    const confirmat = membre && sessioActual.assistencia && sessioActual.assistencia[membre.id];
+    const noConfirmat = membre && !confirmat;
     const color = COLORS_TRONC[t.pis] || '#7f8c8d';
+    const bgColor = membre ? (noConfirmat ? '#e74c3c' : color) : 'var(--gris-clar)';
+    const borderColor = membre ? (noConfirmat ? '#c0392b' : color) : 'var(--vora)';
     return `<div onclick="obreAssignacioTroncSessio('${casId}','${t.id}')"
-      style="background:${membre?color:'var(--gris-clar)'};border:1.5px solid ${membre?color:'var(--vora)'};
+      style="background:${bgColor};border:1.5px solid ${borderColor};
       border-radius:8px;padding:6px 4px;text-align:center;cursor:pointer;min-height:48px;
       display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;">
       <div style="font-size:9px;font-weight:700;color:${membre?'#fff':'var(--text-suau)'};text-transform:uppercase;letter-spacing:0.4px;">${nomPisTronc(t.pis)}</div>
       ${membre
         ? `<div style="font-size:10px;font-weight:700;color:#fff;margin-top:2px;line-height:1.2;word-break:break-word;">${membre.nom.split(' ')[0]}</div><div style="font-size:9px;font-weight:500;color:rgba(255,255,255,0.85);line-height:1.2;word-break:break-word;">${membre.nom.split(' ').slice(1).join(' ')}</div>
+           ${noConfirmat ? `<div style="font-size:9px;font-weight:700;color:#fff;margin-top:2px;">⚠ No confirmat</div>` : ''}
            <button onclick="event.stopPropagation();desassignaTroncSessio('${casId}','${t.id}')" style="position:absolute;top:2px;right:3px;background:none;border:none;color:rgba(255,255,255,0.8);font-size:11px;cursor:pointer;">✕</button>`
         : `<div style="font-size:9px;color:var(--text-suau);margin-top:2px;">+</div>`}
     </div>`;
@@ -1106,12 +1111,16 @@ function renderitzaTroncSessio(cas, pinya, obert) {
       const membreId=cas.assignacions&&cas.assignacions[pos.id];
       const membre=membreId?estat.membres.find(m=>m.id===membreId):null;
       const color=colorRol('baix');
+      const noConf=membre&&!(sessioActual.assistencia&&sessioActual.assistencia[membre.id]);
+      const bgB=membre?(noConf?'#e74c3c':color):'var(--gris-clar)';
+      const brB=membre?(noConf?'#c0392b':color):'var(--vora)';
       return `<div onclick="obreAssignacioPosicio('${pos.id}','sessio-cas-${casId}')"
-        style="background:${membre?color:'var(--gris-clar)'};border:1.5px solid ${membre?color:'var(--vora)'};
+        style="background:${bgB};border:1.5px solid ${brB};
         border-radius:8px;padding:5px 4px;text-align:center;cursor:pointer;min-height:44px;
         display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;">
         <div style="font-size:9px;font-weight:700;color:${membre?'#fff':'var(--text-suau)'};text-transform:uppercase;">${nomP}</div>
         ${membre?`<div style="font-size:10px;font-weight:700;color:#fff;margin-top:2px;line-height:1.2;word-break:break-word;">${membre.nom.split(' ')[0]}</div><div style="font-size:9px;font-weight:500;color:rgba(255,255,255,0.85);line-height:1.2;word-break:break-word;">${membre.nom.split(' ').slice(1).join(' ')}</div>
+          ${noConf?`<div style="font-size:9px;font-weight:700;color:#fff;margin-top:1px;">⚠ No conf.</div>`:''}
           <button onclick="event.stopPropagation();desassignaPosSessio('${casId}','${pos.id}')" style="position:absolute;top:2px;right:3px;background:none;border:none;color:rgba(255,255,255,0.8);font-size:11px;cursor:pointer;">✕</button>`
         :`<div style="font-size:9px;color:var(--text-suau);margin-top:2px;">+</div>`}
       </div>`;
@@ -1194,13 +1203,17 @@ function renderitzaTroncSessio(cas, pinya, obert) {
       const membreId = cas.assignacions && cas.assignacions[pos.id];
       const membre = membreId ? estat.membres.find(m=>m.id===membreId) : null;
       const color = colorRol(pos.rol);
+      const noConf2 = membre && !(sessioActual.assistencia && sessioActual.assistencia[membre.id]);
+      const bg2 = membre ? (noConf2 ? '#e74c3c' : color) : 'var(--gris-clar)';
+      const br2 = membre ? (noConf2 ? '#c0392b' : color) : 'var(--vora)';
       return `<div onclick="obreAssignacioPosicio('${pos.id}','sessio-cas-${casId}')"
-        style="background:${membre?color:'var(--gris-clar)'};border:1.5px solid ${membre?color:'var(--vora)'};
+        style="background:${bg2};border:1.5px solid ${br2};
         border-radius:8px;padding:5px 4px;text-align:center;cursor:pointer;min-height:44px;
         display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;">
         <div style="font-size:9px;font-weight:700;color:${membre?'#fff':'var(--text-suau)'};text-transform:uppercase;letter-spacing:0.4px;">${nomP}</div>
         ${membre
           ?`<div style="font-size:10px;font-weight:700;color:#fff;margin-top:2px;line-height:1.2;word-break:break-word;">${membre.nom.split(' ')[0]}</div><div style="font-size:9px;font-weight:500;color:rgba(255,255,255,0.85);line-height:1.2;word-break:break-word;">${membre.nom.split(' ').slice(1).join(' ')}</div>
+            ${noConf2?`<div style="font-size:9px;font-weight:700;color:#fff;margin-top:1px;">⚠ No conf.</div>`:''}
             <button onclick="event.stopPropagation();desassignaPosSessio('${casId}','${pos.id}')" style="position:absolute;top:2px;right:3px;background:none;border:none;color:rgba(255,255,255,0.8);font-size:11px;cursor:pointer;">✕</button>`
           :`<div style="font-size:9px;color:var(--text-suau);margin-top:2px;">+</div>`}
       </div>`;
