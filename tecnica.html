@@ -255,6 +255,18 @@
   </div>
 </div>
 
+<!-- Modal gestió d'accés -->
+<div class="modal-overlay" id="modal-gestio-acces">
+  <div class="modal">
+    <div class="modal-titol">🔗 Gestió d'accés</div>
+    <div id="gestio-acces-nom" style="font-size:14px;font-weight:600;margin-bottom:12px;color:var(--text-suau);"></div>
+    <div id="gestio-acces-llista">
+      <div class="buit" style="padding:16px;"><div class="buit-text">Carregant...</div></div>
+    </div>
+    <button class="btn" style="margin-top:12px;width:100%;background:none;color:var(--text-suau);" onclick="tancaModal('modal-gestio-acces')">Tancar</button>
+  </div>
+</div>
+
 <!-- Modal convidar usuari -->
 <div class="modal-overlay" id="modal-convidar">
   <div class="modal">
@@ -263,7 +275,19 @@
       <label class="input-etiqueta">Membre</label>
       <div id="convidar-nom" style="padding:8px 12px;background:var(--gris-clar);border-radius:8px;font-size:14px;margin-bottom:4px;"></div>
     </div>
-    <div class="input-grup">
+    <div id="convidar-opcions-canalla" style="display:none;">
+      <div style="background:var(--blau-clar);border:1.5px solid var(--blau);border-radius:8px;padding:12px;margin-bottom:12px;">
+        <div style="font-size:13px;font-weight:600;color:var(--blau);margin-bottom:8px;">🧒 Membre de la canalla</div>
+        <div style="font-size:12px;color:var(--text-suau);margin-bottom:10px;">Pots enviar una invitació nova o vincular-lo a un usuari adult existent (pare/mare)</div>
+        <div class="input-grup" style="margin-bottom:8px;">
+          <label class="input-etiqueta">Vincular a usuari existent (opcional)</label>
+          <select id="convidar-usuari-existent" style="width:100%;padding:8px 12px;border:1.5px solid var(--vora);border-radius:8px;font-size:14px;">
+            <option value="">— Enviar invitació nova —</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div id="convidar-email-grup" class="input-grup">
       <label class="input-etiqueta">Correu electrònic</label>
       <input type="email" id="convidar-email" placeholder="casteller@exemple.com">
     </div>
@@ -349,6 +373,18 @@
       <div>
         <label class="input-etiqueta">Data de naixement</label>
         <input type="date" id="membre-naixement">
+      </div>
+    </div>
+    <div class="input-grup">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--gris-clar);border-radius:8px;cursor:pointer;" onclick="document.getElementById('membre-canalla').click()">
+        <div>
+          <div style="font-size:13px;font-weight:600;">🧒 Canalla</div>
+          <div style="font-size:11px;color:var(--text-suau);margin-top:2px;">Activar si és membre de la canalla</div>
+        </div>
+        <label class="toggle" onclick="event.stopPropagation()">
+          <input type="checkbox" id="membre-canalla">
+          <span class="toggle-slider"></span>
+        </label>
       </div>
     </div>
     <div class="input-grup">
@@ -1558,7 +1594,7 @@ function renderitzaOpcionsPersones(persones) {
       <div class="membre-avatar ${colorAvatar(m.nom)}" style="width:32px;height:32px;font-size:11px;${m.foto ? `background-image:url('${m.foto}');background-size:cover;background-position:center;` : ''}">${m.foto ? '' : inicials(m.nom)}</div>
       <div style="flex:1;">
         <div class="persona-opcio-nom" style="font-size:14px;font-weight:600;">${m.nom}</div>
-        </div>
+      </div>
       ${ocupat ? `<span class="tag-ocupat" style="font-size:10px;">↔ Intercanviar</span>` : ''}
     </div>`;
   }).join('');
@@ -1801,6 +1837,48 @@ function toggleAssistCard() {
   assistCardObert = !assistCardObert;
   document.getElementById('assist-cos').style.display = assistCardObert ? '' : 'none';
   document.getElementById('assist-chevron').style.transform = assistCardObert ? '' : 'rotate(-90deg)';
+}
+
+let _dragCasId = null;
+
+function dragStart(event, casId) {
+  _dragCasId = casId;
+  event.dataTransfer.effectAllowed = 'move';
+  setTimeout(() => {
+    const el = document.getElementById('card-cas-' + casId);
+    if (el) el.style.opacity = '0.4';
+  }, 0);
+}
+
+function dragOver(event) {
+  event.preventDefault();
+  event.dataTransfer.dropEffect = 'move';
+}
+
+function dragDrop(event, targetCasId) {
+  event.preventDefault();
+  if (!_dragCasId || _dragCasId === targetCasId) return;
+  const castells = sessioActual.castells;
+  const fromIdx = castells.findIndex(c => c.id === _dragCasId);
+  const toIdx = castells.findIndex(c => c.id === targetCasId);
+  if (fromIdx < 0 || toIdx < 0) return;
+  const [moved] = castells.splice(fromIdx, 1);
+  castells.splice(toIdx, 0, moved);
+  desaSessio();
+  renderitzaPinyaSessio();
+}
+
+function dragEnd(event) {
+  _dragCasId = null;
+  document.querySelectorAll('[id^="card-cas-"]').forEach(el => el.style.opacity = '');
+}
+
+function toggleDesc(casId) {
+  const cos = document.getElementById('desc-cos-' + casId);
+  const chev = document.getElementById('desc-chevron-' + casId);
+  const obert = cos.style.display !== 'none';
+  cos.style.display = obert ? 'none' : '';
+  chev.style.transform = obert ? 'rotate(-90deg)' : '';
 }
 
 function toggleCastell(casId) {
@@ -2056,6 +2134,7 @@ function obreModalMembre(membreId) {
     document.getElementById('membre-tel').value = m.tel || '';
     document.getElementById('membre-mida').value = m.mida || '';
     document.getElementById('membre-naixement').value = m.naixement || '';
+    document.getElementById('membre-canalla').checked = !!m.canalla;
     document.getElementById('membre-notes').value = m.notes || '';
     if (m.foto) {
       prev.innerHTML = `<img src="${m.foto}" style="width:100%;height:100%;object-fit:cover;">`;
@@ -2071,6 +2150,7 @@ function obreModalMembre(membreId) {
     document.getElementById('membre-tel').value = '';
     document.getElementById('membre-mida').value = '';
     document.getElementById('membre-naixement').value = '';
+    document.getElementById('membre-canalla').checked = false;
     document.getElementById('membre-notes').value = '';
     prev.innerHTML = '👤'; prev.dataset.foto = '';
     document.getElementById('membre-foto-esborrar').style.display = 'none';
@@ -2089,6 +2169,7 @@ function guardarMembre() {
     tel: document.getElementById('membre-tel').value.trim(),
     mida: parseInt(document.getElementById('membre-mida').value) || null,
     naixement: document.getElementById('membre-naixement').value || null,
+    canalla: document.getElementById('membre-canalla').checked || false,
     notes: document.getElementById('membre-notes').value.trim(),
     foto
   };
@@ -2143,59 +2224,169 @@ function renderitzaMembres(filtre) {
     cont.innerHTML = '<div class="buit" style="padding:16px;"><div class="buit-text">Cap resultat</div></div>';
     return;
   }
-  cont.innerHTML = membres.map(m => `
-    <div class="membre-item">
+
+  const adults = membres.filter(m => !m.canalla);
+  const canalla = membres.filter(m => m.canalla);
+
+  function renderMembre(m) {
+    return `<div class="membre-item">
       <div class="membre-avatar ${colorAvatar(m.nom)}" style="${m.foto ? `background-image:url('${m.foto}');background-size:cover;background-position:center;` : ''}">${m.foto ? '' : inicials(m.nom)}</div>
       <div class="membre-info">
-        <div class="membre-nom">${m.nom}</div>
+        <div class="membre-nom">${m.nom}${m.canalla ? ' 🧒' : ''}</div>
         <div class="membre-detall">${m.tel ? ' · 📞 ' + m.tel : ''}</div>
       </div>
       <div class="membre-accions">
         <button class="btn btn-petit" style="background:var(--blau-clar);color:var(--blau);" onclick="obreConvidar('${m.id}','${m.nom.replace(/'/g,"\\'")}')">📧</button>
+        <button class="btn btn-petit" style="background:var(--gris-clar);color:var(--text);" onclick="obreGestioAcces('${m.id}','${m.nom.replace(/'/g,"\\'")}')">🔗</button>
         <button class="btn btn-petit btn-groc" onclick="obreModalMembre('${m.id}')">✏️</button>
         <button class="btn btn-petit btn-perill" onclick="eliminarMembre('${m.id}')">🗑️</button>
       </div>
-    </div>
-  `).join('');
+    </div>`;
+  }
+
+  let html = '';
+  if (adults.length) {
+    if (canalla.length) html += `<div style="padding:8px 16px;font-size:11px;font-weight:700;color:var(--text-suau);text-transform:uppercase;letter-spacing:0.5px;background:var(--gris-clar);">👥 Adults (${adults.length})</div>`;
+    html += adults.map(renderMembre).join('');
+  }
+  if (canalla.length) {
+    html += `<div style="padding:8px 16px;font-size:11px;font-weight:700;color:var(--text-suau);text-transform:uppercase;letter-spacing:0.5px;background:var(--gris-clar);">🧒 Canalla (${canalla.length})</div>`;
+    html += canalla.map(renderMembre).join('');
+  }
+  cont.innerHTML = html;
 }
 
 let _membreConvidarId = null;
 
+let _membreGestioId = null;
+
+async function obreGestioAcces(membreId, membreNom) {
+  _membreGestioId = membreId;
+  document.getElementById('gestio-acces-nom').textContent = membreNom;
+  document.getElementById('gestio-acces-llista').innerHTML = '<div class="buit" style="padding:16px;"><div class="buit-text">Carregant...</div></div>';
+  obreModal('modal-gestio-acces');
+  await carregaAccesMembre(membreId);
+}
+
+async function carregaAccesMembre(membreId) {
+  const cont = document.getElementById('gestio-acces-llista');
+  try {
+    const vinc = await sbFetch(`membre_usuari?membre_id=eq.${membreId}&select=user_id`);
+    if (!vinc || !vinc.length) {
+      cont.innerHTML = '<div class="buit" style="padding:16px;"><div class="buit-ico">🔓</div><div class="buit-text">Sense usuaris vinculats</div></div>';
+      return;
+    }
+    // Obtenir info dels usuaris via Edge Function o mostrar user_id
+    cont.innerHTML = '<div style="font-size:12px;color:var(--text-suau);margin-bottom:8px;">Usuaris amb accés a aquesta fitxa:</div>' +
+      vinc.map(v => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 12px;background:var(--gris-clar);border-radius:8px;margin-bottom:6px;">
+          <div>
+            <div style="font-size:13px;font-weight:600;">Usuari vinculat</div>
+            <div style="font-size:11px;color:var(--text-suau);font-family:monospace;">${v.user_id.slice(0,8)}...</div>
+          </div>
+          <button class="btn btn-petit btn-perill" onclick="desvincula('${v.user_id}')">Desvincular</button>
+        </div>
+      `).join('');
+  } catch(e) {
+    cont.innerHTML = '<div class="buit" style="padding:16px;"><div class="buit-text">Error carregant</div></div>';
+  }
+}
+
+async function desvincula(userId) {
+  confirma('Desvincular aquest usuari de la fitxa?', async () => {
+    try {
+      await sbFetch(`membre_usuari?user_id=eq.${userId}&membre_id=eq.${_membreGestioId}`, { method: 'DELETE' });
+      await carregaAccesMembre(_membreGestioId);
+    } catch(e) {
+      alert('Error desvinculant: ' + e.message);
+    }
+  });
+}
+
 function obreConvidar(membreId, membreNom) {
   _membreConvidarId = membreId;
+  const m = estat.membres.find(x => x.id === membreId);
   document.getElementById('convidar-nom').textContent = membreNom;
   document.getElementById('convidar-email').value = '';
   document.getElementById('convidar-error').style.display = 'none';
   document.getElementById('convidar-ok').style.display = 'none';
   document.getElementById('btn-convidar').textContent = 'Enviar invitació';
   document.getElementById('btn-convidar').disabled = false;
+
+  const esCanalla = m && m.canalla;
+  document.getElementById('convidar-opcions-canalla').style.display = esCanalla ? '' : 'none';
+  document.getElementById('convidar-email-grup').style.display = '';
+
+  if (esCanalla) {
+    // Carregar usuaris existents per vincular
+    carregaUsuarisExistents();
+    document.getElementById('convidar-usuari-existent').onchange = function() {
+      const teUsuari = this.value !== '';
+      document.getElementById('convidar-email-grup').style.display = teUsuari ? 'none' : '';
+      document.getElementById('btn-convidar').textContent = teUsuari ? 'Vincular usuari' : 'Enviar invitació';
+    };
+  }
+
   obreModal('modal-convidar');
   setTimeout(() => document.getElementById('convidar-email').focus(), 100);
 }
 
+async function carregaUsuarisExistents() {
+  try {
+    const vinculacions = await sbFetch('membre_usuari?select=user_id,membres(nom)');
+    const sel = document.getElementById('convidar-usuari-existent');
+    sel.innerHTML = '<option value="">— Enviar invitació nova —</option>';
+    if (vinculacions && vinculacions.length) {
+      // Agrupar per user_id per evitar duplicats
+      const usuaris = {};
+      vinculacions.forEach(v => {
+        if (!usuaris[v.user_id]) usuaris[v.user_id] = v.membres?.nom || v.user_id;
+      });
+      Object.entries(usuaris).forEach(([uid, nom]) => {
+        sel.innerHTML += `<option value="${uid}">${nom}</option>`;
+      });
+    }
+  } catch(e) {}
+}
+
 async function enviaConvit() {
-  const email = document.getElementById('convidar-email').value.trim();
+  const usuariExistent = document.getElementById('convidar-usuari-existent')?.value;
   const err = document.getElementById('convidar-error');
   const ok = document.getElementById('convidar-ok');
   const btn = document.getElementById('btn-convidar');
   err.style.display = 'none'; ok.style.display = 'none';
+
+  // Vincular a usuari existent (cas canalla amb pare/mare ja registrat)
+  if (usuariExistent) {
+    btn.textContent = '⏳ Vinculant...'; btn.disabled = true;
+    try {
+      await sbFetch('membre_usuari', {
+        method: 'POST',
+        body: JSON.stringify({ user_id: usuariExistent, membre_id: _membreConvidarId })
+      });
+      ok.textContent = '✓ Membre vinculat correctament';
+      ok.style.display = 'block';
+      btn.textContent = 'Vincular usuari'; btn.disabled = false;
+    } catch(e) {
+      err.textContent = 'Error: ' + e.message;
+      err.style.display = 'block';
+      btn.textContent = 'Vincular usuari'; btn.disabled = false;
+    }
+    return;
+  }
+
+  // Invitació per email nova
+  const email = document.getElementById('convidar-email').value.trim();
   if (!email) { err.textContent = 'Cal posar un correu'; err.style.display = 'block'; return; }
-
   btn.textContent = '⏳ Enviant...'; btn.disabled = true;
-
   try {
     const res = await fetch(SUPABASE_URL + '/functions/v1/convidar-casteller', {
       method: 'POST',
-      headers: {
-        'Authorization': 'Bearer ' + supabaseToken,
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Authorization': 'Bearer ' + supabaseToken, 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, membre_id: _membreConvidarId })
     });
-
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Error desconegut');
-
     ok.textContent = `✓ Invitació enviada a ${email}`;
     ok.style.display = 'block';
     btn.textContent = 'Enviar invitació'; btn.disabled = false;
@@ -2328,7 +2519,7 @@ function renderitzaPinyaSessio() {
   castells.forEach((cas, idx) => {
     const pinya = cas.pinya || null;
     const info = pinya ? (NOMS_TIPUS[pinya.tipus] || { nom: pinya.tipus, ico: '🏛️' }) : null;
-    const num = castells.length > 1 ? ` ${idx+1}` : '';
+    const num = '';
 
     if (!pinya) {
       html += `<div class="card" style="margin-bottom:14px;">
@@ -2344,8 +2535,13 @@ function renderitzaPinyaSessio() {
       return;
     }
 
-    html += `<div class="card" style="margin-bottom:14px;">
-      <div class="card-cap">
+    html += `<div class="card" style="margin-bottom:14px;" draggable="true" id="card-cas-${cas.id}"
+      ondragstart="dragStart(event,'${cas.id}')"
+      ondragover="dragOver(event)"
+      ondrop="dragDrop(event,'${cas.id}')"
+      ondragend="dragEnd(event)">
+      <div class="card-cap" style="cursor:grab;">
+        <span style="color:var(--text-suau);font-size:16px;margin-right:6px;cursor:grab;">⠿</span>
         <div style="flex:1;min-width:0;">
           <span class="card-titol">${info.ico} ${pinya.nom}${num}</span>
           ${pinya.desc ? `<div style="font-size:11px;color:var(--text-suau);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${pinya.desc}</div>` : ''}
@@ -2357,6 +2553,13 @@ function renderitzaPinyaSessio() {
         </div>
       </div>
       <div id="vista-cas-${cas.id}" ${castellPlegat[cas.id] ? 'style="display:none"' : ''}>
+        ${pinya.desc ? `
+        <div onclick="toggleDesc('${cas.id}')" style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;cursor:pointer;background:var(--blau-clar);border-bottom:1px solid var(--vora);">
+          <span style="font-size:12px;font-weight:700;color:var(--blau);text-transform:uppercase;letter-spacing:0.5px;">📝 Descripció</span>
+          <span id="desc-chevron-${cas.id}" style="font-size:14px;color:var(--blau);transform:rotate(-90deg);transition:transform 0.2s;">▼</span>
+        </div>
+        <div id="desc-cos-${cas.id}" style="display:none;padding:12px 16px;font-size:13px;color:var(--text);border-bottom:1px solid var(--vora);white-space:pre-wrap;">${pinya.desc}</div>
+        ` : ''}
         <div onclick="togglePinya('${cas.id}')" style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;cursor:pointer;background:var(--gris-clar);border-bottom:1px solid var(--vora);">
           <span style="font-size:12px;font-weight:700;color:var(--text-suau);text-transform:uppercase;letter-spacing:0.5px;">🏛️ Pinya</span>
           <span style="font-size:14px;color:var(--text-suau);transition:transform 0.2s;transform:${pinyaOculta[cas.id]?'rotate(-90deg)':''}">▼</span>
