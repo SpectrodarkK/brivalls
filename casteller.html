@@ -287,7 +287,7 @@ function renderitzaSessions() {
       </div>
       <div style="display:flex;align-items:center;gap:8px;">
         ${membreActiu?`<label class="toggle" onclick="event.stopPropagation()"><input type="checkbox" ${assist?'checked':''} onchange="toggleAssistencia('${s.id}',this.checked,${idx})"><span class="toggle-slider"></span></label>`:''}
-        ${teDetall?'<span style="font-size:18px;color:#29327a;">›</span>':''}
+        ${teDetall?'<span style="font-size:18px;color:#29327a;">›</span>':'<span style="width:18px;display:inline-block;"></span>'}
       </div>
     </div>`;
   }).join('') + '</div>';
