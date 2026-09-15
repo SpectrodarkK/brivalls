@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>Redirigint...</title></head>
+<body>
+<script>
+// Capturar tot el fragment i query params i passar-los a casteller.html
+const hash = window.location.hash;
+const search = window.location.search;
+if (hash || search) {
+  window.location.replace('https://spectrodarkk.github.io/brivalls/casteller.html' + search + hash);
+} else {
+  window.location.replace('https://spectrodarkk.github.io/brivalls/index.html');
+}
+</script>
+</body>
+</html>
