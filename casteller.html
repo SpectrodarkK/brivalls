@@ -274,7 +274,8 @@ function renderitzaSessions() {
     const esAvui = data.getTime()===avui.getTime();
     const past = data < avui;
     const assist = membreActiu && s.assistencia && s.assistencia[membreActiu.id];
-    return `<div class="sessio-item" style="${past?'opacity:0.6':''}">
+    const teDetall = s.tipus === 'diada' || s.tipus === 'actuacio';
+    return `<div class="sessio-item" style="${past?'opacity:0.6':''}${teDetall?';cursor:pointer':''}" ${teDetall?`onclick="obreDetallSessio(${idx})"`:''}>
       <div>
         <div class="sessio-data" style="${esAvui?'color:#e74c3c':''}">${diaNum(s.data)}</div>
         <div class="sessio-mes">${mesAbr(s.data)}</div>
@@ -284,9 +285,50 @@ function renderitzaSessions() {
         <div style="margin-top:4px;">${tagTipus(s.tipus)}</div>
         <div class="sessio-subtitol">${s.lloc||''}</div>
       </div>
-      ${membreActiu?`<label class="toggle"><input type="checkbox" ${assist?'checked':''} onchange="toggleAssistencia('${s.id}',this.checked,${idx})"><span class="toggle-slider"></span></label>`:''}
+      <div style="display:flex;align-items:center;gap:8px;">
+        ${membreActiu?`<label class="toggle" onclick="event.stopPropagation()"><input type="checkbox" ${assist?'checked':''} onchange="toggleAssistencia('${s.id}',this.checked,${idx})"><span class="toggle-slider"></span></label>`:''}
+        ${teDetall?'<span style="font-size:18px;color:#29327a;">›</span>':''}
+      </div>
     </div>`;
   }).join('') + '</div>';
+}
+
+function obreDetallSessio(idx) {
+  const s = sessions[idx];
+  const castells = (s.castells || []).filter(c => c.pinya);
+  const cont = document.getElementById('llista-sessions');
+
+  let html = `<div class="sessio-item" style="cursor:pointer;background:var(--gris-clar);" onclick="renderitzaSessions()">
+    <span style="color:#29327a;font-size:18px;">‹</span>
+    <span style="font-size:14px;font-weight:600;color:#29327a;">Tornar</span>
+  </div>`;
+  html += `<div style="padding:10px 16px 4px;font-size:13px;color:var(--text-suau);">${formatData(s.data)}${s.lloc?' · '+s.lloc:''}</div>`;
+
+  if (!castells.length) {
+    html += '<div class="buit"><div class="buit-ico">🏛️</div><div>Sense castells assignats</div></div>';
+  } else {
+    castells.forEach((cas, i) => {
+      const p = cas.pinya;
+      const NOMS_TIPUS_LOC = {pilar:{nom:'Pilar',ico:'🏛️'},'2':{nom:'Castell de 2',ico:'🏛️'},'3':{nom:'Castell de 3',ico:'🏛️'},'3ag':{nom:'3 amb agulla',ico:'🏰'},'4':{nom:'Castell de 4',ico:'🏛️'},'5':{nom:'Castell de 5',ico:'🏆'}};
+      const info = NOMS_TIPUS_LOC[p.tipus] || {ico:'🏛️'};
+      const num = castells.length > 1 ? ` ${i+1}` : '';
+      html += `<div class="card" style="margin-bottom:10px;">
+        <div style="padding:12px 16px;font-size:15px;font-weight:600;border-bottom:1px solid var(--vora);">${info.ico} ${p.nom}${num}</div>
+        <div id="tronc-det-${i}"></div>
+        <div id="svg-det-${i}" style="${cas.pinyaOculta?'display:none':''}"></div>
+      </div>`;
+    });
+  }
+
+  cont.innerHTML = '<div class="card">' + html + '</div>';
+
+  castells.forEach((cas, i) => {
+    const p = cas.pinya;
+    const elTronc = document.getElementById('tronc-det-' + i);
+    const elSvg = document.getElementById('svg-det-' + i);
+    if (elTronc && p.tronc) elTronc.innerHTML = generaTroncHTML(cas, p);
+    if (elSvg && !cas.pinyaOculta && p.posicions) elSvg.innerHTML = generaSVG(p, cas.nomsAssignats);
+  });
 }
 
 async function toggleAssistencia(sessioId, val, idx) {
@@ -388,6 +430,56 @@ function mostraPanell(id) {
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('actiu'));
   document.getElementById('panell-'+id).classList.add('actiu');
   document.getElementById('nav-'+id).classList.add('actiu');
+}
+
+function generaSVG(pinya, nomsAssignats) {
+  const COLORS = {baix:'#1a1a2e',baix_pilar:'#1a1a2e',agulla:'#27ae60',crossa:'#f1c40f',contrafort:'#e8e8e8',vent:'#c0392b',lateral:'#2980b9',diagonal:'#2980b9',mans:'#8e44ad',tap:'#95a5a6',envoltant:'#27ae60'};
+  const R=5.2, pos=pinya.posicions||[], nA=nomsAssignats||{};
+  if(!pos.length)return'';
+  const xs=pos.map(p=>p.cx),ys=pos.map(p=>p.cy);
+  const marge=R+8,minX=Math.min(...xs)-marge,maxX=Math.max(...xs)+marge,minY=Math.min(...ys)-marge,maxY=Math.max(...ys)+marge;
+  const cercles=pos.map(p=>{
+    const color=COLORS[p.rol]||'#999';
+    const nom=nA[p.id];
+    const txt=nom?`<text x="${p.cx}" y="${p.cy+1.5}" text-anchor="middle" dominant-baseline="middle" font-size="3.5" font-weight="700" fill="#fff" font-family="sans-serif">${nom.slice(0,6)}</text>`:'';
+    return `<circle cx="${p.cx}" cy="${p.cy}" r="${R}" fill="${color}" stroke="#fff" stroke-width="0.3" opacity="0.9"/>${txt}`;
+  }).join('');
+  return `<svg viewBox="${minX} ${minY} ${maxX-minX} ${maxY-minY}" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block;padding:8px;">${cercles}</svg>`;
+}
+
+function generaTroncHTML(cas, pinya) {
+  const NOMS_PILARS={'2':['Carregada','Descarregada'],'3':['Rengla','Plena','Buida'],'3ag':['Rengla','Plena','Buida','Agulla'],'4':['Esquerra','Rengla','Dreta','Contra'],'5':['Rengla','Plena','Buida','Carregada','Descarregada']};
+  const INDEX_BAIX={'2':[1,0],'3':[0,2,1],'3ag':[0,2,1,-1],'4':[3,2,1,0],'5':[0,1,2,3,4]};
+  const tronc=pinya.tronc||[],aT=cas.assignacionsTronc||{},aP=cas.assignacions||{};
+  const nPilars={pilar:1,'2':2,'3':3,'3ag':4,'4':4,'5':5}[pinya.tipus];
+  if(!nPilars)return'';
+  const noms=NOMS_PILARS[pinya.tipus]||[],mapa=INDEX_BAIX[pinya.tipus]||[];
+  const baixos=(pinya.posicions||[]).filter(p=>p.rol==='baix');
+  const baixPilar=(pinya.posicions||[]).find(p=>p.rol==='baix_pilar');
+  const nT=cas.nomsTronc||{},nA=cas.nomsAssignats||{};
+  const cols=`repeat(${nPilars},1fr)`;
+  function cella(assignat,negre,nom){
+    const bg=assignat?(negre?'#1a1a2e':'#29327a'):'#f0f0f0';
+    const color=assignat?'#fff':'#ccc';
+    const text=assignat?(nom||'✓'):'–';
+    const fs=nom&&nom.length>6?'9px':'11px';
+    return `<div style="background:${bg};color:${color};border-radius:6px;padding:4px 2px;text-align:center;font-size:${fs};font-weight:700;min-height:28px;display:flex;align-items:center;justify-content:center;overflow:hidden;">${text}</div>`;
+  }
+  const enx=tronc.find(t=>t.pis==='enxaneta');
+  const acots=tronc.filter(t=>t.pis==='acotxador');
+  const dosos=tronc.filter(t=>t.pis==='dos');
+  let html='<div style="padding:12px 16px;border-bottom:1px solid #eee;">';
+  html+='<div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">🏗️ Tronc</div>';
+  if(enx)html+=`<div style="max-width:80px;margin:0 auto 4px;">${cella(!!aT[enx.id],false,nT[enx.id])}</div>`;
+  if(acots.length){const w=acots.length===1?'max-width:80px;margin:0 auto 4px;':`display:grid;grid-template-columns:repeat(${acots.length},1fr);gap:4px;margin-bottom:4px;`;html+=`<div style="${w}">${acots.map(t=>cella(!!aT[t.id],false,nT[t.id])).join('')}</div>`;}
+  if(dosos.length)html+=`<div style="display:grid;grid-template-columns:repeat(${dosos.length},1fr);gap:4px;margin-bottom:4px;">${dosos.map(t=>cella(!!aT[t.id],false,nT[t.id])).join('')}</div>`;
+  html+='<div style="border-top:1px dashed #ddd;margin:8px 0;"></div>';
+  html+=`<div style="display:grid;grid-template-columns:${cols};gap:4px;margin-bottom:4px;">${Array.from({length:nPilars},(_,i)=>`<div style="text-align:center;font-size:9px;font-weight:600;color:#888;">${noms[i]||'P'+(i+1)}</div>`).join('')}</div>`;
+  ['quartes','terços','segons'].forEach(pis=>{html+=`<div style="display:grid;grid-template-columns:${cols};gap:4px;margin-bottom:4px;">${Array.from({length:nPilars},(_,i)=>{const t=tronc.find(x=>x.pilar===i+1&&x.pis===pis);return cella(t&&!!aT[t.id],false,t&&nT[t.id]);}).join('')}</div>`;});
+  html+='<div style="border-top:1px dashed #ddd;margin:8px 0;"></div>';
+  html+=`<div style="display:grid;grid-template-columns:${cols};gap:4px;margin-bottom:4px;">${Array.from({length:nPilars},(_,i)=>{const idx=mapa[i];const pos=idx===-1?baixPilar:baixos[idx];return cella(pos&&!!aP[pos.id],true,pos&&nA[pos.id]);}).join('')}</div>`;
+  html+='</div>';
+  return html;
 }
 
 function sortir() {
