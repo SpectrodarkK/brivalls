@@ -521,7 +521,7 @@
     <div class="modal-titol" id="modal-confirm-titol">Confirmar</div>
     <p id="modal-confirm-text" style="font-size:15px;color:var(--text-suau);margin-bottom:20px;"></p>
     <div style="display:flex;gap:10px;">
-      <button class="btn btn-secundari" style="flex:1;justify-content:center;" onclick="tancaModal('modal-confirm')">Cancel·lar</button>
+      <button class="btn btn-secundari" id="modal-confirm-cancel" style="flex:1;justify-content:center;" onclick="tancaModal('modal-confirm')">Cancel·lar</button>
       <button class="btn btn-perill" id="modal-confirm-ok" style="flex:1;justify-content:center;background:var(--blau);color:#fff;">Eliminar</button>
     </div>
   </div>
@@ -1949,11 +1949,13 @@ function tancaModal(id) {
 }
 
 // Substitueix confirm() per un modal propi (confirm() no funciona en WebViews)
-function confirma(text, callback) {
+function confirma(text, callback, onCancel) {
   document.getElementById('modal-confirm-titol').textContent = 'Confirmar';
   document.getElementById('modal-confirm-text').textContent = text;
   const btn = document.getElementById('modal-confirm-ok');
   btn.onclick = () => { tancaModal('modal-confirm'); callback(); };
+  const btnCancel = document.getElementById('modal-confirm-cancel');
+  if (btnCancel) btnCancel.onclick = () => { tancaModal('modal-confirm'); if(onCancel) onCancel(); };
   obreModal('modal-confirm');
 }
 document.querySelectorAll('.modal-overlay').forEach(el => {
@@ -2371,12 +2373,14 @@ function guardarMembre() {
 
 function eliminarMembre(membreId) {
   if (!estaAutenticat()) { requereixPin(() => eliminarMembre(membreId)); return; }
+  const tornAFitxa = () => { if (_membreEditantId) obreModalMembre(_membreEditantId); };
   confirma('Eliminar aquest membre?', async () => {
     estat.membres = estat.membres.filter(m => m.id !== membreId);
+    _membreEditantId = null;
     desa();
     try { await sbFetch('membres?id=eq.' + membreId, { method: 'DELETE' }); } catch(e) {}
     renderitzaMembres();
-  });
+  }, tornAFitxa);
 }
 
 const membreSubObert = { adults: true, canalla: true };
