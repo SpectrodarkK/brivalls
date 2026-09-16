@@ -230,7 +230,7 @@
   <button class="nav-btn actiu" onclick="canviaPanell('sessions')" id="nav-sessions">
     <span class="ico">📅</span><span>Sessions</span>
   </button>
-  <button class="nav-btn" onclick="requereixPin(()=>canviaPanell('membres');comprovaniversaris())" id="nav-membres">
+  <button class="nav-btn" onclick="requereixPin(()=>{canviaPanell('membres');comprovaniversaris();})" id="nav-membres">
     <span class="ico">👥</span><span>Membres</span>
   </button>
 
@@ -2444,7 +2444,7 @@ function renderitzaMembres(filtre) {
     cont.innerHTML = `<div class="buit" style="padding:32px 16px;">
       <div class="buit-ico">🔐</div>
       <div class="buit-text" style="margin-bottom:16px;">Cal el PIN per veure els membres</div>
-      <button class="btn btn-primari" style="width:auto;padding:10px 24px;" onclick="requereixPin(()=>canviaPanell('membres');comprovaniversaris())">Introduir PIN</button>
+      <button class="btn btn-primari" style="width:auto;padding:10px 24px;" onclick="requereixPin(()=>{canviaPanell('membres');comprovaniversaris();})">Introduir PIN</button>
     </div>`;
     return;
   }
