@@ -274,7 +274,7 @@ function renderitzaSessions() {
     const esAvui = data.getTime()===avui.getTime();
     const past = data < avui;
     const assist = membreActiu && s.assistencia && s.assistencia[membreActiu.id];
-    const teDetall = s.tipus === 'diada' || s.tipus === 'actuacio';
+    const teDetall = (s.tipus === 'diada' || s.tipus === 'actuacio') && s.publicarCastells;
     return `<div class="sessio-item" style="${past?'opacity:0.6':''}${teDetall?';cursor:pointer':''}" ${teDetall?`onclick="obreDetallSessio(${idx})"`:''}>
       <div>
         <div class="sessio-data" style="${esAvui?'color:#e74c3c':''}">${diaNum(s.data)}</div>
