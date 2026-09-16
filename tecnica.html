@@ -391,7 +391,14 @@
       <label class="input-etiqueta">Notes</label>
       <textarea id="membre-notes" placeholder="Observacions, experiència..."></textarea>
     </div>
-    <button class="btn btn-primari" onclick="guardarMembre()">Guardar membre</button>
+    <button class="btn btn-primari" onclick="guardarMembre()">Desar canvis</button>
+    <div id="membre-accions-modal" style="display:none;margin-top:12px;display:flex;flex-direction:column;gap:8px;">
+      <div style="border-top:1px solid var(--vora);padding-top:12px;display:flex;gap:8px;">
+        <button class="btn" style="flex:1;background:var(--blau-clar);color:var(--blau);" onclick="tancaModal('modal-membre');obreConvidarActual()">📧 Invitar</button>
+        <button class="btn" style="flex:1;background:var(--gris-clar);color:var(--text);" onclick="tancaModal('modal-membre');obreGestioAccesActual()">🔗 Accés</button>
+        <button class="btn btn-perill" style="flex:1;" onclick="tancaModal('modal-membre');eliminarMembre(_membreEditantId)">🗑️ Eliminar</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -2279,11 +2286,15 @@ function esborraFotoMembre() {
   document.getElementById('membre-foto-esborrar').style.display = 'none';
 }
 
+let _membreEditantId = null;
+
 function obreModalMembre(membreId) {
   if (!estaAutenticat()) { requereixPin(() => obreModalMembre(membreId)); return; }
+  _membreEditantId = membreId || null;
   const prev = document.getElementById('membre-foto-preview');
   document.getElementById('membre-foto-input').value = '';
   document.getElementById('membre-id-edit').value = membreId || '';
+  const accions = document.getElementById('membre-accions-modal');
   if (membreId) {
     const m = estat.membres.find(x => x.id === membreId);
     document.getElementById('modal-membre-titol').textContent = 'Editar membre';
@@ -2301,6 +2312,7 @@ function obreModalMembre(membreId) {
       prev.innerHTML = '👤'; prev.dataset.foto = '';
       document.getElementById('membre-foto-esborrar').style.display = 'none';
     }
+    if (accions) accions.style.display = 'flex';
   } else {
     document.getElementById('modal-membre-titol').textContent = 'Nou membre';
     document.getElementById('membre-nom').value = '';
@@ -2311,8 +2323,21 @@ function obreModalMembre(membreId) {
     document.getElementById('membre-notes').value = '';
     prev.innerHTML = '👤'; prev.dataset.foto = '';
     document.getElementById('membre-foto-esborrar').style.display = 'none';
+    if (accions) accions.style.display = 'none';
   }
   obreModal('modal-membre');
+}
+
+function obreConvidarActual() {
+  if (!_membreEditantId) return;
+  const m = estat.membres.find(x => x.id === _membreEditantId);
+  if (m) obreConvidar(m.id, m.nom);
+}
+
+function obreGestioAccesActual() {
+  if (!_membreEditantId) return;
+  const m = estat.membres.find(x => x.id === _membreEditantId);
+  if (m) obreGestioAcces(m.id, m.nom);
 }
 
 function guardarMembre() {
@@ -2396,18 +2421,13 @@ function renderitzaMembres(filtre) {
   const canalla = membres.filter(m => m.canalla);
 
   function renderMembre(m) {
-    return `<div class="membre-item">
+    return `<div class="membre-item" onclick="obreModalMembre('${m.id}')" style="cursor:pointer;">
       <div class="membre-avatar ${colorAvatar(m.nom)}" style="${m.foto ? `background-image:url('${m.foto}');background-size:cover;background-position:center;` : ''}">${m.foto ? '' : inicials(m.nom)}</div>
       <div class="membre-info">
         <div class="membre-nom">${m.nom}${m.canalla ? ' 🧒' : ''}</div>
-        <div class="membre-detall">${m.tel ? ' · 📞 ' + m.tel : ''}</div>
+        <div class="membre-detall">${m.tel ? '📞 ' + m.tel : ''}</div>
       </div>
-      <div class="membre-accions">
-        <button class="btn btn-petit" style="background:var(--blau-clar);color:var(--blau);" onclick="obreConvidar('${m.id}','${m.nom.replace(/'/g,"\\'")}')">📧</button>
-        <button class="btn btn-petit" style="background:var(--gris-clar);color:var(--text);" onclick="obreGestioAcces('${m.id}','${m.nom.replace(/'/g,"\\'")}')">🔗</button>
-        <button class="btn btn-petit btn-groc" onclick="obreModalMembre('${m.id}')">✏️</button>
-        <button class="btn btn-petit btn-perill" onclick="eliminarMembre('${m.id}')">🗑️</button>
-      </div>
+      <span style="color:var(--text-suau);font-size:18px;">›</span>
     </div>`;
   }
 
