@@ -2391,30 +2391,25 @@ function comprovaniversaris() {
   if (!banner) return;
   const avui = new Date();
   const any = avui.getFullYear();
-  const mesAvui = avui.getMonth();
-  const diaAvui = avui.getDate();
+  const avuiD = new Date(any, avui.getMonth(), avui.getDate());
 
-  // Buscar aniversaris en els propers 7 dies
-  const aniversaris = estat.membres.filter(m => {
-    if (!m.naixement) return false;
-    const [anyN, mesN, diaN] = m.naixement.split('-').map(Number);
-    // Crear data d'aniversari enguany
+  const aniversaris = estat.membres.map(m => {
+    if (!m.naixement) return null;
+    const parts = m.naixement.split('-').map(Number);
+    const anyN = parts[0], mesN = parts[1], diaN = parts[2];
     const aniv = new Date(any, mesN-1, diaN);
-    // Si ja ha passat enguany, provar l'any que ve
-    const avuiD = new Date(any, mesAvui, diaAvui);
     if (aniv < avuiD) aniv.setFullYear(any+1);
     const dies = Math.round((aniv - avuiD) / (1000*60*60*24));
-    m._diesAniversari = dies;
-    m._edatProxima = any + (aniv.getFullYear() > any ? 1 : 0) - anyN;
-    return dies <= 7;
-  }).sort((a,b) => a._diesAniversari - b._diesAniversari);
+    if (dies > 7) return null;
+    const edat = aniv.getFullYear() - anyN;
+    return { nom: m.nom, dies, edat };
+  }).filter(Boolean).sort((a,b) => a.dies - b.dies);
 
   if (!aniversaris.length) { banner.style.display = 'none'; return; }
 
-  const linia = aniversaris.map(m => {
-    const dies = m._diesAniversari;
-    const quan = dies === 0 ? '🎉 avui!' : dies === 1 ? 'demà' : `en ${dies} dies`;
-    return `<strong>${m.nom.split(' ')[0]}</strong> fa ${m._edatProxima} anys ${quan}`;
+  const linia = aniversaris.map(a => {
+    const quan = a.dies === 0 ? '🎉 avui!' : a.dies === 1 ? 'demà' : `en ${a.dies} dies`;
+    return `<strong>${a.nom.split(' ')[0]}</strong> fa ${a.edat} anys ${quan}`;
   }).join('<br>');
 
   banner.style.display = '';
