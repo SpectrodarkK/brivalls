@@ -474,32 +474,86 @@ function generaSVG(pinya, nomsAssignats) {
 }
 
 function obreSVGModal(pinya, nomsAssignats) {
-  // Permetre pinch-to-zoom mentre el modal és obert
-  document.getElementById('meta-viewport').content = 'width=device-width, initial-scale=1.0';
-
-  let modal = document.getElementById('svg-modal');
-  if (!modal) {
-    modal = document.createElement('div');
-    modal.id = 'svg-modal';
-    modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:9999;display:flex;align-items:center;justify-content:center;padding:0;touch-action:pan-x pan-y;';
-    modal.onclick = (e) => { if(e.target===modal) tancaSVGModal(); };
-    document.body.appendChild(modal);
-  }
   const svgHtml = generaSVG(pinya, nomsAssignats);
+
+  const modal = document.createElement('div');
+  modal.id = 'svg-modal';
+  modal.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.92);z-index:9999;overflow:hidden;';
   modal.innerHTML = `
-    <div style="position:relative;width:100%;height:100%;overflow:auto;-webkit-overflow-scrolling:touch;">
-      <button onclick="tancaSVGModal()" style="position:fixed;top:12px;right:12px;z-index:10000;background:rgba(0,0,0,0.6);border:none;color:#fff;font-size:22px;width:40px;height:40px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;">✕</button>
-      <div style="min-width:700px;padding:40px 16px 16px;">
+    <button id="svg-modal-close" style="position:fixed;top:12px;right:12px;z-index:10001;background:rgba(0,0,0,0.6);border:none;color:#fff;font-size:22px;width:44px;height:44px;border-radius:50%;cursor:pointer;">✕</button>
+    <div id="svg-modal-inner" style="position:absolute;inset:0;overflow:hidden;display:flex;align-items:center;justify-content:center;">
+      <div id="svg-zoom-wrap" style="transform-origin:center center;transition:none;min-width:320px;width:90%;max-width:600px;">
         ${svgHtml}
       </div>
     </div>`;
+
+  document.body.appendChild(modal);
+  document.getElementById('svg-modal-close').onclick = tancaSVGModal;
+
+  // Pinch-to-zoom i pan manual
+  const wrap = document.getElementById('svg-zoom-wrap');
+  let scale = 1, lastScale = 1;
+  let tx = 0, ty = 0, lastTx = 0, lastTy = 0;
+  let startDist = 0, startMid = {x:0,y:0};
+  let isPinching = false, isPanning = false;
+  let startPan = {x:0,y:0}, touchStart = [];
+
+  function dist(t) { return Math.hypot(t[0].clientX-t[1].clientX, t[0].clientY-t[1].clientY); }
+  function mid(t) { return {x:(t[0].clientX+t[1].clientX)/2, y:(t[0].clientY+t[1].clientY)/2}; }
+  function applyTransform() { wrap.style.transform = `translate(${tx}px,${ty}px) scale(${scale})`; }
+
+  modal.addEventListener('touchstart', e => {
+    touchStart = Array.from(e.touches);
+    if (e.touches.length === 2) {
+      isPinching = true; isPanning = false;
+      startDist = dist(touchStart);
+      startMid = mid(touchStart);
+      lastScale = scale; lastTx = tx; lastTy = ty;
+    } else if (e.touches.length === 1) {
+      isPanning = scale > 1;
+      startPan = {x: e.touches[0].clientX - tx, y: e.touches[0].clientY - ty};
+    }
+  }, {passive:true});
+
+  modal.addEventListener('touchmove', e => {
+    if (isPinching && e.touches.length === 2) {
+      e.preventDefault();
+      const newDist = dist(Array.from(e.touches));
+      scale = Math.min(5, Math.max(1, lastScale * (newDist / startDist)));
+      applyTransform();
+    } else if (isPanning && e.touches.length === 1) {
+      e.preventDefault();
+      tx = e.touches[0].clientX - startPan.x;
+      ty = e.touches[0].clientY - startPan.y;
+      applyTransform();
+    }
+  }, {passive:false});
+
+  modal.addEventListener('touchend', e => {
+    if (e.touches.length < 2) isPinching = false;
+    if (e.touches.length === 0) {
+      isPanning = false;
+      if (scale <= 1) { tx = 0; ty = 0; applyTransform(); }
+      // Doble tap per tancar si no hem fet zoom
+      if (scale <= 1 && e.changedTouches.length === 1) {
+        const t = e.changedTouches[0];
+        const closeBtn = document.getElementById('svg-modal-close');
+        const r = closeBtn && closeBtn.getBoundingClientRect();
+        const overClose = r && t.clientX>=r.left && t.clientX<=r.right && t.clientY>=r.top && t.clientY<=r.bottom;
+        if (!overClose && !isPinching) {
+          // Un sol tap al fons negre (fora de la SVG) tanca
+          const svgRect = wrap.getBoundingClientRect();
+          const overSVG = t.clientX>=svgRect.left && t.clientX<=svgRect.right && t.clientY>=svgRect.top && t.clientY<=svgRect.bottom;
+          if (!overSVG) tancaSVGModal();
+        }
+      }
+    }
+  }, {passive:true});
 }
 
 function tancaSVGModal() {
   const modal = document.getElementById('svg-modal');
   if (modal) modal.remove();
-  // Restaurar el bloqueig de zoom
-  document.getElementById('meta-viewport').content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
 }
 
 function generaTroncHTML(cas, pinya) {
