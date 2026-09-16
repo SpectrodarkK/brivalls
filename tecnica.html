@@ -1169,13 +1169,36 @@ function renderitzaTroncSessio(cas, pinya, obert) {
       <div style="text-align:center;font-size:10px;font-weight:700;color:var(--text-suau);text-transform:uppercase;margin-top:4px;">▼ Baixos</div>`;
   } else {
     const pisosPom = ['enxaneta','acotxador','dos'];
-    const filaPom = pisosPom.map(pis=>{
-      const items=tronc.filter(t=>t.pilar===0&&t.pis===pis);
-      const cel=items.map(t=>cellaTroncSessio(t)).join('');
-      return pis==='dos'
-        ?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;">${cel}</div>`
-        :`<div style="margin-bottom:6px;">${cel}</div>`;
-    }).join('');
+    let filaPom;
+    if (pinya.tipus === '3ag') {
+      // Pom especial: enxaneta i acotxador ocupen 3fr (Rengla+Plena+Buida) + 1fr buit (Agulla)
+      // Dos: 1fr (Rengla) + 2fr (Plena+Buida) + 1fr buit
+      const enx = tronc.find(t=>t.pilar===0&&t.pis==='enxaneta');
+      const acot = tronc.find(t=>t.pilar===0&&t.pis==='acotxador');
+      const dos = tronc.filter(t=>t.pilar===0&&t.pis==='dos');
+      filaPom = `
+        <div style="display:grid;grid-template-columns:3fr 1fr;gap:6px;margin-bottom:6px;">
+          <div>${enx?cellaTroncSessio(enx):''}</div>
+          <div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:3fr 1fr;gap:6px;margin-bottom:6px;">
+          <div>${acot?cellaTroncSessio(acot):''}</div>
+          <div></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 2fr 1fr;gap:6px;margin-bottom:6px;">
+          <div>${dos[0]?cellaTroncSessio(dos[0]):''}</div>
+          <div>${dos[1]?cellaTroncSessio(dos[1]):''}</div>
+          <div></div>
+        </div>`;
+    } else {
+      filaPom = pisosPom.map(pis=>{
+        const items=tronc.filter(t=>t.pilar===0&&t.pis===pis);
+        const cel=items.map(t=>cellaTroncSessio(t)).join('');
+        return pis==='dos'
+          ?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:6px;">${cel}</div>`
+          :`<div style="margin-bottom:6px;">${cel}</div>`;
+      }).join('');
+    }
     const fp=pisosOrdrePilar.map(pis=>{
       const cels=Array.from({length:nPilars},(_,i)=>{const t=tronc.find(x=>x.pilar===i+1&&x.pis===pis);return t?cellaTroncSessio(t):'<div></div>';}).join('');
       return `<div style="display:grid;grid-template-columns:repeat(${nPilars},1fr);gap:6px;margin-bottom:6px;">${cels}</div>`;
