@@ -1296,9 +1296,10 @@ function obreDuplicaCastell(casId) {
   // Omplir selector de sessions (totes menys l'actual si és la mateixa)
   const sel = document.getElementById('duplica-sessio-dest');
   sel.innerHTML = '<option value="__actual__">— Aquesta mateixa sessió —</option>';
+  const avui = new Date(); avui.setHours(0,0,0,0);
   estat.sessions
-    .filter(s => s.id !== sessioActual.id)
-    .sort((a,b) => b.data.localeCompare(a.data))
+    .filter(s => s.id !== sessioActual.id && new Date(s.data+'T00:00:00') >= avui)
+    .sort((a,b) => a.data.localeCompare(b.data))
     .forEach(s => {
       sel.innerHTML += `<option value="${s.id}">${formatData(s.data)} · ${tipusSessio(s.tipus)}${s.lloc?' · '+s.lloc:''}`;
     });
@@ -2627,16 +2628,35 @@ function renderitzaSessions() {
   }
 
   if (passades.length) {
-    const historicId = 'historic-block';
-    html += `<div style="padding:8px 16px;margin-top:8px;">
-      <div onclick="toggleHistoric()" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:8px 0;border-top:1px solid var(--vora);">
+    // Agrupar per any
+    const perAny = {};
+    passades.forEach(s => {
+      const any = s.data.slice(0,4);
+      if (!perAny[any]) perAny[any] = [];
+      perAny[any].push(s);
+    });
+    const anys = Object.keys(perAny).sort((a,b) => b-a);
+
+    html += `<div style="padding:8px 16px;margin-top:4px;border-top:1px solid var(--vora);">
+      <div onclick="toggleHistoric()" style="display:flex;align-items:center;justify-content:space-between;cursor:pointer;padding:6px 0;">
         <span style="font-size:13px;font-weight:700;color:var(--text-suau);text-transform:uppercase;letter-spacing:0.5px;">📦 Històric (${passades.length})</span>
         <span id="historic-chevron" style="font-size:14px;color:var(--text-suau);transform:rotate(-90deg);transition:transform 0.2s;">▼</span>
       </div>
     </div>
-    <div id="${historicId}" style="display:none;">
-      ${passades.map(renderSessio).join('')}
-    </div>`;
+    <div id="historic-block" style="display:none;">`;
+
+    anys.forEach(any => {
+      const sessions = perAny[any];
+      html += `<div onclick="toggleAny('${any}')" style="display:flex;align-items:center;justify-content:space-between;padding:7px 16px;background:var(--blau-clar);cursor:pointer;border-top:1px solid var(--vora);">
+        <span style="font-size:12px;font-weight:700;color:var(--blau);text-transform:uppercase;letter-spacing:0.5px;">📅 ${any} (${sessions.length})</span>
+        <span id="any-chevron-${any}" style="font-size:13px;color:var(--blau);transition:transform 0.2s;transform:rotate(-90deg);">▼</span>
+      </div>
+      <div id="any-bloc-${any}" style="display:none;">
+        ${sessions.map(renderSessio).join('')}
+      </div>`;
+    });
+
+    html += '</div>';
   }
 
   cont.innerHTML = '<div class="card">' + html + '</div>';
@@ -2645,6 +2665,14 @@ function renderitzaSessions() {
 function toggleHistoric() {
   const bloc = document.getElementById('historic-block');
   const chev = document.getElementById('historic-chevron');
+  const obert = bloc.style.display !== 'none';
+  bloc.style.display = obert ? 'none' : '';
+  chev.style.transform = obert ? 'rotate(-90deg)' : '';
+}
+
+function toggleAny(any) {
+  const bloc = document.getElementById('any-bloc-' + any);
+  const chev = document.getElementById('any-chevron-' + any);
   const obert = bloc.style.display !== 'none';
   bloc.style.display = obert ? 'none' : '';
   chev.style.transform = obert ? 'rotate(-90deg)' : '';
