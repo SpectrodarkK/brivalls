@@ -2196,9 +2196,19 @@ function eliminarMembre(membreId) {
   });
 }
 
+const membreSubObert = { adults: true, canalla: true };
+
 function filtraMembres() {
   const cerca = normalitza(document.getElementById('cerca-membre').value);
   renderitzaMembres(cerca);
+}
+
+function toggleMembreSub(grup) {
+  membreSubObert[grup] = !membreSubObert[grup];
+  const cos = document.getElementById('membre-sub-' + grup);
+  const chev = document.getElementById('membre-chev-' + grup);
+  if (cos) cos.style.display = membreSubObert[grup] ? '' : 'none';
+  if (chev) chev.style.transform = membreSubObert[grup] ? '' : 'rotate(-90deg)';
 }
 
 function renderitzaMembres(filtre) {
@@ -2243,15 +2253,6 @@ function renderitzaMembres(filtre) {
     </div>`;
   }
 
-let membreSubObert = { adults: true, canalla: true };
-
-function toggleMembreSub(grup) {
-  membreSubObert[grup] = !membreSubObert[grup];
-  const cos = document.getElementById('membre-sub-' + grup);
-  const chev = document.getElementById('membre-chev-' + grup);
-  if (cos) cos.style.display = membreSubObert[grup] ? '' : 'none';
-  if (chev) chev.style.transform = membreSubObert[grup] ? '' : 'rotate(-90deg)';
-}
 
   let html = '';
   if (adults.length) {
