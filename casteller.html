@@ -148,6 +148,7 @@ async function detectaToken() {
     sessionStorage.setItem('sb-token', accessToken);
     if (refreshToken) sessionStorage.setItem('sb-refresh', refreshToken);
     sessionStorage.setItem('sb-canvia-pwd', '1');
+    sessionStorage.setItem('primer-acces', '1');
     history.replaceState(null, '', window.location.pathname);
   } else if (tokenHash && type) {
     try {
@@ -420,8 +421,19 @@ async function canviaContrasenya() {
   if (pwd.length < 6) { err.textContent='La contrasenya ha de tenir mínim 6 caràcters'; err.style.display='block'; return; }
   if (pwd !== conf) { err.textContent='Les contrasenyes no coincideixen'; err.style.display='block'; return; }
   const r = await sbAuth('user', {method:'PUT', body:JSON.stringify({password:pwd})});
-  if (r.ok) { ok.style.display='block'; document.getElementById('pwd-nou').value=''; document.getElementById('pwd-confirma').value=''; }
-  else { err.textContent='Error en canviar la contrasenya'; err.style.display='block'; }
+  if (r.ok) {
+    ok.textContent = '✓ Contrasenya desada!';
+    ok.style.display='block';
+    document.getElementById('pwd-nou').value='';
+    document.getElementById('pwd-confirma').value='';
+    // Si és el primer accés (venim d'una invitació), redirigir a sessions
+    if (sessionStorage.getItem('primer-acces')) {
+      sessionStorage.removeItem('primer-acces');
+      setTimeout(() => { mostraPanell('sessions'); carrega(); }, 1200);
+    }
+  } else {
+    err.textContent='Error en canviar la contrasenya'; err.style.display='block';
+  }
 }
 
 function mostraPanell(id) {
