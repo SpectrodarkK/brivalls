@@ -509,6 +509,10 @@ function generaTroncHTML(cas, pinya) {
         ${dosB.length>=2?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:4px;">${cella(!!aT[dosB[0].id],false,nT[dosB[0].id])}${cella(!!aT[dosB[1].id],false,nT[dosB[1].id])}</div>`:''}
       </div>
     </div>`;
+  } else if (pinya.tipus === '2' || pinya.tipus === '4') {
+    if(enx) html+=`<div style="margin-bottom:4px;">${cella(!!aT[enx.id],false,nT[enx.id])}</div>`;
+    if(acots.length) html+=`<div style="margin-bottom:4px;">${cella(!!aT[acots[0].id],false,nT[acots[0].id])}</div>`;
+    if(dosos.length) html+=`<div style="display:grid;grid-template-columns:repeat(${dosos.length},1fr);gap:4px;margin-bottom:4px;">${dosos.map(t=>cella(!!aT[t.id],false,nT[t.id])).join('')}</div>`;
   } else {
     if(enx)html+=`<div style="max-width:80px;margin:0 auto 4px;">${cella(!!aT[enx.id],false,nT[enx.id])}</div>`;
     if(acots.length){const w=acots.length===1?'max-width:80px;margin:0 auto 4px;':`display:grid;grid-template-columns:repeat(${acots.length},1fr);gap:4px;margin-bottom:4px;`;html+=`<div style="${w}">${acots.map(t=>cella(!!aT[t.id],false,nT[t.id])).join('')}</div>`;}
