@@ -1306,7 +1306,9 @@ function obreAssignacioTroncSessio(casId, troncId) {
   document.getElementById('cerca-persona').style.display = 'block';
   document.getElementById('cerca-persona').value = '';
   document.getElementById('modal-sel-titol').textContent = 'Assignar al tronc';
-  renderitzaOpcionsPersones(estat.membres, true);
+  _personesEsTronc = true;
+  _personesDisponibles = estat.membres;
+  renderitzaOpcionsPersones(_personesDisponibles, true);
   obreModal('modal-seleccio-persona');
 }
 
