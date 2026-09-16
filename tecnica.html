@@ -263,7 +263,7 @@
     <div id="gestio-acces-llista">
       <div class="buit" style="padding:16px;"><div class="buit-text">Carregant...</div></div>
     </div>
-    <button class="btn" style="margin-top:12px;width:100%;background:none;color:var(--text-suau);" onclick="tancaModal('modal-gestio-acces')">Tancar</button>
+    <button class="btn" style="margin-top:12px;width:100%;background:none;color:var(--text-suau);" onclick="tancaModal('modal-gestio-acces');if(_membreEditantId)obreModalMembre(_membreEditantId);">← Tornar a la fitxa</button>
   </div>
 </div>
 
@@ -294,7 +294,7 @@
     <div id="convidar-error" style="color:#e74c3c;font-size:13px;margin-bottom:8px;display:none;"></div>
     <div id="convidar-ok" style="color:#27ae60;font-size:13px;margin-bottom:8px;display:none;"></div>
     <button class="btn btn-primari" id="btn-convidar" onclick="enviaConvit()">Enviar invitació</button>
-    <button class="btn" style="margin-top:8px;width:100%;background:none;color:var(--text-suau);" onclick="tancaModal('modal-convidar')">Cancel·lar</button>
+    <button class="btn" style="margin-top:8px;width:100%;background:none;color:var(--text-suau);" onclick="tancaModal('modal-convidar');if(_membreEditantId)obreModalMembre(_membreEditantId);">← Tornar a la fitxa</button>
   </div>
 </div>
 
@@ -394,8 +394,8 @@
     <button class="btn btn-primari" onclick="guardarMembre()">Desar canvis</button>
     <div id="membre-accions-modal" style="display:none;margin-top:12px;display:flex;flex-direction:column;gap:8px;">
       <div style="border-top:1px solid var(--vora);padding-top:12px;display:flex;gap:8px;">
-        <button class="btn" style="flex:1;background:var(--blau-clar);color:var(--blau);" onclick="tancaModal('modal-membre');obreConvidarActual()">📧 Invitar</button>
-        <button class="btn" style="flex:1;background:var(--gris-clar);color:var(--text);" onclick="tancaModal('modal-membre');obreGestioAccesActual()">🔗 Accés</button>
+        <button class="btn" style="flex:1;background:var(--blau-clar);color:var(--blau);" onclick="tancaModal('modal-membre');obreConvidarActual()">📧 Convidar</button>
+        <button class="btn" style="flex:1;background:var(--gris-clar);color:var(--text);" onclick="tancaModal('modal-membre');obreGestioAccesActual()">🔗 Vincular</button>
         <button class="btn btn-perill" style="flex:1;" onclick="tancaModal('modal-membre');eliminarMembre(_membreEditantId)">🗑️ Eliminar</button>
       </div>
     </div>
