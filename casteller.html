@@ -496,17 +496,19 @@ function generaTroncHTML(cas, pinya) {
     const pomA=tronc.filter(t=>t.pilar===6), pomB=tronc.filter(t=>t.pilar===7);
     const acotA=pomA.find(t=>t.pis==='acotxador'), dosA=pomA.filter(t=>t.pis==='dos');
     const acotB=pomB.find(t=>t.pis==='acotxador'), dosB=pomB.filter(t=>t.pis==='dos');
-    html+=`<div style="display:grid;grid-template-columns:3fr 2fr;gap:8px;margin-bottom:4px;">
+    // Enxaneta: ample complet
+    if(enx) html+=`<div style="margin-bottom:4px;">${cella(!!aT[enx.id],false,nT[enx.id])}</div>`;
+    // Acotxadors i dosos a la mateixa fila: 3fr (Banda3) | 2fr (Banda2)
+    html+=`<div style="display:grid;grid-template-columns:3fr 2fr;gap:6px;margin-bottom:4px;">
       <div>
-        <div style="font-size:9px;font-weight:700;color:#888;text-align:center;margin-bottom:4px;">Banda del 3</div>
-        ${enx?`<div style="margin-bottom:4px;">${cella(!!aT[enx.id],false,nT[enx.id])}</div>`:''}
-        ${acotA?`<div style="margin-bottom:4px;">${cella(!!aT[acotA.id],false,nT[acotA.id])}</div>`:''}
-        ${dosA.length>=2?`<div style="display:grid;grid-template-columns:1fr 2fr;gap:4px;margin-bottom:4px;">${cella(!!aT[dosA[0].id],false,nT[dosA[0].id])}${cella(!!aT[dosA[1].id],false,nT[dosA[1].id])}</div>`:''}
+        <div style="font-size:9px;font-weight:700;color:#888;text-align:center;margin-bottom:3px;">Banda del 3</div>
+        ${acotA?`<div style="margin-bottom:3px;">${cella(!!aT[acotA.id],false,nT[acotA.id])}</div>`:''}
+        ${dosA.length>=2?`<div style="display:grid;grid-template-columns:1fr 2fr;gap:4px;">${cella(!!aT[dosA[0].id],false,nT[dosA[0].id])}${cella(!!aT[dosA[1].id],false,nT[dosA[1].id])}</div>`:''}
       </div>
       <div>
-        <div style="font-size:9px;font-weight:700;color:#888;text-align:center;margin-bottom:4px;">Banda del 2</div>
-        ${acotB?`<div style="margin-bottom:4px;">${cella(!!aT[acotB.id],false,nT[acotB.id])}</div>`:''}
-        ${dosB.length>=2?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:4px;">${cella(!!aT[dosB[0].id],false,nT[dosB[0].id])}${cella(!!aT[dosB[1].id],false,nT[dosB[1].id])}</div>`:''}
+        <div style="font-size:9px;font-weight:700;color:#888;text-align:center;margin-bottom:3px;">Banda del 2</div>
+        ${acotB?`<div style="margin-bottom:3px;">${cella(!!aT[acotB.id],false,nT[acotB.id])}</div>`:''}
+        ${dosB.length>=2?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;">${cella(!!aT[dosB[0].id],false,nT[dosB[0].id])}${cella(!!aT[dosB[1].id],false,nT[dosB[1].id])}</div>`:''}
       </div>
     </div>`;
   } else if (pinya.tipus === '2' || pinya.tipus === '4') {
