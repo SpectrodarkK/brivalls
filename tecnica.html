@@ -230,7 +230,7 @@
   <button class="nav-btn actiu" onclick="canviaPanell('sessions')" id="nav-sessions">
     <span class="ico">📅</span><span>Sessions</span>
   </button>
-  <button class="nav-btn" onclick="requereixPin(()=>canviaPanell('membres'))" id="nav-membres">
+  <button class="nav-btn" onclick="requereixPin(()=>canviaPanell('membres');comprovaniversaris())" id="nav-membres">
     <span class="ico">👥</span><span>Membres</span>
   </button>
 
@@ -238,6 +238,7 @@
 
 <!-- ======================== PANELL MEMBRES ======================== -->
 <div class="panell" id="panell-membres">
+  <div id="banner-aniversaris" style="display:none;"></div>
   <button class="btn btn-primari" onclick="requereixPin(obreModalMembre)" style="margin-bottom:14px;">
     ➕ Afegir membre
   </button>
@@ -2385,6 +2386,44 @@ function eliminarMembre(membreId) {
 
 const membreSubObert = { adults: true, canalla: true };
 
+function comprovaniversaris() {
+  const banner = document.getElementById('banner-aniversaris');
+  if (!banner) return;
+  const avui = new Date();
+  const any = avui.getFullYear();
+  const mesAvui = avui.getMonth();
+  const diaAvui = avui.getDate();
+
+  // Buscar aniversaris en els propers 7 dies
+  const aniversaris = estat.membres.filter(m => {
+    if (!m.naixement) return false;
+    const [anyN, mesN, diaN] = m.naixement.split('-').map(Number);
+    // Crear data d'aniversari enguany
+    const aniv = new Date(any, mesN-1, diaN);
+    // Si ja ha passat enguany, provar l'any que ve
+    const avuiD = new Date(any, mesAvui, diaAvui);
+    if (aniv < avuiD) aniv.setFullYear(any+1);
+    const dies = Math.round((aniv - avuiD) / (1000*60*60*24));
+    m._diesAniversari = dies;
+    m._edatProxima = any + (aniv.getFullYear() > any ? 1 : 0) - anyN;
+    return dies <= 7;
+  }).sort((a,b) => a._diesAniversari - b._diesAniversari);
+
+  if (!aniversaris.length) { banner.style.display = 'none'; return; }
+
+  const linia = aniversaris.map(m => {
+    const dies = m._diesAniversari;
+    const quan = dies === 0 ? '🎉 avui!' : dies === 1 ? 'demà' : `en ${dies} dies`;
+    return `<strong>${m.nom.split(' ')[0]}</strong> fa ${m._edatProxima} anys ${quan}`;
+  }).join('<br>');
+
+  banner.style.display = '';
+  banner.innerHTML = `<div style="background:#fef9e7;border:1.5px solid #f39c12;border-radius:10px;padding:12px 14px;margin-bottom:12px;">
+    <div style="font-size:12px;font-weight:700;color:#b7770d;margin-bottom:6px;">🎂 Aniversaris aquesta setmana</div>
+    <div style="font-size:13px;color:#7d5a00;line-height:1.6;">${linia}</div>
+  </div>`;
+}
+
 function filtraMembres() {
   const cerca = normalitza(document.getElementById('cerca-membre').value);
   renderitzaMembres(cerca);
@@ -2405,7 +2444,7 @@ function renderitzaMembres(filtre) {
     cont.innerHTML = `<div class="buit" style="padding:32px 16px;">
       <div class="buit-ico">🔐</div>
       <div class="buit-text" style="margin-bottom:16px;">Cal el PIN per veure els membres</div>
-      <button class="btn btn-primari" style="width:auto;padding:10px 24px;" onclick="requereixPin(()=>canviaPanell('membres'))">Introduir PIN</button>
+      <button class="btn btn-primari" style="width:auto;padding:10px 24px;" onclick="requereixPin(()=>canviaPanell('membres');comprovaniversaris())">Introduir PIN</button>
     </div>`;
     return;
   }
@@ -2956,7 +2995,7 @@ async function verificaPin() {
     pinAutenticat = true;
     tancaModal('modal-pin');
     actualitzaBotoPin();
-    carregaDades().then(() => { renderitzaMembres(); renderitzaSessions(); });
+    carregaDades().then(() => { renderitzaMembres(); comprovaniversaris(); renderitzaSessions(); });
     if (window._pinCallback) {
       const cb = window._pinCallback;
       window._pinCallback = null;
