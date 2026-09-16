@@ -1190,6 +1190,19 @@ function renderitzaTroncSessio(cas, pinya, obert) {
           <div>${dos[1]?cellaTroncSessio(dos[1]):''}</div>
           <div></div>
         </div>`;
+    } else if (pinya.tipus === '3') {
+      // Pom especial: enxaneta i acotxador ocupen tot l'ample (3fr)
+      // Dos: 1fr (Rengla) + 2fr (Plena+Buida)
+      const enx = tronc.find(t=>t.pilar===0&&t.pis==='enxaneta');
+      const acot = tronc.find(t=>t.pilar===0&&t.pis==='acotxador');
+      const dos = tronc.filter(t=>t.pilar===0&&t.pis==='dos');
+      filaPom = `
+        <div style="margin-bottom:6px;">${enx?cellaTroncSessio(enx):''}</div>
+        <div style="margin-bottom:6px;">${acot?cellaTroncSessio(acot):''}</div>
+        <div style="display:grid;grid-template-columns:1fr 2fr;gap:6px;margin-bottom:6px;">
+          <div>${dos[0]?cellaTroncSessio(dos[0]):''}</div>
+          <div>${dos[1]?cellaTroncSessio(dos[1]):''}</div>
+        </div>`;
     } else {
       filaPom = pisosPom.map(pis=>{
         const items=tronc.filter(t=>t.pilar===0&&t.pis===pis);
