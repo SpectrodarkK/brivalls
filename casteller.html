@@ -240,8 +240,7 @@ async function carrega() {
 
   // Carregar sessions
   const avui = new Date(); avui.setHours(0,0,0,0);
-  const limite = new Date(avui); limite.setDate(limite.getDate()-7);
-  const limitStr = limite.toISOString().slice(0,10);
+  const limitStr = avui.toISOString().slice(0,10);
   const all = await sbFetch(`sessions?select=*&data=gte.${limitStr}&order=data.asc`);
   sessions = all || [];
   renderitzaSessions();
