@@ -1100,10 +1100,24 @@ function renderitzaTroncSessio(cas, pinya, obert) {
       const t = tronc.find(x => x.pis === pis);
       return t ? cellaTroncSessio(t) : '';
     }).join('');
+    // Baix del pilar
+    const posBaix = pinya.posicions && pinya.posicions.find(p => p.rol === 'baix');
+    const membreIdBaix = posBaix && cas.assignacions && cas.assignacions[posBaix.id];
+    const membreBaix = membreIdBaix ? estat.membres.find(m => m.id === membreIdBaix) : null;
+    const noConfBaix = membreBaix && !(sessioActual.assistencia && sessioActual.assistencia[membreBaix.id]);
+    const bgBaix = membreBaix ? (noConfBaix ? '#e74c3c' : colorRol('baix')) : 'var(--gris-clar)';
+    const brBaix = membreBaix ? (noConfBaix ? '#c0392b' : colorRol('baix')) : 'var(--vora)';
+    const baixCell = posBaix ? `<div onclick="obreAssignacioPosicio('${posBaix.id}','sessio-baix-${casId}')"
+      style="background:${bgBaix};border:1.5px solid ${brBaix};border-radius:8px;padding:6px 4px;text-align:center;cursor:pointer;min-height:48px;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;">
+      <div style="font-size:9px;font-weight:700;color:${membreBaix?'#fff':'var(--text-suau)'};text-transform:uppercase;">Baix</div>
+      ${membreBaix?`<div style="font-size:10px;font-weight:700;color:#fff;margin-top:2px;line-height:1.2;">${membreBaix.nom.split(' ')[0]}</div><div style="font-size:9px;color:rgba(255,255,255,0.85);">${membreBaix.nom.split(' ').slice(1).join(' ')}</div>${noConfBaix?'<div style="font-size:9px;font-weight:700;color:#fff;margin-top:2px;">⚠ No conf.</div>':''}<button onclick="event.stopPropagation();desassignaPosSessio('${casId}','${posBaix.id}')" style="position:absolute;top:2px;right:3px;background:none;border:none;color:rgba(255,255,255,0.8);font-size:11px;cursor:pointer;">✕</button>`:'<div style="font-size:9px;color:var(--text-suau);margin-top:2px;">+</div>'}
+    </div>` : '';
     cos = `<div style="max-width:180px;margin:0 auto;display:flex;flex-direction:column;gap:6px;">
       <div style="text-align:center;font-size:10px;font-weight:700;color:var(--text-suau);text-transform:uppercase;">▲ Dalt</div>
       ${files}
-      <div style="text-align:center;font-size:10px;font-weight:700;color:var(--text-suau);text-transform:uppercase;">▼ Baixos</div>
+      <div style="border-top:2px dashed var(--vora);margin:2px 0;"></div>
+      ${baixCell}
+      <div style="text-align:center;font-size:10px;font-weight:700;color:var(--text-suau);text-transform:uppercase;">▼ Baix</div>
     </div>`;
   } else if (pinya.tipus === '5') {
     const pomA=tronc.filter(t=>t.pilar===6), pomB=tronc.filter(t=>t.pilar===7);
