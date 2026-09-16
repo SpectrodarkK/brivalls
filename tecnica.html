@@ -500,6 +500,10 @@
       <textarea id="edita-castell-desc" placeholder="Notes sobre la formació..." style="min-height:80px;"></textarea>
     </div>
     <button class="btn btn-primari" onclick="desaEditaCastell()">Desar</button>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px;">
+      <button class="btn" style="background:var(--blau-clar);color:var(--blau);" onclick="tancaModal('modal-edita-castell');obreDuplicaCastell(_casIdEditant)">⧉ Duplicar</button>
+      <button class="btn btn-perill" onclick="tancaModal('modal-edita-castell');eliminarCastellSessio(_casIdEditant)">🗑️ Eliminar</button>
+    </div>
     <button class="btn" style="margin-top:8px;width:100%;background:none;color:var(--text-suau);" onclick="tancaModal('modal-edita-castell')">Cancel·lar</button>
   </div>
 </div>
@@ -2737,7 +2741,7 @@ function renderitzaPinyaSessio() {
         </div>
         <div class="buit" style="padding:20px;">
           <div class="buit-ico">🏛️</div>
-          <div class="buit-text">Selecciona el tipus de castell per a configurar la pinya</div>
+          <div class="buit-text">Selecciona el tipus de castell per configurar la pinya</div>
         </div>
       </div>`;
       return;
@@ -2748,17 +2752,12 @@ function renderitzaPinyaSessio() {
       ondragover="dragOver(event)"
       ondrop="dragDrop(event,'${cas.id}')"
       ondragend="dragEnd(event)">
-      <div class="card-cap" style="cursor:grab;">
-        <span style="color:var(--text-suau);font-size:16px;margin-right:6px;cursor:grab;">⠿</span>
+      <div class="card-cap" style="cursor:pointer;" onclick="toggleCastell('${cas.id}')">
+        <span style="color:var(--text-suau);font-size:16px;margin-right:6px;">⠿</span>
         <div style="flex:1;min-width:0;">
           <span class="card-titol">${info.ico} ${pinya.nom}${num}</span>
         </div>
-        <div style="display:flex;gap:6px;flex-shrink:0;">
-          <button class="btn btn-petit btn-groc" onclick="obreEditaCastell('${cas.id}')" title="Editar nom i descripció">✏️</button>
-          <button class="btn btn-petit" style="background:var(--blau-clar);color:var(--blau);" onclick="obreDuplicaCastell('${cas.id}')" title="Duplicar castell">⧉</button>
-          <button class="btn btn-petit" style="background:none;border:none;font-size:16px;cursor:pointer;color:var(--text-suau);transition:transform 0.2s;transform:${castellPlegat[cas.id]?'rotate(-90deg)':''}" onclick="toggleCastell('${cas.id}')">▼</button>
-          <button class="btn btn-petit btn-perill" onclick="eliminarCastellSessio('${cas.id}')">🗑️</button>
-        </div>
+        <button class="btn btn-petit btn-groc" onclick="event.stopPropagation();obreEditaCastell('${cas.id}')" title="Editar">✏️</button>
       </div>
       <div id="vista-cas-${cas.id}" ${castellPlegat[cas.id] ? 'style="display:none"' : ''}>
         ${pinya.desc ? `
