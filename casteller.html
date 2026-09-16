@@ -310,7 +310,7 @@ function obreDetallSessio(idx) {
       const p = cas.pinya;
       const NOMS_TIPUS_LOC = {pilar:{nom:'Pilar',ico:'🏛️'},'2':{nom:'Castell de 2',ico:'🏛️'},'3':{nom:'Castell de 3',ico:'🏛️'},'3ag':{nom:'3 amb agulla',ico:'🏰'},'4':{nom:'Castell de 4',ico:'🏛️'},'5':{nom:'Castell de 5',ico:'🏆'}};
       const info = NOMS_TIPUS_LOC[p.tipus] || {ico:'🏛️'};
-      const num = castells.length > 1 ? ` ${i+1}` : '';
+      const num = '';
       html += `<div class="card" style="margin-bottom:10px;">
         <div style="padding:12px 16px;font-size:15px;font-weight:600;border-bottom:1px solid var(--vora);">${info.ico} ${p.nom}${num}</div>
         <div id="tronc-det-${i}"></div>
@@ -483,13 +483,12 @@ function generaTroncHTML(cas, pinya) {
   html+='<div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">🏗️ Tronc</div>';
 
   if (pinya.tipus === 'pilar') {
-    // Pilar: enxaneta, acotxador, terç, segon, baix en columna sense separadors
     const ordre = ['enxaneta','acotxador','terços','segons'];
     ordre.forEach(pis => {
       const t = tronc.find(x => x.pis === pis);
       if(t) html+=`<div style="margin-bottom:4px;">${cella(!!aT[t.id],false,nT[t.id])}</div>`;
     });
-    // Baix
+    html+='<div style="border-top:1px dashed #ddd;margin:8px 0;"></div>';
     const posBaix = baixos[0];
     if(posBaix) html+=`<div style="margin-bottom:4px;">${cella(!!aP[posBaix.id],true,nA[posBaix.id])}</div>`;
   } else if (pinya.tipus === '3') {
