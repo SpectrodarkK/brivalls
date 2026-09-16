@@ -1104,10 +1104,11 @@ function renderitzaTroncSessio(cas, pinya, obert) {
   } else if (pinya.tipus === '5') {
     const pomA=tronc.filter(t=>t.pilar===6), pomB=tronc.filter(t=>t.pilar===7);
     const enx=tronc.find(t=>t.pis==='enxaneta');
-    function pomH(items){
+    function pomH(items, isPomA){
       const dos=items.filter(t=>t.pis==='dos'),acot=items.find(t=>t.pis==='acotxador');
+      const cols = isPomA ? '1fr 2fr' : '1fr 1fr';
       return `<div style="margin-bottom:4px;">${acot?cellaTroncSessio(acot):''}</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;">${dos.map(t=>cellaTroncSessio(t)).join('')}</div>`;
+        <div style="display:grid;grid-template-columns:${cols};gap:4px;">${dos.map(t=>cellaTroncSessio(t)).join('')}</div>`;
     }
     const fp=pisosOrdrePilar.filter(p=>['quartes','terços','segons'].includes(p)).map(pis=>{
       const cels=Array.from({length:5},(_,i)=>{const t=tronc.find(x=>x.pilar===i+1&&x.pis===pis);return t?cellaTroncSessio(t):'<div></div>';}).join('');
@@ -1158,8 +1159,8 @@ function renderitzaTroncSessio(cas, pinya, obert) {
       <div style="margin-bottom:6px;">${enx?cellaTroncSessio(enx):''}</div>
       <div style="border-top:2px dashed var(--vora);margin:8px 0;"></div>
       <div style="display:grid;grid-template-columns:3fr 2fr;gap:8px;margin-bottom:6px;">
-        <div><div style="font-size:9px;font-weight:700;color:var(--text-suau);text-align:center;margin-bottom:4px;">Pom A · Banda del 3</div>${pomH(pomA)}</div>
-        <div><div style="font-size:9px;font-weight:700;color:var(--text-suau);text-align:center;margin-bottom:4px;">Pom B · Banda del 2</div>${pomH(pomB)}</div>
+        <div><div style="font-size:9px;font-weight:700;color:var(--text-suau);text-align:center;margin-bottom:4px;">Pom A · Banda del 3</div>${pomH(pomA, true)}</div>
+        <div><div style="font-size:9px;font-weight:700;color:var(--text-suau);text-align:center;margin-bottom:4px;">Pom B · Banda del 2</div>${pomH(pomB, false)}</div>
       </div>
       <div style="border-top:2px dashed var(--vora);margin:8px 0;"></div>
       <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:4px;margin-bottom:4px;">${etiq5}</div>

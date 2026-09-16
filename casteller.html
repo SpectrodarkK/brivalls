@@ -492,6 +492,23 @@ function generaTroncHTML(cas, pinya) {
     if(enx) html+=`<div style="display:grid;grid-template-columns:3fr 1fr;gap:4px;margin-bottom:4px;"><div>${cella(!!aT[enx.id],false,nT[enx.id])}</div><div></div></div>`;
     if(acots.length) html+=`<div style="display:grid;grid-template-columns:3fr 1fr;gap:4px;margin-bottom:4px;"><div>${cella(!!aT[acots[0].id],false,nT[acots[0].id])}</div><div></div></div>`;
     if(dosos.length>=2) html+=`<div style="display:grid;grid-template-columns:1fr 2fr 1fr;gap:4px;margin-bottom:4px;">${cella(!!aT[dosos[0].id],false,nT[dosos[0].id])}${cella(!!aT[dosos[1].id],false,nT[dosos[1].id])}<div></div></div>`;
+  } else if (pinya.tipus === '5') {
+    const pomA=tronc.filter(t=>t.pilar===6), pomB=tronc.filter(t=>t.pilar===7);
+    const acotA=pomA.find(t=>t.pis==='acotxador'), dosA=pomA.filter(t=>t.pis==='dos');
+    const acotB=pomB.find(t=>t.pis==='acotxador'), dosB=pomB.filter(t=>t.pis==='dos');
+    html+=`<div style="display:grid;grid-template-columns:3fr 2fr;gap:8px;margin-bottom:4px;">
+      <div>
+        <div style="font-size:9px;font-weight:700;color:#888;text-align:center;margin-bottom:4px;">Banda del 3</div>
+        ${enx?`<div style="margin-bottom:4px;">${cella(!!aT[enx.id],false,nT[enx.id])}</div>`:''}
+        ${acotA?`<div style="margin-bottom:4px;">${cella(!!aT[acotA.id],false,nT[acotA.id])}</div>`:''}
+        ${dosA.length>=2?`<div style="display:grid;grid-template-columns:1fr 2fr;gap:4px;margin-bottom:4px;">${cella(!!aT[dosA[0].id],false,nT[dosA[0].id])}${cella(!!aT[dosA[1].id],false,nT[dosA[1].id])}</div>`:''}
+      </div>
+      <div>
+        <div style="font-size:9px;font-weight:700;color:#888;text-align:center;margin-bottom:4px;">Banda del 2</div>
+        ${acotB?`<div style="margin-bottom:4px;">${cella(!!aT[acotB.id],false,nT[acotB.id])}</div>`:''}
+        ${dosB.length>=2?`<div style="display:grid;grid-template-columns:1fr 1fr;gap:4px;margin-bottom:4px;">${cella(!!aT[dosB[0].id],false,nT[dosB[0].id])}${cella(!!aT[dosB[1].id],false,nT[dosB[1].id])}</div>`:''}
+      </div>
+    </div>`;
   } else {
     if(enx)html+=`<div style="max-width:80px;margin:0 auto 4px;">${cella(!!aT[enx.id],false,nT[enx.id])}</div>`;
     if(acots.length){const w=acots.length===1?'max-width:80px;margin:0 auto 4px;':`display:grid;grid-template-columns:repeat(${acots.length},1fr);gap:4px;margin-bottom:4px;`;html+=`<div style="${w}">${acots.map(t=>cella(!!aT[t.id],false,nT[t.id])).join('')}</div>`;}
