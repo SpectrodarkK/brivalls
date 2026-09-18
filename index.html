@@ -138,7 +138,7 @@ async function recuperaContrasenya() {
       headers:{'apikey':SUPABASE_KEY,'Content-Type':'application/json'},
       body: JSON.stringify({
         email,
-        redirectTo: 'https://spectrodarkk.github.io/brivalls/casteller.html'
+        redirectTo: 'https://app.brivalls.cat/casteller.html'
       })
     });
     document.getElementById('error-msg').style.color='#27ae60';
