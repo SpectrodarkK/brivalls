@@ -429,6 +429,18 @@
         <option value="diada">Diada</option>
       </select>
     </div>
+    <div class="input-grup" id="grup-icona-assaig">
+      <label class="input-etiqueta">Icona</label>
+      <div style="display:flex;gap:10px;">
+        <div id="ico-general" onclick="seleccionaIcona('🏋️')" style="flex:1;padding:12px;border:2px solid var(--vora);border-radius:10px;text-align:center;cursor:pointer;font-size:24px;" title="Assaig general">🏋️<div style="font-size:11px;color:var(--text-suau);margin-top:4px;">General</div></div>
+        <div id="ico-canalla" onclick="seleccionaIcona('🧒')" style="flex:1;padding:12px;border:2px solid var(--vora);border-radius:10px;text-align:center;cursor:pointer;font-size:24px;" title="Assaig canalla">🧒<div style="font-size:11px;color:var(--text-suau);margin-top:4px;">Canalla</div></div>
+      </div>
+      <input type="hidden" id="sessio-icona" value="🏋️">
+    </div>
+    <div class="input-grup">
+      <label class="input-etiqueta">Informació addicional</label>
+      <textarea id="sessio-info" placeholder="Hora de convocatòria, enllaç a Google Maps, àpat posterior..." style="min-height:70px;"></textarea>
+    </div>
     <div class="input-grup" id="grup-publicar-castells" style="display:none;">
       <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--gris-clar);border-radius:8px;cursor:pointer;" onclick="document.getElementById('sessio-publicar').click()">
         <div>
@@ -2646,9 +2658,19 @@ async function enviaConvit() {
   }
 }
 
+function seleccionaIcona(ico) {
+  document.getElementById('sessio-icona').value = ico;
+  document.getElementById('ico-general').style.borderColor = ico === '🏋️' ? 'var(--blau)' : 'var(--vora)';
+  document.getElementById('ico-general').style.background = ico === '🏋️' ? 'var(--blau-clar)' : '';
+  document.getElementById('ico-canalla').style.borderColor = ico === '🧒' ? 'var(--blau)' : 'var(--vora)';
+  document.getElementById('ico-canalla').style.background = ico === '🧒' ? 'var(--blau-clar)' : '';
+}
+
 function actualitzaTogglePublicar() {
   const tipus = document.getElementById('sessio-tipus').value;
-  document.getElementById('grup-publicar-castells').style.display = (tipus === 'diada' || tipus === 'actuacio') ? '' : 'none';
+  const esAssaig = tipus === 'assaig';
+  document.getElementById('grup-publicar-castells').style.display = esAssaig ? 'none' : '';
+  document.getElementById('grup-icona-assaig').style.display = esAssaig ? '' : 'none';
 }
 
 function obreModalSessio(sessioId) {
@@ -2661,6 +2683,10 @@ function obreModalSessio(sessioId) {
   document.getElementById('sessio-lloc').value = sessio ? (sessio.lloc || '') : '';
   document.getElementById('sessio-tipus').value = sessio ? sessio.tipus : 'assaig';
   document.getElementById('sessio-publicar').checked = sessio ? !!sessio.publicarCastells : false;
+  document.getElementById('sessio-info').value = sessio ? (sessio.info || '') : '';
+  const icona = sessio ? (sessio.icona || '🏋️') : '🏋️';
+  document.getElementById('sessio-icona').value = icona;
+  seleccionaIcona(icona);
   actualitzaTogglePublicar();
   obreModal('modal-sessio');
 }
@@ -2675,6 +2701,8 @@ function guardarSessio() {
     hora: document.getElementById('sessio-hora').value,
     lloc: document.getElementById('sessio-lloc').value.trim(),
     tipus: document.getElementById('sessio-tipus').value,
+    icona: document.getElementById('sessio-icona').value || '🏋️',
+    info: document.getElementById('sessio-info').value.trim(),
     publicarCastells: document.getElementById('sessio-publicar').checked || false,
   };
   if (editId) {
@@ -2719,7 +2747,7 @@ function renderitzaSessions() {
 
   function renderSessio(s) {
     const nAssist = estat.membres.filter(m => s.assistencia && s.assistencia[m.id]).length;
-    const icona = {assaig:'🏋️', actuacio:'🏰', diada:'🎉'}[s.tipus] || '📅';
+    const icona = s.icona || {assaig:'🏋️', actuacio:'🏰', diada:'🎉'}[s.tipus] || '📅';
     return `<div class="sessio-item" onclick="obreSessioDetall('${s.id}')">
       <span style="font-size:24px;">${icona}</span>
       <div class="sessio-info">

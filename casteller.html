@@ -280,6 +280,7 @@ function renderitzaSessions() {
     const past = data < avui;
     const assist = membreActiu && s.assistencia && s.assistencia[membreActiu.id];
     const teDetall = (s.tipus === 'diada' || s.tipus === 'actuacio') && s.publicarCastells;
+    const icona = s.icona || {assaig:'🏋️', actuacio:'🏰', diada:'🎉'}[s.tipus] || '📅';
     return `<div class="sessio-item" style="${past?'opacity:0.6':''}${teDetall?';cursor:pointer':''}" ${teDetall?`onclick="obreDetallSessio(${idx})"`:''}>
       <div>
         <div class="sessio-data" style="${esAvui?'color:#e74c3c':''}">${diaNum(s.data)}</div>
@@ -287,12 +288,14 @@ function renderitzaSessions() {
       </div>
       <div class="sessio-info">
         <div class="sessio-titol">${esAvui?'<strong>Avui · </strong>':''}${s.hora||''}</div>
-        <div style="margin-top:4px;">${tagTipus(s.tipus)}</div>
+        <div style="margin-top:4px;">${icona} ${tagTipus(s.tipus)}</div>
         <div class="sessio-subtitol">${s.lloc||''}</div>
+        ${s.info ? `<div style="font-size:12px;color:var(--text-suau);margin-top:4px;white-space:pre-wrap;">${s.info}</div>` : ''}
       </div>
       <div style="display:flex;align-items:center;gap:8px;">
         ${membreActiu?`<label class="toggle" onclick="event.stopPropagation()"><input type="checkbox" ${assist?'checked':''} onchange="toggleAssistencia('${s.id}',this.checked,${idx})"><span class="toggle-slider"></span></label>`:''}
-        <div style="min-width:24px;text-align:center;">${teDetall?'<span style="font-size:18px;color:#29327a;">›</span>':''}</div>      </div>
+        <div style="min-width:24px;text-align:center;">${teDetall?'<span style="font-size:18px;color:#29327a;">›</span>':''}</div>
+      </div>
     </div>`;
   }).join('') + '</div>';
 }
