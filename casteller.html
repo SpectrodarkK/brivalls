@@ -226,7 +226,11 @@ function tagTipus(t) { return `<span class="tag tag-${t}">${tipusSessio(t)}</spa
 
 async function carrega() {
   // Obtenir fitxes del casteller
-  const vinc = await sbFetch('membre_usuari?select=membre_id,membres(id,nom,foto,tel,notes,naixement)');
+  // Obtenir l'usuari actual per filtrar les seves fitxes
+  const userRes = await sbAuth('user');
+  const userId = userRes && userRes.data && userRes.data.id;
+  if (!userId) { window.location.href = 'index.html'; return; }
+  const vinc = await sbFetch(`membre_usuari?user_id=eq.${userId}&select=membre_id,membres(id,nom,foto,tel,notes,naixement)`);
   if (!vinc || !vinc.length) {
     document.getElementById('cap-nom').textContent = 'Sense fitxa assignada';
     document.getElementById('contingut-fitxa').innerHTML = '<div class="buit"><div class="buit-ico">👤</div><div>El tècnic encara no ha assignat cap fitxa</div></div>';
