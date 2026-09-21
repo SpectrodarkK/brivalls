@@ -142,27 +142,35 @@ async function detectaToken() {
   const type = hashParams.get('type') || queryParams.get('type');
   const accessToken = hashParams.get('access_token');
   const refreshToken = hashParams.get('refresh_token');
-  const tokenHash = queryParams.get('token_hash') || queryParams.get('token');
+  // Token OTP cru (del nostre template hardcodejat)
+  const tokenOTP = hashParams.get('token') || queryParams.get('token');
+  const tokenHash = queryParams.get('token_hash') || tokenOTP;
 
   if (accessToken && (type === 'invite' || type === 'recovery' || type === 'signup' || type === 'magiclink')) {
+    // JWT directe — usar immediatament
     sessionStorage.setItem('sb-token', accessToken);
     if (refreshToken) sessionStorage.setItem('sb-refresh', refreshToken);
     sessionStorage.setItem('sb-canvia-pwd', '1');
     sessionStorage.setItem('primer-acces', '1');
     history.replaceState(null, '', window.location.pathname);
   } else if (tokenHash && type) {
+    // Token OTP — verificar per obtenir JWT
     try {
-      const res = await fetch('https://djxugrnyvbmziwttaszo.supabase.co/auth/v1/verify', {
+      const verifyType = type === 'invite' ? 'invite' : type;
+      const res = await fetch(SUPABASE_URL + '/auth/v1/verify', {
         method: 'POST',
         headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ token_hash: tokenHash, type })
+        body: JSON.stringify({ token_hash: tokenHash, type: verifyType })
       });
       if (res.ok) {
         const data = await res.json();
-        sessionStorage.setItem('sb-token', data.access_token);
-        if (data.refresh_token) sessionStorage.setItem('sb-refresh', data.refresh_token);
-        sessionStorage.setItem('sb-canvia-pwd', '1');
-        history.replaceState(null, '', window.location.pathname);
+        if (data.access_token) {
+          sessionStorage.setItem('sb-token', data.access_token);
+          if (data.refresh_token) sessionStorage.setItem('sb-refresh', data.refresh_token);
+          sessionStorage.setItem('sb-canvia-pwd', '1');
+          sessionStorage.setItem('primer-acces', '1');
+          history.replaceState(null, '', window.location.pathname);
+        }
       }
     } catch(e) { console.error('Error verificant token:', e); }
   }
