@@ -986,10 +986,10 @@ function generaTronc(tipus) {
   // Pilars amb noms específics per cada castell
   const nomsPilars = {
     '2':   ['Carregada', 'Descarregada'],
-    '3':   ['Rengla', 'Plena', 'Buida'],
-    '3ag': ['Rengla', 'Plena', 'Buida', 'Agulla'],
+    '3':   ['Rengla', 'Buida', 'Plena'],
+    '3ag': ['Rengla', 'Buida', 'Plena', 'Agulla'],
     '4':   ['Esquerra', 'Rengla', 'Dreta', 'Contra'],
-    '5':   ['Rengla', 'Plena', 'Buida', 'Carregada', 'Descarregada'],
+    '5':   ['Rengla', 'Buida', 'Plena', 'Carregada', 'Descarregada'],
   };
   const noms = nomsPilars[tipus] || [];
   for (let p = 1; p <= nPilars; p++) {
@@ -1020,19 +1020,19 @@ function generaTronc(tipus) {
 // Mapa pilar → índex del baix a la pinya (ordre visual de cada castell)
 const INDEX_BAIX_PER_PILAR = {
   '2':   [1, 0],
-  '3':   [0, 2, 1],
-  '3ag': [0, 2, 1, -1],
+  '3':   [0, 1, 2],   // Rengla, Buida, Plena
+  '3ag': [0, 1, 2, -1], // Rengla, Buida, Plena, Agulla
   '4':   [3, 2, 1, 0],
-  '5':   [0, 1, 2, 3, 4],  // Rengla, Plena, Buida, Descarregada, Carregada
+  '5':   [0, 1, 2, 3, 4],
 };
 
 function getNomPilar(tipus, pilarIdx) {
   const noms = {
     '2':   ['Carregada', 'Descarregada'],
-    '3':   ['Rengla', 'Plena', 'Buida'],
-    '3ag': ['Rengla', 'Plena', 'Buida', 'Agulla'],
+    '3':   ['Rengla', 'Buida', 'Plena'],
+    '3ag': ['Rengla', 'Buida', 'Plena', 'Agulla'],
     '4':   ['Esquerra', 'Rengla', 'Dreta', 'Contra'],
-    '5':   ['Rengla', 'Plena', 'Buida', 'Carregada', 'Descarregada'],
+    '5':   ['Rengla', 'Buida', 'Plena', 'Carregada', 'Descarregada'],
   };
   return (noms[tipus] || [])[pilarIdx] || `Pilar ${pilarIdx+1}`;
 }
