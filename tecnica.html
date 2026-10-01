@@ -1978,8 +1978,8 @@ document.querySelectorAll('.modal-overlay').forEach(el => {
 
 function maxCastells(tipus) {
   if (tipus === 'assaig') return 15;
-  if (tipus === 'diada') return 5;
-  return 1; // actuacio
+  if (tipus === 'diada') return 10;
+  return 10; // actuacio
 }
 
 function asseguraCastells() {
@@ -2923,7 +2923,7 @@ function renderitzaPinyaSessio() {
   if (castells.length < max) {
     const label = sessioActual.tipus === 'assaig'
       ? `➕ Afegir prova`
-      : `➕ Afegir castell (${castells.length}/${max})`;
+      : `➕ Afegir castell`;
     html += `<button class="btn btn-secundari" style="width:100%;margin-bottom:14px;" onclick="afegirCastellSessio()">
       ${label}
     </button>`;
