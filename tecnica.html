@@ -3020,7 +3020,7 @@ function toggleAssistencia(membreId, val) {
   sessioActual.assistencia[membreId] = val;
   const i = estat.sessions.findIndex(s => s.id === sessioActual.id);
   estat.sessions[i] = sessioActual;
-  desa();
+  desaSessioSupa();
   const nAssist = estat.membres.filter(m => sessioActual.assistencia[m.id]).length;
   document.getElementById('resum-assist').textContent = nAssist + ' / ' + estat.membres.length;
   // Update pinya sessio area persones disponibles
