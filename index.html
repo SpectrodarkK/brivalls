@@ -109,7 +109,7 @@ const EMAIL_TECNIC = 'validacio-tecnica@brivalls.cat';
   } else {
     localStorage.removeItem('sessio-casteller');
   }
-})();
+});
   
   // Ping a Supabase per evitar que el projecte es pausi per inactivitat
   (async function ping() {
@@ -118,7 +118,7 @@ const EMAIL_TECNIC = 'validacio-tecnica@brivalls.cat';
         headers: { 'apikey': SUPABASE_KEY }
       });
     } catch(e) {}
-  })();
+  });
 
 async function login() {
   const email = document.getElementById('email').value.trim();
