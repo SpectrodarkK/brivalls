@@ -89,56 +89,36 @@ const EMAIL_TECNIC = 'validacio-tecnica@brivalls.cat';
     } catch(e) { console.error('Error verificant token:', e); }
   }
 
-  // PRIORITAT 2: comprovar si hi ha sessió guardada al localStorage
-  const tokenGuardat = localStorage.getItem('sb-token');
-  if (!tokenGuardat) return; // cap sessió, mostrar login normalment
-
-  // Verificar si l'access token encara és vàlid
-  const resUser = await fetch(SUPABASE_URL + '/auth/v1/user', {
-    headers: { 'apikey': SUPABASE_KEY, 'Authorization': 'Bearer ' + tokenGuardat }
+  // PRIORITAT 2: comprovar si hi ha sessió pròpia guardada
+  const sessioToken = localStorage.getItem('sessio-casteller');
+  if (!sessioToken) return;
+  
+  const res = await fetch(SUPABASE_URL + '/functions/v1/verificar-sessio', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ token: sessioToken })
   });
-
-  if (resUser.ok) {
-    // Token vàlid, entrar directament
-    sessionStorage.setItem('sb-token', tokenGuardat);
-    const refreshGuardat = localStorage.getItem('sb-refresh');
-    if (refreshGuardat) sessionStorage.setItem('sb-refresh', refreshGuardat);
+  
+  if (res.ok) {
+    const data = await res.json();
+    sessionStorage.setItem('sb-token', data.access_token);
+    sessionStorage.setItem('sb-refresh', data.refresh_token);
     window.location.href = 'casteller.html';
-    return;
+  } else {
+    localStorage.removeItem('sessio-casteller');
+    localStorage.removeItem('sb-token');
+    localStorage.removeItem('sb-refresh');
   }
-
-  // Token caducat, intentar renovar amb el refresh token
-  const refreshGuardat = localStorage.getItem('sb-refresh');
-  if (refreshGuardat) {
-    const resRefresh = await fetch(SUPABASE_URL + '/auth/v1/token?grant_type=refresh_token', {
-      method: 'POST',
-      headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ refresh_token: refreshGuardat })
-    });
-    if (resRefresh.ok) {
-      const data = await resRefresh.json();
-      localStorage.setItem('sb-token', data.access_token);
-      if (data.refresh_token) localStorage.setItem('sb-refresh', data.refresh_token);
-      sessionStorage.setItem('sb-token', data.access_token);
-      if (data.refresh_token) sessionStorage.setItem('sb-refresh', data.refresh_token);
-      window.location.href = 'casteller.html';
-      return;
-    }
-  }
-
-  // Refresh també caducat, netejar i mostrar login
-  localStorage.removeItem('sb-token');
-  localStorage.removeItem('sb-refresh');
-})();
-
-// Ping a Supabase per evitar que el projecte es pausi per inactivitat
-(async function ping() {
-  try {
-    await fetch(SUPABASE_URL + '/rest/v1/sessions?select=id&limit=1', {
-      headers: { 'apikey': SUPABASE_KEY }
-    });
-  } catch(e) {}
-})();
+  })();
+  
+  // Ping a Supabase per evitar que el projecte es pausi per inactivitat
+  (async function ping() {
+    try {
+      await fetch(SUPABASE_URL + '/rest/v1/sessions?select=id&limit=1', {
+        headers: { 'apikey': SUPABASE_KEY }
+      });
+    } catch(e) {}
+  })();
 
 async function login() {
   const email = document.getElementById('email').value.trim();
