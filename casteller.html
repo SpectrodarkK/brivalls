@@ -273,6 +273,7 @@ if (sessioToken) {
     token = data.access_token;
     sessionStorage.setItem('sb-token', data.access_token);
     localStorage.setItem('sb-token', data.access_token);
+    if (data.refresh_token) localStorage.setItem('sb-refresh', data.refresh_token);
   } else {
     // Token invàlid o caducat
     localStorage.removeItem('sessio-casteller');
