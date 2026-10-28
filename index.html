@@ -91,6 +91,7 @@ const EMAIL_TECNIC = 'validacio-tecnica@brivalls.cat';
 
   // PRIORITAT 2: comprovar si hi ha sessió pròpia guardada
   const sessioToken = localStorage.getItem('sessio-casteller');
+  console.log('sessioToken:', sessioToken);
   if (!sessioToken) return;
   
   const res = await fetch(SUPABASE_URL + '/functions/v1/verificar-sessio', {
