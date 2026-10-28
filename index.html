@@ -121,6 +121,8 @@ async function login() {
     if (email === EMAIL_TECNIC) {
       window.location.href = 'tecnica.html';
     } else {
+      localStorage.setItem('sb-token', data.access_token);
+      if (data.refresh_token) localStorage.setItem('sb-refresh', data.refresh_token);
       window.location.href = 'casteller.html';
     }
   } catch(e) {
