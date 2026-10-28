@@ -162,10 +162,25 @@ async function login() {
     if (email === EMAIL_TECNIC) {
       window.location.href = 'tecnica.html';
     } else {
-      localStorage.setItem('sb-token', data.access_token);
-      if (data.refresh_token) localStorage.setItem('sb-refresh', data.refresh_token);
-      window.location.href = 'casteller.html';
-    }
+  // Crear token de sessió propi per al casteller
+  const userId = data.user.id;
+  const resToken = await fetch(SUPABASE_URL + '/functions/v1/crear-sessio-casteller', {
+    method: 'POST',
+    headers: {
+      'Authorization': 'Bearer ' + data.access_token,
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({ user_id: userId })
+  });
+  if (resToken.ok) {
+    const tokenData = await resToken.json();
+    localStorage.setItem('sessio-casteller', tokenData.token);
+  }
+  // Guardar també el token de Supabase per a la sessió actual
+  sessionStorage.setItem('sb-token', data.access_token);
+  sessionStorage.setItem('sb-refresh', data.refresh_token);
+  window.location.href = 'casteller.html';
+}
   } catch(e) {
     err.textContent='Correu o contrasenya incorrectes'; err.style.display='block';
     btn.textContent='Entrar'; btn.disabled=false;
