@@ -259,6 +259,22 @@ async function carrega() {
   const all = await sbFetch(`sessions?select=*&data=gte.${limitStr}&order=data.asc`);
   sessions = all || [];
   renderitzaSessions();
+
+  // Renovar token silenciosament per allargar la sessió
+  const refreshGuardat = localStorage.getItem('sb-refresh');
+  if (refreshGuardat) {
+  const resRefresh = await fetch(SUPABASE_URL + '/auth/v1/token?grant_type=refresh_token', {
+    method: 'POST',
+    headers: { 'apikey': SUPABASE_KEY, 'Content-Type': 'application/json' },
+    body: JSON.stringify({ refresh_token: refreshGuardat })
+  });
+  if (resRefresh.ok) {
+    const data = await resRefresh.json();
+    localStorage.setItem('sb-token', data.access_token);
+    if (data.refresh_token) localStorage.setItem('sb-refresh', data.refresh_token);
+    token = data.access_token;
+  }
+  }
 }
 
 function renderitzaChips() {
