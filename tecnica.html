@@ -2121,7 +2121,7 @@ async function carregaDades() {
   } catch(e) {
     console.error('Error carregant de Supabase:', e.message);
     alert('Error connectant amb Supabase: ' + e.message);
-    const local = JSON.parse(localStorage.getItem('pinya-castellers') || '{}');
+    const local = JSON.parse(sessionStorage.getItem('pinya-castellers') || '{}');
     if (local.membres) estat.membres = local.membres;
     if (local.sessions) estat.sessions = local.sessions;
   }
@@ -2193,7 +2193,7 @@ function tornarEnrere() {
 
 function desa() {
   // Desa còpia local com a backup
-  localStorage.setItem('pinya-castellers', JSON.stringify(estat));
+  sessionStorage.setItem('pinya-castellers', JSON.stringify(estat));
 }
 
 async function desaMembresSupa(m) {
