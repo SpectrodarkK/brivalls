@@ -185,8 +185,8 @@ let sessions = [];
 // Inicialitzar de forma seqüencial
 (async () => {
   await detectaToken();
-  token = sessionStorage.getItem('sb-token');
-  refreshToken = sessionStorage.getItem('sb-refresh');
+  token = localStorage.getItem('sb-token');
+  refreshToken = localStorage.getItem('sb-refresh');
 
   if (!token) { window.location.href = 'index.html'; return; }
 
@@ -674,6 +674,8 @@ function generaTroncHTML(cas, pinya) {
 function sortir() {
   if (!confirm('Vols tancar la sessió?')) return;
   sessionStorage.clear();
+  localStorage.removeItem('sb-token');
+  localStorage.removeItem('sb-refresh');
   window.location.href='index.html';
 }
 </script>
