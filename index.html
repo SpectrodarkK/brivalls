@@ -102,16 +102,20 @@ const EMAIL_TECNIC = 'validacio-tecnica@brivalls.cat';
   
   if (res.ok) {
   const data = await res.json();
-    if (data.access_token && data.refresh_token) {
-      await supabase.auth.setSession({
-        access_token: data.access_token,
-        refresh_token: data.refresh_token
-      });
-      window.location.href = 'casteller.html';
-    } else {
-      localStorage.removeItem('sessio-casteller');
-    }
+  if (data.access_token && data.refresh_token) {
+    // Guardar tokens al localStorage com fa Supabase JS
+    const sbKey = 'sb-djxugrnyvbmziwttaszo-auth-token';
+    localStorage.setItem(sbKey, JSON.stringify({
+      access_token: data.access_token,
+      refresh_token: data.refresh_token,
+      token_type: 'bearer',
+      expires_at: Math.floor(Date.now() / 1000) + 3600
+    }));
+    window.location.href = 'casteller.html';
+  } else {
+    localStorage.removeItem('sessio-casteller');
   }
+}
 })();
   
   // Ping a Supabase per evitar que el projecte es pausi per inactivitat
