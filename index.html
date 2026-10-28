@@ -102,18 +102,14 @@ const EMAIL_TECNIC = 'validacio-tecnica@brivalls.cat';
   
   if (res.ok) {
   const data = await res.json();
-    if (data.verified) {
-      // Fer login amb el token de Supabase existent si encara és vàlid
-      // o redirigir al login si ha caducat
-      const sbToken = localStorage.getItem('sb-token');
-      if (sbToken) {
-        sessionStorage.setItem('sb-token', sbToken);
-        window.location.href = 'casteller.html';
-      } else {
-        // Token de Supabase caducat, cal renovar
-        localStorage.removeItem('sessio-casteller');
-        // Mostrar login
-      }
+    if (data.access_token && data.refresh_token) {
+      await supabase.auth.setSession({
+        access_token: data.access_token,
+        refresh_token: data.refresh_token
+      });
+      window.location.href = 'casteller.html';
+    } else {
+      localStorage.removeItem('sessio-casteller');
     }
   }
 })();
